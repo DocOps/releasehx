@@ -1,0 +1,39 @@
+  {%- assign change = include.change %}
+  {%- assign config = include.config %}
+  - chid: {{ change.chid }}
+    {%- if change.tick %}
+    tick: {{ change.tick }}
+    {%- endif %}
+    {%- if change.type %}
+    type: {{ change.type }}
+    {%- endif %}
+    {%- if change.parts.size > 0 %}
+    {%-   if change.parts.size == 1 %}
+    part: {{ change.parts[0] }}
+    {%-   else %}
+    parts:
+      {%- for part in change.parts %}
+      - {{ part }}
+      {%- endfor %}
+    {%-   endif %}
+    {%- endif %}
+    {%-  if change.hash %}
+    hash: {{ change.hash }}
+    {%- endif %}
+    summ: {{ change.summ }}
+    {%- if change.head %}
+    head: {{ change.head }}
+    {%- endif %}
+    {%- if change.note and change.note.strip != "" %}
+    note: |
+      {{ change.note | indent: 6 }}
+    {%- endif %}
+    {%-  if change.tags.size > 0 %}
+    tags:
+    {%- for tag in change.tags %}
+      - {{ tag }}
+    {%- endfor %}
+    {%- endif %}
+    {%- if change.lead %}
+    lead: {{ change.lead }}
+    {%- endif %}

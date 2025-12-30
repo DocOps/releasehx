@@ -1,0 +1,82 @@
+# Build paths
+build/
+_build/
+_output/
+pkg/
+
+# Bundler
+.bundle/
+vendor/
+.vendor/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# DocOps Lab Dev tooling - vendor configs are synced, not tracked
+.config/.vendor/
+scripts/.vendor/
+# Generated configs
+.config/vale.ini
+.config/htmlproofer.yml
+
+# Temporary paths
+tmp/
+*.tmp
+*.bak
+*~
+.warp/
+.agent/*
+!.agent/team/
+.agents/
+
+# Logs
+*.log
+
+# RSpec
+.rspec_status
+specs/tests/results/
+
+# Test coverage
+/coverage/
+
+# Environment variable files
+.env
+.env.local
+.env.*.local
+.env.testing
+
+# Ruby version managers
+.ruby-version
+.ruby-gemset
+
+# Gem content paths
+*.gem
+
+# Documentation build artifacts
+.yardoc/
+README.html
+
+# Generated code
+lib/releasehx/generated.rb
+lib/releasehx/mcp/assets/
+
+# Development/debugging scripts (not for distribution)
+ai-prompt-collect.sh
+class_module_map.rb
+filename_swap.rb
+find_requires.rb
+cleanup.rb
+debug_milestones.rb
+
+# Development artifacts and notes
+releasehx_0.1.0_workplan.adoc
+releasehx-issues.yml
+repomix-output.xml
+
+# Local development directories
+dev/
+releasehx-demo/

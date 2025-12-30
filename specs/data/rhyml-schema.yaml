@@ -1,0 +1,152 @@
+$schema:
+  type: Map
+  desc: |
+    The schema for documenting the changes in an individual revision release in RHYML.
+
+    This object is typically hosted as serialized Array of tabular data under a `releases`
+  properties:
+    $meta: 
+      req: [code,changes]
+    code:
+      desc: The revision (version) number or other identifier of the release.
+      type: String
+    date:
+      desc: The release date.
+      type: Date
+    hash:
+      desc: The Git commit hash (SHA256 ID) for the release.
+      type: String
+    memo:
+      desc: |
+        A brief summary of the release.
+        May include markup formatting.
+      type: String
+    $config:
+      desc: |
+        Settings specific to this document.
+      type: Map
+      properties:
+        markup:
+          desc: |
+            The markup format for the `note` and `memo` properties of RHYML objects.
+
+            Change to `asciidoc` to convert upstream Markdown to AsciiDoc.
+
+            This setting defaults to the value of the `config.rhyml.markup` setting, which defaults to `markdown`.
+          type: String
+          dflt: markdown
+    changes:
+      desc: A list of changes completed in this release.
+      type: ArrayTable
+      aliases: ['work']
+      recordset:
+
+      properties:
+        chid:
+          desc: 
+            The change identifier.
+            This is a contiguous String (no spaces) that MUST be among all changes in its own release and is recommended to be universally unique (across all releases).
+
+            By default, when RHYML is automatically generated, this property is constructed from the `tick` String and the first portion of the `summ` String, truncated and slugified.
+
+            You can override this in the `config.templates.chid` property.
+          type: Slug
+
+        tick:
+          desc: The issue ticket number for the change.
+          type: Line
+
+        hash:
+          desc: The commit hash for the change.
+          type: Line
+
+        type:
+          desc: |
+            The type of change.
+
+            Must be registered in the `types` block of the config.
+          type: String
+          context:
+            has_one: './config-def.yml#/properties/types'
+
+        part:
+          desc: |
+            The component, interface, feature, or aspect of the product affected by the change.
+
+            Must be registered in the `parts` block of the config.
+
+            If `part` is specified, `parts` cannot be specified.
+          type: String
+
+        parts:
+          desc: |
+            When more than one component, interface, feature, or aspect of the product is affected by the change, and you wish all such "`parts`" to be noted.
+
+            All items must be listed in the `parts` block of the config.
+
+            If `parts` is specified, `part` cannot be specified.
+          type: Array
+
+        summ:
+          desc: |
+            A brief summary of the change.
+            Typically used as the Changelog entry.
+          type: String
+
+        head:
+          desc: |
+            The headline for a release note, if the value of the `summ` property is not preferred.
+            In standard templates, the headline placeholder looks for a `head` property but falls back to `summ`.
+
+        note:
+          desc: |
+            A note about the change.
+
+            May include markup formatting.
+          type: String
+
+        tags:
+          desc: |
+            An array of tags associated with the change.
+
+            Must be registered in the `tags` block of the config.
+          type: Array
+          items:
+            type: Slug
+            has_one: './config-def.yml#/properties/tags'
+
+        links:
+          desc: |
+            A list of documentation or marketing links for the change.
+
+            The `xref` and `href` properties are mutually exclusive; `href` will supersede.
+          type: ArrayTable
+          properties:
+            text:
+              desc: The display text for the link.
+              type: String
+            xref:
+              desc: The local cross-reference for the linked document.
+              type: String
+            href:
+              desc: The URL for the linked document.
+              type: String
+
+        lead:
+          desc: |
+            The primary contributor to the change.
+            Associated with a username in the Issues system.
+          type: Slug
+
+        auths:
+          desc: |
+            An array of contributors to the change.
+            Associated with a username in the Issues system.
+          type: ArrayTable
+          properties:
+            user:
+              desc: The username of the contributor.
+              type: Slug
+            memo:
+              desc: A role label or note about the contributor's involvement.
+              type: String

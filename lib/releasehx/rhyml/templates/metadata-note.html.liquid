@@ -1,0 +1,36 @@
+{%- assign show_labels = content_config.items.metadata_labels %}
+{%- assign show_icons = content_config.items.metadata_icons %}
+{%- embed tags-listing.liquid %}
+
+{%- capture change_metadata %}
+{%-   for kind in metadata_kinds %}
+{%-     assign change_meta_kind = change[kind] %}
+{%-     assign kind_plural = kind | append: "s" %}
+{%-     if kind == "tag" %}
+{%-       continue %}
+{%-     endif %}
+{%-     if config[kind_plural][change_meta_kind].icon and show_icons and show_icons == "before" %}
+<i class="fa fa-{{ config[kind_plural][change_meta_kind].icon | default: 'tag' }} meta-icon"></i>
+{%-     endif %}
+{%-     if show_labels %}
+<span class="badge bg-secondary meta-label {{ kind }}-label">{{ config[kind_plural][change_meta_kind]['text'] | default: change_meta_kind }}</span>
+{%-     endif %}
+{%-     if config[kind_plural][change_meta_kind].icon and show_icons and show_icons == "after" %}
+<i class="fa fa-{{ config[kind_plural][change_meta_kind].icon | default: 'tag' }} meta-icon"></i>
+{%-     endif %}
+{%-   endfor %}
+{%-   if tags_listing != "" %}
+{{ tags_listing | trim }}
+{%-   endif %}
+{%-   if config.links.web and config.links.web.href %}
+<a href="{{ config.links.web.href | render: change }}" class="issue-link text-decoration-none">
+    <i class="fa fa-{{ config.links.web.icon | default: 'ticket' }}"></i>{{ config.links.web.text | render: change | default: change.tick }}
+</a>
+{%-   endif -%}
+{%-   if config.links.git and config.links.git.href %}
+<a href="{{ config.links.git.href | render: change }}" class="git-link text-decoration-none">
+    <i class="fa fa-{{ config.links.git.icon | default: 'code-fork' }}"></i>{% assign git_text = config.links.git.text | render: change | default: change.hash %}{{ git_text | slice: 0, 7 }}
+</a>
+{%-   endif %}
+{%- endcapture %}
+{%- assign catch_metadata_error = change_metadata %}

@@ -1,0 +1,534 @@
+= API Integration Setup Guide for ReleaseHx
+:toc: macro
+:toclevels: 3
+
+This guide provides comprehensive setup instructions for testing and using ReleaseHx with live API integrations for GitHub, GitLab, and Jira.
+
+toc::[]
+
+
+[[overview]]
+== Overview
+
+ReleaseHx supports fetching issues directly from three major platforms through their REST APIs:
+
+Jira::
+Search API v2 with basic authentication (username + API token)
+
+GitHub::
+Issues API v3 with OAuth token authentication
+
+GitLab::
+Issues API v4 with private token authentication  
+
+Each platform requires specific environment variables and permissions to function correctly.
+
+The ReleaseHx repository includes a `.env.testing.tplt` template file for creating your own multi-platform `.env.testing` file with environment variables.
+
+
+[[quick-test]]
+== Quick Test
+
+To test all API integrations at once:
+
+....
+source .env.testing && ruby specs/tests/api-auth-test.rb
+....
+
+This will systematically test authentication, configuration loading, issue fetching, and version filtering for all three platforms.
+
+
+[[github-api-integration]]
+== GitHub API Integration
+
+[[required-github-environment-variables]]
+=== Required Environment Variables
+
+[.prompt]
+ export GITHUB_TOKEN="ghp_your_token_here"
+
+Alternative environment variable names (in order of preference):
+
+* `GITHUB_TOKEN` (preferred)
+* `GITHUB_ACCESS_TOKEN`
+
+Optional environment variables:
+
+* `GITHUB_API_HOST` (defaults to `https://api.github.com`)
+* `GITHUB_REPO` (format: `owner/repository`)
+
+[[token-creation]]
+=== Token Creation
+
+. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+. Click "Generate new token (classic)"
+. Select scopes:
+  * `repo` (Full control of private repositories) - *required*
+  * `read:org` (Read org and team membership, read org projects) - optional but recommended
+. Copy the token and set it as `GITHUB_TOKEN` environment variable
+
+[[required-permissions]]
+=== Required Permissions
+
+Your token must have access to:
+
+* Read issues in the target repository
+* Read milestones (if using milestone-based filtering)
+* Read repository metadata
+
+[[configuration]]
+=== Configuration
+
+In your ReleaseHx config file:
+
+[source,yaml]
+----
+api:
+  from: github
+  # Optional: specify project if not using GITHUB_REPO env var
+  # project: owner/repository
+----
+
+[[testing-github-integration]]
+=== Testing GitHub Integration
+
+[source,bash]
+----
+# Test with specific repository
+export GITHUB_REPO="owner/repository"
+export GITHUB_TOKEN="ghp_your_token"
+
+# Run authentication test
+ruby specs/tests/api-auth-test.rb
+
+# Test with actual ReleaseHx command
+rhx 1.0.0 --config specs/tests/api-configs/github-test.yml --api-data
+----
+
+[[common-issues]]
+=== Common Issues
+
+*401 Unauthorized*::
+* Token is invalid or expired
+* Token doesn't have `repo` scope
+* Repository is private and token lacks access
+
+*404 Not Found*::
+* Repository doesn't exist or you don't have access
+* Repository name is misspelled
+* Check `GITHUB_REPO` environment variable format
+
+*403 Forbidden*::
+* Rate limit exceeded (GitHub allows 5000 requests/hour for authenticated requests)
+* Token lacks required permissions
+
+
+[[gitlab-api-integration]]
+== GitLab API Integration
+
+[[required-gitlab-environment-variables]]
+=== Required Environment Variables
+
+[.prompt]
+ export GITLAB_TOKEN="glpat-your_token_here"
+
+Alternative environment variable names:
+
+* `GITLAB_TOKEN` (preferred)  
+* `GITLAB_ACCESS_TOKEN`
+
+Optional environment variables:
+
+* `GITLAB_API_HOST` (defaults to `https://gitlab.com`)
+* `GITLAB_PROJECT_ID` (numeric project ID)
+
+[[token-creation]]
+=== Token Creation
+
+. Go to GitLab Settings → Access Tokens
+. Create a personal access token with scopes:
+  * `read_api` (Read-only API access) - **required**
+  * `read_repository` (Read repository) - recommended
+. Copy the token and set it as `GITLAB_TOKEN` environment variable
+
+[[required-permissions]]
+=== Required Permissions
+
+Your token must have access to:
+
+* Read issues in the target project
+* Read project metadata  
+* Read milestones (if using milestone-based filtering)
+
+[[configuration]]
+=== Configuration
+
+In your ReleaseHx config file:
+
+[source,yaml]
+----
+api:
+  from: gitlab
+  # Required: GitLab project ID (numeric)
+  project: "12345"
+----
+
+[[finding-your-gitlab-project-id]]
+=== Finding Your GitLab Project ID
+
+. Go to your GitLab project page
+. The project ID is displayed under the project name
+. Or use the API: `curl -H "PRIVATE-TOKEN: your_token" "https://gitlab.com/api/v4/projects/owner%2Fproject"`
+
+[[testing-gitlab-integration]]
+=== Testing GitLab Integration
+
+[source,bash]
+----
+# Set environment variables
+export GITLAB_PROJECT_ID="12345"
+export GITLAB_TOKEN="glpat-your_token"
+
+# Run authentication test
+ruby specs/tests/api-auth-test.rb
+
+# Test with actual ReleaseHx command  
+rhx 1.0.0 --config specs/tests/api-configs/gitlab-test.yml --api-data
+----
+
+[[common-issues]]
+=== Common Issues
+
+*401 Unauthorized*::
+* Token is invalid or expired
+* Token doesn't have `read_api` scope
+
+*404 Not Found*::
+* Project doesn't exist or you don't have access
+* Project ID is incorrect
+* Check `GITLAB_PROJECT_ID` environment variable
+
+*403 Forbidden*::
+* Token lacks required permissions
+* Project is private and token lacks access
+
+
+[[jira-api-integration]]
+== Jira API Integration
+
+[[required-jira-environment-variables]]
+=== Required Environment Variables
+
+[source,bash]
+----
+export JIRA_USERNAME="your.email@company.com"
+export JIRA_API_TOKEN="your_api_token_here"
+----
+
+Note the capitalization: `JIRA_USERNAME` and `JIRA_API_TOKEN` (not `JIRA_*`)
+
+Optional environment variables:
+
+* `JIRA_HOST` (defaults to `https://your-domain.atlassian.net`)
+* `JIRA_PROJECT` (Jira project key, e.g., `PROJ`)
+
+[[api-token-creation]]
+=== API Token Creation
+
+. Go to Atlassian Account Settings: https://id.atlassian.com/manage-profile/security/api-tokens
+. Click "Create API token"
+. Give it a descriptive name
+. Copy the token and set it as `JIRA_API_TOKEN` environment variable
+. Use your Atlassian account email as `JIRA_USERNAME`
+
+[[required-permissions]]
+=== Required Permissions
+
+Your Jira account must have:
+
+* Browse Projects permission for target projects
+* View Issues permission
+* Access to custom fields (if using custom field mapping)
+
+[[configuration]]
+=== Configuration
+
+In your ReleaseHx config file:
+
+[source,yaml]
+----
+api:
+  from: jira
+  # Required: Jira project key
+  project: "PROJ"
+----
+
+[[testing-jira-integration]]
+=== Testing Jira Integration
+
+[source,bash]
+----
+# Set environment variables
+export JIRA_HOST="https://your-company.atlassian.net"  
+export JIRA_PROJECT="PROJ"
+export JIRA_USERNAME="your.email@company.com"
+export JIRA_API_TOKEN="your_api_token"
+
+# Run authentication test
+ruby specs/tests/api-auth-test.rb
+
+# Test with actual ReleaseHx command
+rhx 1.0.0 --config specs/tests/api-configs/jira-test.yml --api-data
+----
+
+[[common-issues]]
+=== Common Issues
+
+*401 Unauthorized*::
+* Username/password combination is incorrect
+* API token is invalid or expired
+* Account doesn't exist or is disabled
+
+*400 Bad Request*::
+* JQL query is malformed
+* Project key doesn't exist
+* Field names in JQL are incorrect
+
+*403 Forbidden*::
+* Account lacks permission to view the project
+* Account lacks permission to view issues
+* Custom fields aren't accessible
+
+
+[[version-and-milestone-filtering]]
+== Version and Milestone Filtering
+
+[[github-milestone-resolution]]
+=== GitHub Milestone Resolution
+
+GitHub uses milestone titles that get resolved to milestone numbers:
+
+[source,yaml]
+----
+# Your milestone in GitHub should be named "1.0.0" 
+# ReleaseHx will automatically resolve this to the milestone number
+----
+
+[[gitlab-milestone-filtering]]
+=== GitLab Milestone Filtering
+
+GitLab uses milestone titles in API queries:
+
+[.prompt]
+ # GitLab API query: milestone=1.0.0&state=closed
+
+[[jira-version-filtering]]
+=== Jira Version Filtering  
+
+Jira uses `fixVersion` in JQL queries:
+
+[.prompt]
+ # JQL: project="PROJ" AND fixVersion="1.0.0" ORDER BY updated DESC
+
+
+[[testing-environment-setup]]
+== Testing Environment Setup
+
+[[minimal-testing-environment]]
+=== Minimal Testing Environment
+
+Create a `.env` file (add to `.gitignore`):
+
+[source,bash]
+----
+# GitHub
+export GITHUB_TOKEN="ghp_xxxxx"
+export GITHUB_REPO="owner/test-repo"
+
+# GitLab  
+export GITLAB_TOKEN="glpat-xxxxx"
+export GITLAB_PROJECT_ID="12345"
+
+# Jira
+export JIRA_HOST="https://company.atlassian.net"
+export JIRA_USERNAME="user@company.com" 
+export JIRA_API_TOKEN="xxxxx"
+export JIRA_PROJECT="TEST"
+----
+
+Then source it:
+[.prompt]
+ source .env
+
+[[test-data-requirements]]
+=== Test Data Requirements
+
+Each platform should have:
+
+* At least one project/repository with issues
+* Some closed issues for testing
+* Issues with labels/tags that match your configuration
+* At least one milestone/version for filtering tests
+
+[[recommended-test-projects]]
+=== Recommended Test Projects
+
+*GitHub*::
+Create a test repository with sample issues, milestones, and labels
+
+*GitLab*::  
+Create a test project with sample issues, milestones, and labels
+
+*Jira*::
+Create a test project with sample issues, versions, and custom fields
+
+
+[[security-considerations]]
+== Security Considerations
+
+[[token-security]]
+=== Token Security
+
+* Never commit API tokens to version control
+* Use environment variables or secure credential management
+* Rotate tokens regularly
+* Use tokens with minimal required permissions
+* Consider using separate tokens for testing vs. production
+
+[[network-security]]
+=== Network Security
+
+* API calls are made over HTTPS
+* Tokens are sent in Authorization headers
+* Consider IP restrictions for high-security environments
+
+
+[[troubleshooting]]
+== Troubleshooting
+
+[[debug-mode]]
+=== Debug Mode
+
+Enable debug logging to see API requests:
+
+[source,bash]
+----
+export RELEASEHX_LOG_LEVEL=DEBUG
+ruby specs/tests/api-auth-test.rb
+----
+
+[[rate-limiting]]
+=== Rate Limiting
+
+[horizontal]
+GitHub:: 5,000 requests/hour for authenticated requests
+GitLab:: 2,000 requests/minute for GitLab.com
+Jira:: Varies by instance, typically 10,000 requests/hour
+
+If you hit rate limits:
+
+* Wait for the limit to reset
+* Use pagination to reduce request frequency
+* Consider caching responses for development
+
+[[api-version-compatibility]]
+=== API Version Compatibility
+
+[horizontal]
+GitHub:: Uses v3 REST API (stable)
+GitLab:: Uses v4 REST API (stable)  
+Jira:: Uses v2 REST API (legacy but stable)
+
+
+[[support-and-documentation]]
+== Support and Documentation
+
+[[api-documentation-links]]
+=== API Documentation Links
+
+* https://docs.github.com/en/rest/issues/issues[GitHub Issues API]
+* https://docs.gitlab.com/ee/api/issues.html[GitLab Issues API]  
+* https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-search/[Jira Search API]
+
+[[releasehx-configuration]]
+=== ReleaseHx Configuration
+
+* See `specs/data/config-def.yml` for complete configuration options
+* Check `specs/tests/configs/` for working examples
+* Review API client definitions in `lib/releasehx/rest/clients/`
+
+[NOTE]
+The `specs/tests/api-auth-test.rb` script skips live API checks unless the required environment variables are set.
+
+
+[[test-results-relasehx-0-1-0]]
+== Test Results (RelaseHx 0.1.0)
+
+This section documents actual API authentication test results performed on 2025-08-29.
+
+[[authentication-test-summary]]
+=== Authentication Test Summary
+
+[cols="1,1,1,1",options="header"]
+|===
+|Platform |Authentication |API Access |Status
+
+|GitHub
+|✅ SUCCESS
+|✅ SUCCESS  
+|✅ **WORKING**
+
+|GitLab
+|✅ SUCCESS
+|✅ SUCCESS
+|✅ **WORKING**
+
+|Jira
+|✅ SUCCESS
+|✅ SUCCESS
+|✅ **WORKING**
+|===
+
+[[test-environment-details]]
+=== Test Environment Details
+
+*GitHub*:: Repository `DocOps/issuer-test` with 20+ test issues and milestones "0.1.0", "0.2.0", "1.0.0"
+*GitLab*:: Project `bdom/asciidoc-testing` (ID: 14069112) with no issues or milestones
+*Jira*:: Instance `docopslab.atlassian.net`, project `RHX` with 6 sample issues
+
+[[key-findings]]
+=== Key Findings
+
+[[authentication-success]]
+==== Authentication Success
+All three platforms authenticated successfully using CLI tools (`gh`, `glab`, `acli`) and proper environment variables.
+
+[[query-requirements-discovery]]
+==== Query Requirements Discovery
+RelaseHx uses very specific API queries:
+
+*GitHub*:: `milestone="<version>"` AND `state="closed"`
+*GitLab*:: `milestone=<version>` AND `state=closed`
+*Jira*:: `project="<PROJECT>"` AND `fixVersion="<version>"`
+
+[[working-environment-configuration]]
+=== Working Environment Configuration
+
+This configuration was verified working:
+
+[source,bash]
+----
+# GitHub
+export GITHUB_TOKEN="gho_****" # 40 characters  
+export GITHUB_REPO="DocOps/issuer-test"
+
+# GitLab
+export GITLAB_TOKEN="glpat-****" # 55 characters
+export GITLAB_PROJECT_ID="14069112"
+
+# Jira  
+export JIRA_HOST="https://docopslab.atlassian.net"
+export JIRA_USERNAME="codewriting@protonmail.com"
+export JIRA_API_TOKEN="ATAT****" # 192 characters
+export JIRA_PROJECT="RHX"
+----

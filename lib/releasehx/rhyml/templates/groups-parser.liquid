@@ -1,0 +1,60 @@
+{%-  assign sort        = config.notes.sort | default: "type:group" %}
+{%-  assign groups      = "" | split: "," %}
+{%-  assign grouping1   = "" | split: "," %}
+{%-  assign grouping2   = "" | split: "," %}
+{%-  assign sort_by     = "type" %}
+
+{%-  for sorter in sort %}
+{%-    assign parts = sorter | split: ":" %}
+{%-    assign key   = parts[0] %}
+{%-    assign mode  = parts[1] | default: "label" %}
+
+{%-    if mode == "label" or mode == "none" %}
+{%-      assign sort_by = key %}
+{%-      continue %}
+{%-    endif %}
+
+{%-    case key %}
+{%-      when "type" %}
+{%-        assign list = config.notes.types | default: config.types %}
+{%-      when "part" %}
+{%-        assign list = config.notes.parts | default: config.parts %}
+{%-      when "tag" %}
+{%-        assign list = config.notes.tags | default: config.tags %}
+{%-      else %}
+{%-        assign list = key | split: "," %}
+{%-    endcase %}
+
+{%-    for entry in list %}
+{%-      assign item = entry %}
+{%-      if entry[0] %}
+{%-        assign name = entry[0] %}
+{%-        if name == 'label_prefix' %}
+{%-          continue %}
+{%-        endif %}
+{%-      else %}
+{%-        assign name = entry %}
+{%-      endif %}
+
+{%-      assign group_key = key | append: ":" | append: name %}
+{%-      assign group = group_key | split: "," %}
+
+{%-      if mode == "grouping1" %}
+{%-        assign grouping1 = grouping1 | concat: group %}
+{%-      elsif mode == "grouping2" %}
+{%-        assign grouping2 = grouping2 | concat: group %}
+{%-      elsif mode == "group" %}
+{%-        assign groups = groups | concat: group %}
+{%-      endif %}
+{%-    endfor %}
+{%-  endfor %}
+
+{%-  if grouping1.size > 0 %}
+{%-    assign grouping1 = grouping1 | concat: groups | uniq %}
+{%-  else %}
+{%-    assign grouping1 = groups %}
+{%-  endif %}
+
+{%-  if grouping2.size > 0 and grouping1 == empty %}
+Improper grouping configuration: grouping2 requires grouping1.
+{%-  endif %}

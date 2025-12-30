@@ -1,0 +1,34 @@
+generated:
+  module: ReleaseHx
+  path: lib/releasehx/generated.rb
+attributes:
+  - source: README.adoc
+    name: globals
+snippets:
+  - source: README.adoc
+    tag: helpscreen
+    name: helpscreen
+    out: helpscreen.txt
+regions:
+  - source: README.adoc
+    tag: ai-prompt
+    out: releasehx-ai-prompt.adoc
+render:
+  - template: lib/schemagraphy/templates/cfgyml/config-reference.adoc.liquid
+    data: specs/data/config-def.yml
+    key: config_def
+    attrs: README.adoc
+    out: build/docs/config-reference.adoc
+    name: config-reference
+  - template: lib/schemagraphy/templates/cfgyml/sample-config.yaml.liquid
+    data: specs/data/config-def.yml
+    key: config_def
+    attrs: README.adoc
+    out: build/docs/sample-config.yml
+    name: sample-config
+  - converter: SchemaGraphy::CFGYML::DocBuilder
+    data: specs/data/config-def.yml
+    attrs: README.adoc
+    out: build/docs/config-reference.json
+    name: config-reference-json
+    pretty: true

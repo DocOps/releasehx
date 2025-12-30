@@ -1,0 +1,12 @@
+{%-  assign kind = group | split: ":" | first %}
+{%-  assign slug = group | split: ":" | last %}
+
+{%-  if kind == "tag" %}
+{%-    assign entry = config.tags[slug] %}
+{%-  elsif kind == "type" %}
+{%-    assign entry = config.types[slug] %}
+{%-  elsif kind == "part" %}
+{%-    assign entry = config.parts[slug] %}
+{%-  endif %}
+{%-  assign dflt_head = entry.text | default: slug | capitalize %}
+{%-  assign group_heading = entry.head | default: dflt_head %}

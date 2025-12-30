@@ -1,0 +1,16 @@
+{%- assign format  = "asciidoc" %}
+{%- assign config  = vars.config %}
+{%- assign release = vars.release %}
+{%- assign changes = vars.changes %}
+{%- assign sorted  = vars.sorted -%}
+:icons: font
+{% embed head-parser.liquid %}
+
+{%- if release.hash and release.hash != "" and config.links.git and config.links.git.trim != "" %}
+link:{{ config.links.git | render: release }}[icon:{{ config.links.git_icon | default: 'code-fork' }}[]{{ release.hash | slice: 0, 7 }}]
+{%- endif %}
+{%- if config.links.get.href  and config.links.get.href.trim != "" %}
+[.btn.btn-success]#link:{{ config.links.get.href | render: release }}[icon:{{ config.links.get.icon | default: 'download' }}[] {{ config.links.get.text | default: 'Get this release' }}]#
+{%- endif %}
+
+{%- embed sections.liquid %}

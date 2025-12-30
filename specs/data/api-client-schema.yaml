@@ -1,0 +1,160 @@
+$schema:
+  type: Map
+  desc: |
+    Structural governance for the files that define simple REST API clients for ReleaseHx to query for Issues payloads.
+
+    Files following this shema will have Liquid parsing available in all fields.
+    Available Liquid variables are:
+
+    `user`::
+    The user credential determined according to config.api.auth settings.
+
+    `key`::
+    The API key or token used for authentication.
+
+    `host`::
+    The `config.api.host` value.
+
+    `proj`::
+    The `config.api.project` value.
+
+  properties:
+    name:
+      type: String
+      desc: |
+        The name of the API client configuration file, which should match the API endpoint it is designed to query.
+      sgyml:
+        templating:
+          stage: load
+    desc:
+      type: Multiline
+      desc: |
+        A brief description of the API client configuration, explaining its purpose and functionality.
+    auth:
+      type: Map
+      desc: |
+        Authentication configuration for the API client, including details on how to authenticate requests.
+      properties:
+        mode:
+          type: String
+          desc: |
+            The type of authentication to use.
+
+            Options are: `basic`, `token`, `bearer`, `header`, `query`, `none`.
+          sgyml:
+            templating:
+              stage: load
+        header:
+          type: String
+          desc: |
+            The header to use for authentication.
+            Only used if `auth.mode` is `header`.
+        format:
+          type: String
+          desc: |
+            The format string for the authentication header value.
+            Supports Liquid templating for dynamic token/credential injection.
+          sgyml:
+            templating:
+              delay: true
+    href:
+      type: String
+      desc: |
+        The base URL endpoint for the API.
+        Supports Liquid templating for dynamic URL construction.
+      sgyml:
+        templating:
+          delay: true
+    query_type:
+      type: String
+      desc: |
+        The type of query parameter encoding to use.
+        Options are: `key_value`, `jql`, `query_string`.
+    query_params:
+      type: Map
+      desc: |
+        Structured query parameters for the API request.
+        Each parameter supports Liquid templating for dynamic values.
+      sgyml:
+        templating:
+          delay: true
+    query_string:
+      type: String
+      desc: |
+        Legacy query string format (use query_params instead).
+        Supports Liquid templating for dynamic query construction.
+      sgyml:
+        templating:
+          delay: true
+    resolutions:
+      type: Map
+      desc: |
+        Dynamic resolution configurations for transforming template values.
+        Used to resolve human-readable identifiers to API-specific IDs.
+      properties:
+        $meta:
+          arb: true # allows arbitrary naming of child Maps
+        <resolution_name>: # as many unique keys as user needs
+          type: Map
+          desc: |
+            Configuration for a specific resolution endpoint.
+            The key is the resolution name, which can be used in query_params.
+          properties:
+            endpoint:
+              type: String
+              desc: |
+                The API endpoint to query for resolution data.
+                Supports Liquid templating for dynamic endpoint construction.
+              sgyml:
+                templating:
+                  delay: true
+            query_param:
+              type: String
+              desc: |
+                The query parameter name that needs resolution.
+            lookup_field:
+              type: String
+              desc: |
+                The field name to match against in the resolution response.
+            return_field:
+              type: String
+              desc: |
+                The field name to extract as the resolved value.
+            match_value:
+              type: String
+              desc: |
+                The value to match against the lookup_field.
+                Supports Liquid templating for dynamic matching.
+              sgyml:
+                templating:
+                  delay: true
+    pagination:
+      type: Map
+      desc: |
+        Pagination configuration for handling paginated API responses.
+      properties:
+        param:
+          type: String
+          desc: |
+            The query parameter name for the page number.
+        page_size_param:
+          type: String
+          desc: |
+            The query parameter name for the page size.
+        page_size:
+          type: Integer
+          desc: |
+            The number of items per page.
+        max_pages:
+          type: Integer
+          desc: |
+            Maximum number of pages to fetch.
+    response_format:
+      type: String
+      desc: |
+        Expected response format from the API (typically 'json').
+    root_issues_path:
+      type: String
+      desc: |
+        JSONPath to the issues array in the API response.
+        Use '.' for root-level arrays.

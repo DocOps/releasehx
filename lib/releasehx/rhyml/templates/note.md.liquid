@@ -1,0 +1,37 @@
+{% if config.conversions.markup == "markdown" -%}
+{% assign change_note = change.note | default: "NO RELEASE NOTE PROVIDED" | trim -%}
+{% else -%}
+{% assign change_note = change.note | default: "NO RELEASE NOTE PROVIDED" | adoc_to_md | trim -%}
+{% endif -%}
+{% embed metadata-note.md.liquid -%}
+
+<a id="note-{{ change.chid }}"></a>
+{%- if config.notes.items.frame == "table" %}
+| Change | Details |
+|--------|---------|
+| {{ change_metadata }} | {% if change.head %}**{{ change.head }}**<br>{% endif %}{{ change_note }} |
+{%- elsif config.notes.items.frame == "desc-list" %}
+**{{ change.head }}**  
+{{ change_note }}  
+*{{ change_metadata }}*
+{% elsif config.notes.items.frame == "admonition" %}
+{% if change.type == "removal" or change.type == "deprecation" or change.type == "breaking" %}
+{% assign admonition_type = "Warning" %}
+{% elsif change.type == "security" %}
+{% assign admonition_type = "Important" %}
+{% elsif change.type == "experimental" %}
+{% assign admonition_type = "Tip" %}
+{% else %}
+{% assign admonition_type = "Note" %}
+{% endif %}
+
+> **{{ admonition_type }}**: {% if change.head %}**{{ change.head }}** - {% endif %}{{ change_note }}  
+> {{ change_metadata }}
+{% else -%}
+{% if change.head -%}
+### {{ change.head }}
+{% endif -%}
+{{ change_note }}
+{{- change_metadata }}
+{% endif %}
+

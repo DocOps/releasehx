@@ -1,0 +1,64 @@
+{%- assign groups = '' | split: ',' %}
+{%- assign grouping1 = '' | split: ',' %}
+{%- assign grouping2 = '' | split: ',' %}
+
+{%- for group_expr in content_config.sort %}
+{%-   assign kind = group_expr | split: ':' | first %}
+{%-   assign target = group_expr | split: ':' | last %}
+
+{%-   if kind == 'tag' or kind == 'tags' %}
+{%-     for tag_entry in config.tags %}
+{%-       assign tag_name = tag_entry[0] %}
+{%-       if tag_name == '_include' or tag_name == '_exclude' %}
+{%-         continue %}
+{%-       endif %}
+{%-       assign group = 'tag:' | append: tag_name %}
+{%-       assign group = group | split: ',' %}
+{%-       if target == 'grouping1' %}
+{%-         assign grouping1 = grouping1 | concat: group %}
+{%-       elsif target == 'grouping2' %}
+{%-         assign grouping2 = grouping2 | concat: group %}
+{%-       endif %}
+{%-     endfor %}
+
+{%-   elsif kind == 'type' %}
+{%-     for type_entry in config.types %}
+{%-       assign type_name = type_entry[0] %}
+{%-       if type_name contains "<" %}
+{%-         continue %}
+{%-       endif %}
+{%-       assign group = 'type:' | append: type_name | split: ',' %}
+{%-       if target == 'grouping1' %}
+{%-         assign grouping1 = grouping1 | concat: group %}
+{%-       elsif target == 'grouping2' %}
+{%-         assign grouping2 = grouping2 | concat: group %}
+{%-       endif %}
+{%-     endfor %}
+
+{%-   elsif kind == 'part' %}
+{%-     for part_entry in config.parts %}
+{%-       assign part_name = part_entry[0] %}
+{%-       if part_name contains "<" or part_name == 'label_prefix' %}
+{%-         continue %}
+{%-       endif %}
+{%-       assign group = 'part:' | append: part_name | split: ',' %}
+{%-       if target == 'grouping1' %}
+{%-         assign grouping1 = grouping1 | concat: group %}
+{%-       elsif target == 'grouping2' %}
+{%-         assign grouping2 = grouping2 | concat: group %}
+{%-       endif %}
+{%-     endfor %}
+
+{%-   else %}
+{%-     assign group = 'tag:' | append: kind | split: ',' %}
+{%-     if target == 'grouping1' %}
+{%-       assign grouping1 = grouping1 | concat: group %}
+{%-     elsif target == 'grouping2' %}
+{%-       assign grouping2 = grouping2 | concat: group %}
+{%-     endif %}
+{%-   endif %}
+{%- endfor %}
+
+{%- if grouping2.size > 0 and grouping1 == empty %}
+Invalid sort: cannot define grouping2 without grouping1
+{%- endif %}

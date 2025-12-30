@@ -1,0 +1,95 @@
+origin:
+  source: github
+  version: 3
+  label: GitHub Issues API v3 - Testing
+  format: json
+  project: DocOps/issuer-test
+
+paths:
+  drafts_dir: .warp
+  payloads_dir: .warp
+  templates_dir: _templates
+  mappings_dir: _mappings
+
+conversions:
+  summ: issue_heading
+  note: issue_body
+  note_pattern: '/^## Release Note\\s*\\n+(?<note>(.|\\n)+)/mi'
+  markup: markdown
+  engine: redcarpet
+
+parts:
+  ui:
+    head: User Interface
+    icon: desktop
+    text: UI
+  api:
+    head: API
+    icon: server
+    text: API
+  testing:
+    head: Testing
+    icon: check
+    text: Testing
+
+links:
+  web: https://github.com/DocOps/issuer-test/issues/{{ tick }}
+  git: https://github.com/DocOps/issuer-test/commit/{{ hash }}
+
+modes:
+  asciidoc_frontmatter: true
+  markdown_frontmatter: true
+
+rhyml:
+  pasterize_head: true
+  chid: "{{ release.code | replace: '.', '_' | upcase }}-{{ change.tick }}"
+  empty_notes: skip
+
+history:
+  items:
+    issue_links: true
+    git_links: false
+    metadata_icons: true
+
+changelog:
+  head: What's Changed
+  items:
+    frame: unordered
+    git_links: false
+    metadata_labels: after
+
+notes:
+  spot: 1
+  items:
+    frame: desc-list
+    allow_redundant: true
+
+tags:
+  _include: ['highlighted', 'changelog', 'breaking', 'enhancement', 'bug']
+  _exclude: ['internal', 'wontfix', 'duplicate']
+
+  highlighted:
+    head: Highlights
+    icon: star
+    text: Featured changes
+
+  breaking:
+    head: Breaking Changes
+    icon: exclamation-triangle
+    text: Breaking changes
+
+  enhancement:
+    head: Enhancements
+    icon: arrow-up
+    text: Improvements
+
+  bug:
+    head: Bug Fixes
+    icon: bug
+    text: Bug fixes
+
+  documentation:
+    head: Documentation
+    icon: book
+    text: Documentation updates
+

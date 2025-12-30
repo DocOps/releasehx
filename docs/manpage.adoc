@@ -1,0 +1,68 @@
+[[releasehx-1]]
+= releasehx(1)
+:doctype: manpage
+:manpage:
+:man-linkstyle: pass:[blue R < >]
+:toc: macro
+include::../README.adoc[tags="globals,helpscreen_attrs"]
+
+
+[[name]]
+== NAME
+
+releasehx - {tagline}
+
+*Tip:* Type `q` to exit this page.
+
+
+[[aliases]]
+== ALIASES
+
+`rhx`
+
+
+[[synopsis]]
+== SYNOPSIS
+
+[subs=quotes]
+....
+*releasehx* _VERSION_|_SOURCE_ [_OPTIONS_]
+
+*rhx* _VERSION_|_SOURCE_ [_OPTIONS_]
+....
+
+
+[[examples]]
+== EXAMPLES
+
+`rhx 1.2.3 --md`::
+Fetches and drafts Release Notes and Changelog for version 1.2.3 in Markdown.
+
+`rhx 1.2.3 --html --pdf`::
+Renders Release Notes and Changelog for version 1.2.3 from existing YAML, Markdown, or AsciiDoc draft; otherwise fetches from source and enriches directly.
+
+`rhx 1.2.3 --check`::
+Scans issues for those missing Release Notes and reports findings.
+
+`rhx release-1.2.3.md --html`::
+Renders Release Notes and Changelog for the specified Markdown file.
+
+
+[[options]]
+== OPTIONS
+
+include::../README.adoc[tags="cli_options"]
+
+// TODO: CONFIGURATION
+
+
+[[exit-status]]
+== EXIT STATUS
+
+*0*::
+Success.
+Command executed without fatal errors.
+
+*1*::
+Failure.
+Command encountered fatal error.

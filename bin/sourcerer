@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'pathname'
+
+# Find gemspec (assumes run from root)
+gemspec_path = Dir.glob('*.gemspec').first or abort('No gemspec found.')
+require_relative File.join('lib', 'sourcerer') # path fixed for dev gem use
+
+# Load and eval the gemspec just enough to get SOURCERER_EMBED
+gemspec_code = File.read(gemspec_path)
+embed_config = begin
+  match = gemspec_code.match(/SOURCERER_EMBED\s*=\s*(\[.*?^\])/m)
+  raise 'SOURCERER_EMBED not found in gemspec' unless match
+
+  # rubocop:disable Security/Eval
+  # Safe: Only evaluates controlled array literal from gemspec at build time, never user input
+  eval(match[1], binding, gemspec_path)
+  # rubocop:enable Security/Eval
+end
+
+embed_config.each do |entry|
+  File.expand_path(entry[:input])
+  File.expand_path(entry[:output])
+  entry[:include] || {}
+
+  # snippet = Sourcerer.load_include input, **inc
+
+  # FileUtils.mkdir_p(File.dirname(output))
+  # File.write(output, snippet)
+  # puts "✅ Wrote #{output}"
+end

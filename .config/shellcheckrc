@@ -1,0 +1,14 @@
+# ShellCheck configuration for DocOps Lab projects
+# This file is synced from docopslab-dev gem
+
+# Disable some overly strict rules for our use cases
+disable=SC2034 # Variable appears unused (common in sourced scripts)
+disable=SC2086 # Double quote to prevent globbing (sometimes we want globbing)
+disable=SC2181 # Check exit code directly with e.g. 'if mycmd;', not indirectly with $?
+
+# Set default shell to bash (most of our scripts are bash)
+shell=bash
+
+# Enable additional optional checks
+enable=quote-safe-variables
+enable=require-variable-braces

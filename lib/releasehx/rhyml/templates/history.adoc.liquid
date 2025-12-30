@@ -1,0 +1,11 @@
+= Release History
+{%- for release in var.releases %}
+{%-   assign config  = var.config %}
+{%-   assign release = var.release %}
+{%-   assign changes = var.changes %}
+{%-   assign sorted  = var.sorted -%}
+{%-   include release.adoc.liquid
+       release=release
+       config=config
+       level=2 %}
+{%- endfor %}

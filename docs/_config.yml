@@ -1,0 +1,36 @@
+title: ReleaseHx Documentation
+theme: just-the-docs
+baseurl: /
+
+plugins:
+  - jekyll-asciidoc
+
+defaults:
+  - scope:
+      path: "api"
+    values:
+      render_with_liquid: false
+
+include:
+  - index.adoc
+  - config-reference.adoc
+
+exclude:
+  - manpage.adoc
+
+# Enable Rouge for syntax highlighting in AsciiDoc blocks
+asciidoctor:
+  attributes:
+    includedir: "{docdir}"
+    source-highlighter: rouge
+
+# Enable Just the Docs dark theme
+color_scheme: dark
+
+# Sass configuration
+sass:
+  sass_dir: jekyll/_sass
+  quiet_deps: true
+  silence_deprecations:
+    - color-functions
+    - import

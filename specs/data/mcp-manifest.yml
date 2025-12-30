@@ -1,0 +1,50 @@
+resources:
+  - href: releasehx://agent/guide
+    name: agent-guide
+    desc: Agent guide for ReleaseHx configuration discovery
+    mime: text/markdown
+    path: docs/agent/mcp-server/agent-config-guide.md
+    file: agent-config-guide.md
+  - href: releasehx://config/sample
+    name: config-sample
+    desc: Sample config tree with defaults and comments
+    mime: text/yaml
+    path: build/docs/sample-config.yml
+    file: sample-config.yml
+  - href: releasehx://config/schema
+    name: config-schema
+    desc: Authoritative configuration definition (CFGYML)
+    mime: text/yaml
+    path: specs/data/config-def.yml
+    file: config-def.yml
+  - href: releasehx://config/reference.json
+    name: config-reference-json
+    desc: JSON reference document for configuration settings
+    mime: application/json
+    path: build/docs/config-reference.json
+    file: config-reference.json
+  - href: releasehx://config/reference.adoc
+    name: config-reference-adoc
+    desc: AsciiDoc configuration reference
+    mime: text/asciidoc
+    path: build/docs/config-reference.adoc
+    file: config-reference.adoc
+
+tools:
+  - name: config.reference.get
+    title: Config Reference Lookup
+    desc: Retrieve config reference details using JSON Pointer
+    input_schema:
+      type: object
+      properties:
+        pointer:
+          type: string
+          desc: JSON Pointer string for the reference JSON
+      required:
+        - pointer
+    annotations:
+      title: Config Reference Lookup
+      read_only_hint: true
+      destructive_hint: false
+      idempotent_hint: true
+      open_world_hint: false

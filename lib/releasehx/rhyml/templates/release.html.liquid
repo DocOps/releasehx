@@ -1,0 +1,20 @@
+{%- assign format  = "html" %}
+{%- assign config  = vars.config %}
+{%- assign release = vars.release %}
+{%- assign changes = vars.changes %}
+{%- assign sorted  = vars.sorted -%}
+{%- embed head-parser.liquid %}
+
+<div class="release-section" id="release-{{ release.code | slugify }}">
+    {%- if release.hash and release.hash != "" and config.links.git and config.links.git != "" %}
+    <div class="mb-2">
+        <a href="{{ config.links.git | render: release }}" class="git-link text-decoration-none">
+            <i class="fa fa-{{ config.links.git_icon | default: 'code-fork' }}"></i>
+            {{ release.hash | slice: 0, 7 }}
+        </a>
+    </div>
+    {%- endif %}
+
+    {%- embed sections.liquid %}
+</div>
+

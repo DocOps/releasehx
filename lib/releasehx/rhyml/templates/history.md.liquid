@@ -1,0 +1,16 @@
+# Release History
+
+{% for release in vars.releases -%}
+{% assign config  = vars.config -%}
+{% assign release = vars.release -%}
+{% assign changes = vars.changes -%}
+{% assign sorted  = vars.sorted -%}
+{% include release.md.liquid
+     release=release
+     changes=changes
+     sorted=sorted
+     format=config.conversions.markup
+     config=config
+     level=2 -%}
+{% endfor %}
+

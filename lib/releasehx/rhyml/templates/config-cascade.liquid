@@ -1,0 +1,61 @@
+{%- comment -%}
+  Configuration cascade logic that handles inheritance from config.history.items
+  to config.changelog.items and config.notes.items.
+
+  This template should be embedded early in the template chain to set up
+  simplified variables that can be used throughout the templates.
+{%- endcomment -%}
+
+{%- comment -%} Base configuration from config.history.items {%- endcomment -%}
+{%- assign base_config = config.history.items -%}
+
+{%- comment -%} Apply cascade logic based on section type {%- endcomment -%}
+{%- if section_type == "changelog" -%}
+  {%- assign effective_config = config.changelog.items -%}
+{%- elsif section_type == "notes" -%}
+  {%- assign effective_config = config.notes.items -%}
+{%- else -%}
+  {%- assign effective_config = base_config -%}
+{%- endif -%}
+
+{%- comment -%} Create cascaded configuration variables {%- endcomment -%}
+{%- assign entry_show_lead = effective_config.show_lead | default: base_config.show_lead -%}
+{%- assign note_show_lead = effective_config.show_lead | default: base_config.show_lead -%}
+{%- assign entry_show_issue_links = effective_config.show_issue_links | default: base_config.show_issue_links -%}
+{%- assign note_show_issue_links = effective_config.show_issue_links | default: base_config.show_issue_links -%}
+{%- assign entry_show_git_links = effective_config.show_git_links | default: base_config.show_git_links -%}
+{%- assign note_show_git_links = effective_config.show_git_links | default: base_config.show_git_links -%}
+{%- assign entry_metadata_labels = effective_config.metadata_labels | default: base_config.metadata_labels -%}
+{%- assign note_metadata_labels = effective_config.metadata_labels | default: base_config.metadata_labels -%}
+{%- assign entry_metadata_icons = effective_config.metadata_icons | default: base_config.metadata_icons -%}
+{%- assign note_metadata_icons = effective_config.metadata_icons | default: base_config.metadata_icons -%}
+{%- assign entry_allow_redundant = effective_config.allow_redundant | default: base_config.allow_redundant -%}
+{%- assign note_allow_redundant = effective_config.allow_redundant | default: base_config.allow_redundant -%}
+
+{%- comment -%} New label display control variables {%- endcomment -%}
+{%- assign entry_show_type_label = effective_config.show_type_label | default: base_config.show_type_label -%}
+{%- assign note_show_type_label = effective_config.show_type_label | default: base_config.show_type_label -%}
+{%- assign entry_show_parts_label = effective_config.show_parts_label | default: base_config.show_parts_label -%}
+{%- assign note_show_parts_label = effective_config.show_parts_label | default: base_config.show_parts_label -%}
+{%- assign entry_show_tags_label = effective_config.show_tags_label | default: base_config.show_tags_label -%}
+{%- assign note_show_tags_label = effective_config.show_tags_label | default: base_config.show_tags_label -%}
+{%- assign entry_show_lead_label = effective_config.show_lead_label | default: base_config.show_lead_label -%}
+{%- assign note_show_lead_label = effective_config.show_lead_label | default: base_config.show_lead_label -%}
+{%- assign entry_show_auths_label = effective_config.show_auths_label | default: base_config.show_auths_label -%}
+{%- assign note_show_auths_label = effective_config.show_auths_label | default: base_config.show_auths_label -%}
+
+{%- comment -%} User link template for bio/homepage links {%- endcomment -%}
+{%- assign entry_user_link_template = config.links.user.href -%}
+{%- assign note_user_link_template = config.links.user.href -%}
+
+{%- comment -%} Labeling configuration variables {%- endcomment -%}
+{%- assign labeling_singularize_labels = config.history.labeling.singularize_labels -%}
+{%- assign labeling_type_label = config.history.labeling.type_label -%}
+{%- assign labeling_parts_label = config.history.labeling.parts_label -%}
+{%- assign labeling_part_label = config.history.labeling.part_label -%}
+{%- assign labeling_tags_label = config.history.labeling.tags_label -%}
+{%- assign labeling_tag_label = config.history.labeling.tag_label -%}
+{%- assign labeling_lead_label = config.history.labeling.lead_label -%}
+{%- assign labeling_auths_label = config.history.labeling.auths_label -%}
+{%- assign labeling_auth_label = config.history.labeling.auth_label -%}
+{%- assign labeling_join_string = config.history.labeling.join_string -%}

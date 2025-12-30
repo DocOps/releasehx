@@ -1,0 +1,18 @@
+:page-permalink: /
+:page-layout: minimal
+:page-liquid: true
+= ReleaseHx
+
+++++
+<div class="hero">
+  <div class="hero-body">
+    <div class="container">
+      <h1 class="title">
+        ReleaseHx
+      </h1>
+    </div>
+  </div>
+</div>
+++++
+
+include::index.adoc[tags="globals,intro,features-list"]

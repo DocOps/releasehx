@@ -1,0 +1,38 @@
+{%- embed metadata-entry.html.liquid -%}
+{%- assign frame = frame %}
+{%- case frame %}
+{%-   when "unordered" %}
+{%-     assign list_class = "list-unstyled" %}
+{%-     assign item_class = "mb-2" %}
+{%-     assign bullet = "• " %}
+{%-   when "ordered" %}
+{%-     assign list_class = "list-group list-group-numbered" %}
+{%-     assign item_class = "list-group-item border-0 px-0" %}
+{%-     assign bullet = "" %}
+{%-   else %}
+{%-     assign list_class = "list-unstyled" %}
+{%-     assign item_class = "mb-2" %}
+{%-     assign bullet = "" %}
+{%- endcase %}
+
+<div class="change-entry {{ item_class }}" id="entry-{{ change.chid }}">
+    <div class="d-flex align-items-start">
+        <div class="flex-grow-1">
+            <span class="change-summary">{{ bullet }}{{ change.summ | trim | pasterize }}</span>
+            {%- if change_metadata != "" -%}
+            <div class="change-metadata mt-1">
+                {{ change_metadata | trim }}
+            </div>
+            {%- endif %}
+        </div>
+        {%- if change.note %}
+        <div class="note-link">
+            <a href="#note-{{ change.chid }}" class="text-decoration-none">
+                <i class="fa fa-sticky-note-o"></i>
+                <small>NOTE</small>
+            </a>
+        </div>
+        {%- endif %}
+    </div>
+</div>
+

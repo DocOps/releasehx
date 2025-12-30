@@ -1,0 +1,335 @@
+= ReleaseHx Test Framework
+:toc: macro
+:toclevels: 3
+:docopslab_lab_www: https://docopslab.org
+
+This directory contains the test framework for ReleaseHx 0.1.0, implementing the Basic Test Framework specified in the work plan.
+
+This project follows DocOps Lab testing standards.
+See https://docopslab.org/docs/testing for shared testing infrastructure patterns and https://docopslab.org/docs/development for test development procedures.
+
+toc::[]
+
+
+[[overview]]
+== Overview
+
+The test framework validates:
+
+* Core ReleaseHx module functionality
+* CLI interface operations
+* RHYML data processing
+* Template system operations
+* Configuration system loading
+* JSON→AsciiDoc, HTML, Markdown conversion workflows
+* Integration with local sample data and optional demo data
+
+
+[[quick-start]]
+== Quick Start
+
+
+[[run-all-tests]]
+=== Run All Tests
+
+[source,bash]
+----
+rake spec
+# or
+bundle exec rspec
+----
+
+
+[[run-comprehensive-test-suite]]
+=== Run Comprehensive Test Suite
+
+[.prompt]
+ rake pr_test
+
+This runs:
+
+*  RSpec unit tests
+*  CLI functionality tests
+*  YAML validation tests
+
+
+[[run-individual-test-components]]
+=== Run Individual Test Components
+
+[source,bash]
+----
+rake spec                   # RSpec tests only
+rake cli_test               # CLI functionality
+rake yaml_test              # YAML validation
+rake mcp_test               # MCP resource smoke test
+----
+
+
+[[test-structure]]
+== Test Structure
+
+[[api-authentication-tests-api-auth-test-rb]]
+=== API Authentication Tests (`api-auth-test.rb`)
+
+Validates authentication and basic functionality for GitHub, GitLab, and Jira APIs:
+
+[.prompt]
+ ruby specs/tests/api-auth-test.rb
+
+Requires environment variables:
+
+* `GITHUB_TOKEN` - GitHub personal access token
+* `GITLAB_TOKEN` - GitLab personal access token  
+* `JIRA_USERNAME` and `JIRA_API_TOKEN` - Jira credentials
+
+Uses local configurations from `specs/tests/configs/` to avoid external dependencies.
+
+[NOTE]
+These tests are skipped by default unless the required environment variables are set.
+
+[[rspec-tests-specs-tests-rspec]]
+=== RSpec Tests (`specs/tests/rspec/`)
+
+* `spec_helper.rb` - Test configuration and helper methods
+* `releasehx_spec.rb` - Core ReleaseHx module tests
+* `cli_spec.rb` - Command-line interface tests
+* `rhyml_spec.rb` - RHYML data processing tests
+* `ops_spec.rb` - Operations module tests
+
+[[test-data-sources]]
+=== Test Data Sources
+
+The tests utilize sample data from:
+
+* `specs/tests/configs/` - Configuration files
+* `lib/releasehx/rhyml/mappings/` - API mapping files
+* `specs/data/` - Sample issue data and schemas
+* Programmatically generated test data in spec_helper.rb
+
+
+[[helper-functions]]
+== Helper Functions
+
+[[file-creation-helpers]]
+=== File Creation Helpers
+
+[source,ruby]
+----
+create_temp_yaml_file(content)  # Creates temporary YAML file
+create_temp_json_file(content)  # Creates temporary JSON file
+create_temp_dir                 # Creates temporary directory
+----
+
+[[sample-data-helpers]]
+=== Sample Data Helpers
+
+[source,ruby]
+----
+sample_release_config          # Basic configuration structure
+sample_release_issues_json     # Sample GitHub-style issues
+sample_rhyml_content           # Sample RHYML release data
+----
+
+
+[[test-categories]]
+== Test Categories
+
+[[unit-tests]]
+=== Unit Tests
+
+* Module loading and initialization
+* Class structure validation
+* Basic functionality verification
+
+[[integration-tests]]
+=== Integration Tests
+
+* JSON data processing workflows
+* Template rendering operations
+* Configuration loading
+* CLI command execution (basic)
+
+[[validation-tests]]
+=== Validation Tests
+
+* YAML/JSON file format validation
+* Configuration schema compliance
+* Template syntax verification
+
+
+[[releasehx-specific-testing]]
+== ReleaseHx-Specific Testing
+
+For general test development guidelines and templates, see https://docopslab.org/docs/development.
+
+[[project-specific-test-patterns]]
+=== Project-Specific Test Patterns
+
+ReleaseHx tests focus on:
+
+* Release data processing workflows (JSON→RHYML→output formats)
+* Template system integration with Liquid
+* API client functionality for GitHub, GitLab, Jira
+* Configuration validation for complex release scenarios
+* Integration with rich demo data from `releasehx-demo` (optional)
+
+
+[[current-test-coverage]]
+== Current Test Coverage
+
+[[implemented]]
+=== ✅ Implemented
+
+* Basic module loading
+* Logger functionality
+* CLI structure validation
+* RHYML module structure
+* Operations module loading
+* Template system basics
+* Sample data processing
+
+[[planned-for-expansion]]
+=== 🚧 Planned for Expansion
+
+* End-to-end workflow testing
+* Template output validation
+* API integration tests
+* Error handling scenarios
+* Performance benchmarks
+
+
+[[integration-with-demo-data]]
+== Integration with Demo Data
+
+The test framework can optionally leverage the rich sample data in https://github.com/DocOps/releasehx-demo:
+
+[horizontal]
+Configurations:: Tests validate all demo config files
+Mappings:: API mapping files are syntax-validated
+Issues:: Sample issue data used for integration tests
+Templates:: Future template customization tests
+
+
+[[continuous-integration]]
+== Continuous Integration
+
+[[pre-commit-testing]]
+=== Pre-commit Testing
+
+[.prompt]
+ rake pr_test
+
+[[release-testing]]
+=== Release Testing
+
+Before any release, run the full test suite:
+
+[source,bash]
+----
+rake install_local  # Build and install locally
+rake pr_test        # Full test suite
+----
+
+[[docopslab-dev]]
+==== DocOps Lab Devtool (`docopslab-dev`)
+
+All merges to trunks require passing universal (organization-wide) linting and link tests, which invoke upstream and third-party libraries.
+These tests are available via the `docopslab-dev` gem.
+
+.List tasks from `docopslab-dev`
+[.prompt]
+ bundle exec rake --tasks | grep labdev:
+
+See the docs at:
+
+* {docopslab_lab_www}/lab-dev-setup/#environment-synchronization (if not already installed)
+* {docopslab_lab_www}/docs/lab-dev-usage/
+* {docopslab_lab_www}/docs/fix-broken-links/
+* {docopslab_lab_www}/docs/fix-spelling-issues/
+
+(Agents see `.agent/docs/topics/dev-tooling-usage.md` once synced.)
+
+
+[[future-enhancements]]
+== Future Enhancements
+
+[[priority-additions]]
+=== Priority Additions
+
+. *End-to-End Workflow Tests*
+*  JSON→Markdown conversion validation
+*  JSON→AsciiDoc→PDF pipeline testing
+*  Template output content verification
+
+. *API Integration Testing*
+*  Mock API responses for testing
+*  Authentication validation
+*  Error handling scenarios
+
+. *Template System Testing*
+*  Custom template loading
+*  Template precedence validation
+*  Liquid template compilation
+
+. *Configuration System Testing*
+*  Complex configuration scenarios
+*  Override behavior validation
+*  Error condition handling
+
+[[long-term-goals]]
+=== Long-term Goals
+
+* Performance benchmarking
+* Memory usage testing
+* Large dataset handling
+* Cross-platform compatibility testing
+
+
+[[troubleshooting]]
+== Troubleshooting
+
+[[common-issues]]
+=== Common Issues
+
+. *Missing Dependencies*
++
+[.prompt]
+ bundle install
+
+. *Test File Cleanup Issues*
+* Tests automatically clean up temporary files
+* Manual cleanup: `rm -rf /tmp/releasehx_test_*`
+
+. *Demo File Access*
+* Optional: clone `releasehx-demo` alongside this repo for richer integration tests
+* Run tests from releasehx root directory
+
+[[debug-mode]]
+=== Debug Mode
+
+Run with verbose output:
+
+[.prompt]
+ bundle exec rspec --format documentation
+
+
+[[contributing]]
+== Contributing
+
+When adding new features to ReleaseHx:
+
+. Add corresponding tests
+. Update existing tests if functionality changes
+. Ensure all tests pass before submitting PRs
+. Document test expectations and edge cases
+
+
+[[support]]
+== Support
+
+For testing issues:
+
+. Check test logs in `specs/tests/results/` (if generated)
+. Run individual test files for focused debugging
+. Verify demo data accessibility
+. Ensure all dependencies are installed

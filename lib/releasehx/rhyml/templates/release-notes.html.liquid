@@ -1,0 +1,14 @@
+{%- assign content_config = config.notes %}
+{%- embed changes-sorter.liquid %}
+{%- assign level = content_config.htag | replace: "h", "" | default: dflt_next_header_level | plus: 0 %}
+{%- assign dflt_next_header_level = level | plus: 1 -%}
+{%- assign item_count = 0 %}
+
+<div class="notes-section">
+    {%- include header.liquid format=format level=level text=content_config.head %}
+
+    {%- embed section-text.liquid %}
+
+    {%- embed groupings.liquid %}
+</div>
+

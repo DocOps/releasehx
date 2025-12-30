@@ -1,0 +1,29 @@
+# Jira Issues API to RHYML mapping configuration
+$config:
+  desc: "Jira Issues API to RHYML mapping"
+  path_lang: jmespath
+  tplt_lang: liquid
+
+changes_array_path: "@"
+
+tick:
+  path: "key"
+
+summ:
+  path: "fields.summary"
+
+note:
+  path: "fields.description"
+
+type:
+  path: "fields.issuetype.name"
+  tplt: '{{ path | downcase }}'
+
+parts:
+  path: "fields.components[].name"
+
+tags:
+  path: "fields.labels"
+
+lead:
+  path: "fields.assignee.displayName"

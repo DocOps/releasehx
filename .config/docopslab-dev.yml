@@ -1,0 +1,74 @@
+source:
+  repo: DocOps/lab
+  ref: v1
+  root: gems/docopslab-dev/config-packs
+
+attributes:
+  product_version:
+    aliases: [releasehx_version,this_prod_vrsn]
+    source: README.adoc
+    object: this_prod_vrsn
+
+docs:
+  - source: docs/agent/AGENTS.md
+    target: AGENTS.md
+    synced: false
+  - source: docs/agent/skills/*.md
+    target: .agent/docs/skills/
+    synced: true
+  - source: docs/agent/topics/*.md
+    target: .agent/docs/topics/
+    synced: true
+  - source: docs/agent/roles/*.md
+    target: .agent/docs/roles/
+    synced: true
+  - source: docs/agent/missions/*.md
+    target: .agent/docs/missions/
+    synced: true    
+
+tools:
+  - tool: rubocop
+    files:
+      - source: rubocop/base.yml
+        target: .config/.vendor/docopslab/rubocop.yml
+        synced: true
+      - source: rubocop/project.yml
+        target: .config/rubocop.yml
+        synced: false
+
+  - tool: vale
+    files:
+      - source: vale/base.ini
+        target: .config/.vendor/docopslab/vale.ini
+        synced: true
+      - source: vale/project.ini
+        target: .config/vale.local.ini
+        synced: false
+    paths:
+      skip:
+        - build/*
+
+  - tool: htmlproofer
+    enabled: true  # Disabled by default, enable per project
+    files:
+      - source: htmlproofer/base.yml
+        target: .config/.vendor/docopslab/htmlproofer.yml
+        synced: true
+      - source: htmlproofer/project.yml
+        target: .config/htmlproofer.local.yml
+        synced: false
+
+  - tool: shellcheck
+    files:
+      - source: shellcheck/base.shellcheckrc
+        target: .config/shellcheckrc
+        synced: true
+  
+  - tool: actionlint
+    files:
+      - source: actionlint/base.yml
+        target: .config/.vendor/docopslab/actionlint.yml
+        synced: true
+      - source: actionlint/project.yml
+        target: .config/actionlint.yml
+        synced: false

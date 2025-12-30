@@ -1,0 +1,56 @@
+/* Your custom Sass styles go here. */
+
+/* Custom styles for vertical description lists */
+.main-content .dlist dl {
+  // Reset the grid layout from the theme
+  display: block;
+}
+
+.main-content .dlist dt {
+  font-weight: bold;
+  margin-top: 1em;
+  text-align: left; /* Fix: Ensure text is flush left */
+}
+
+.main-content .dlist dd {
+  margin-left: 2em; /* Indent the description */
+  margin-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+
+td {
+  vertical-align: top;
+}
+
+h2 {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 1.35rem !important;
+}
+
+h3, h4, h5 {
+  font-weight: bold;
+}
+
+h3 {
+  text-transform: none;
+  font-size: 1.35rem !important;
+}
+
+h4 {
+  text-transform: none;
+  font-size: 1.15rem !important;
+  letter-spacing: 0;
+}
+
+h5 {
+  font-weight: bold;
+  font-size: 1.05rem !important;
+}
+
+.highlight {
+  
+  .cl {
+    color: #6367A9;
+  }
+}

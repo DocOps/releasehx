@@ -1,0 +1,208 @@
+= ReleaseHx MCP MVP: Resource-First Agent Pack
+:toc: macro
+:toclevels: 3
+:status: completed
+:last-updated: 2025-12-29
+
+This product requirements document (PRD) defines a minimum viable product (MVP) for a model-context protocol (MCP) integration for ReleaseHx.
+This STDIO server should improve LLM/agent configuration assistance by exposing a small set of high-signal artifacts (guide + schema + sample config).
+
+toc::[]
+
+
+== Why this MVP
+
+ReleaseHx configuration is defined by a single authoritative schema file (`specs/data/config-def.yml`) and consumed by a configuration loader/validator, with user overrides coming from `.releasehx.yml` or `--config`. :contentReference[oaicite:0]{index=0}
+
+Agents routinely fail at config authoring because they:
+
+* don’t know which artifact to read first,
+* don’t discover the schema file without being told,
+* get trapped in “HTML docs” token cost, and
+* invent keys when they can’t see a full tree of defaults/options.
+
+This MVP provides a default discovery path: “read the agent guide → use sample config as a map → (consult schema OR query config reference as JSON) for authoritative semantics.”
+
+=== Goals
+
+* Make the config structure discoverable to MCP-capable agents without requiring users to know where schema/docs live.
+* Provide a compact “map/TOC” view of the config tree (the generated sample config).
+* Provide an authoritative schema reference (as the original YAML definition).
+* Keep implementation small: resource exposure only (no validation endpoints in MVP).
+
+=== Non-goals
+
+* No “proper MCP” schema interrogation tools (schema.get/search/tree).
+* No deterministic validation endpoints in MVP.
+* No file writes or config mutations performed by the server.
+
+
+== YAML-first Resources
+
+The schema definition and sample config carry meaning in YAML form that is not trivially preserved in JSON:
+
+* commented-out sections in generated sample config (human+agent guidance)
+* “schema DSL” conventions not intended for generic YAML parsers
+
+Therefore:
+
+* MVP MUST ship base schema definition file as YAML (`config-def.yml`).
+* MVP MUST ship generated sample config as YAML (defaults + comments + commented-out fields) because it serves as the best TOC/map.
+* MVP MUST use the JSON-formatted reference output now at `build/docs/config-reference.json` to provide queriable reference.
+
+NOTE: a future “JSON reference docs” generator is a good idea, but treat it as an additive resource (ex: `releasehx://config/config.ref.json`), not the primary artifact.
+
+== User stories (agent-facing)
+
+Discoverability::
+Agent finds what ReleaseHx config is called and where it typically lives, without being told.
+
+Orientation::
+Agent sees the full config tree quickly and stops inventing keys.
+
+Targeted lookup::
+Agent can consult authoritative schema content when it needs allowed values or deeper semantics.
+
+Safe edits::
+Agent can modify an existing config with minimal blast radius by comparing to the sample tree.
+
+
+== The MCP Server
+
+Here is what is expected of this minimum-viable MCP server.
+
+=== Resources Exposed
+
+Expose several resources with stable identifiers:
+
+. `releasehx://agent/guide`
+* Content: `docs/agent/mcp-server/agent-config-guide.md` (new)
+* Purpose: tells the agent what assets exist and how to use them
+
+. `releasehx://config/sample`
+* Content: `build/docs/sample-config.yml` (existing; generated in prebuild)
+* Purpose: config tree/TOC + defaults + short per-key comments + commented-out optional keys
+
+. `releasehx://config/schema`
+* Content: `specs/data/config-def.yml` (existing)
+* Purpose: authoritative semantics including constraints and details. For example, `origin.source` options include `jira`, `github`, `gitlab`, and `rhyml`. :contentReference[oaicite:1]{index=1}
+
+. `releasehx://config/reference.json`
+* Content: generated JSON reference doc (NOT a naive YAML→JSON conversion)
+* Purpose: machine-friendly querying for clients that want jq-style operations
+* Constraint: must preserve enough metadata to remain authoritative (paths/types/defaults/docs/constraints), but comments are not required here since YAML resources remain primary.
+
+. Tool: `config.reference.get`
+* Function: accepts a JSON Pointer string; returns the record for that property.
+* Purpose: allow deterministic retrieval of specific content, radically reducing context overhead
+
+. `releasehx://config/reference.adoc`
+* Content: the source for user-facing HTML docs already generated
+* Purpose: fallback or in case AsciiDoc snippets are prefered. Probably not of great use to agents/clients but available nevertheless.
+
+=== Server Behavior (Minimum)
+
+* Transport: stdio only.
+* Server provides:
+** list resources
+** read resource content
+* Tool: `config.reference.get` required in MVP.
+* No filesystem writes.
+* No project directory assumptions; resources are served from installed package payload.
+
+=== Packaging Requirements
+
+The distributed artifact MUST include:
+
+* `specs/data/config-def.yml` (`:contentReference[oaicite:2]{index=2}`)
+* `build/docs/sample-config.yml` (copied into the package at build/release time)
+* `docs/agent/mcp-server/agent-config-guide.md` (new; need an appropriate assets path for it)
+* `build/docs/config-reference.json` (copied into the package at build/release time)
+* `build/docs/config-reference.adoc` (copied into the package at build/release time)
+
+If any resource is missing at runtime, the server MUST return an explicit error naming the missing file.
+
+
+== Implementation Preferences
+
+=== Add to SchemaGraphy Module
+
+This (`::SchemaGraphy`) is a nascent proto-gem that will eventually be available to all DocOps Lab projects, but for now we are experimenting with it inside ReleaseHx.
+
+The SchemaGraphy module performs most of this handling already.
+Therefore we want a pass-through interface for downstream gems/applications that require SchemaGraphy/CFGYML.
+This will enable downstream developers to process their own `config-def.yml` or equivalent.
+
+They will of course need to provide a custom agent guide Markdown file, but then they'd have a "complete" rendition of this MVP.
+
+This will eventually get more elaborate, but for now we just need the logic/structure in place.
+
+=== Use the Ruby SDK `mcp` Gem
+
+Use the link:https://github.com/modelcontextprotocol/ruby-sdk[official Ruby SDK] to provid server infrastructure, including STDIO transport and resource handling.
+
+When it comes time, read `https://raw.githubusercontent.com/modelcontextprotocol/ruby-sdk/refs/heads/main/README.md` and setup a basic instance that serves the required resources.
+
+=== Use a Distinct Executable
+
+Add a new executable `rhx-mcp` that launches the MCP server.
+This keeps it separate from the main `releasehx` CLI and allows users to run the MCP server independently.
+
+
+== Acceptance Criteria
+
+* Running `rhx-mcp` starts a stdio server that exposes the resources and returns full contents.
+* The guide is short and operational: it teaches the agent how to use the sample config as the map and when to consult the schema.
+* An agent can produce either:
+[loweralpha]
+. a new `.releasehx.yml`, or
+. a safe edit to an existing one,
+  using only these resources as authoritative truth (no HTML doc dump required).
+* The guide correctly states that defaults are defined in `specs/data/config-def.yml` and that user overrides are via `.releasehx.yml` or `--config`. :contentReference[oaicite:3]{index=3}
+
+=== Acceptance Tests
+
+Here are some basic tests we can add to `specs/tests/rspec/mcp_server_spec.rb`:
+
+[source,ruby]
+----
+require 'spec_helper'
+require 'releasehx/mcp/server'
+
+RSpec.describe ReleaseHx::MCP::Server do
+  let(:server) { ReleaseHx::MCP::Server.new }
+
+  describe 'resources' do
+    it 'lists available resources' do
+      resources = server.list_resources
+      expect(resources).to include('releasehx://agent/guide')
+      expect(resources).to include('releasehx://config/sample')
+      expect(resources).to include('releasehx://config/schema')
+      expect(resources).to include('releasehx://config/reference.json')
+    end
+
+    it 'retrieves the agent guide' do
+      guide = server.get_resource('releasehx://agent/guide')
+      expect(guide).to include('AI Agent\'s Guide to Configuring ReleaseHx')
+    end
+
+    it 'retrieves the sample config' do
+      sample_config = server.get_resource('releasehx://config/sample')
+      expect(sample_config).to include('origin:')
+    end
+
+    it 'retrieves the schema' do
+      schema = server.get_resource('releasehx://config/schema')
+      expect(schema).to include('properties:')
+    end
+
+    it 'retrieves the JSON reference' do
+      json_ref = server.get_resource('releasehx://config/reference.json')
+      expect(json_ref).to include('"origin": {')
+    end
+  end
+end
+----
+
+[TIP]
+Be sure to consult `specs/tests/README.adoc` for instructions on writing RSpec tests.

@@ -1,0 +1,410 @@
+$schema:
+  desc: |
+    This schema describes an object that maps the conversion from a given data structure to the RHYML data structure, for organizing release-history information.
+
+    Typically for converting REST API payloads from JSON to RHYML-compliant YAML.
+    The mapping is used to extract relevant fields from the source data structure and transform them into the appropriate RHYML format.
+  type: Map
+
+  $anchors:
+    path_ppty: &path_ppty
+      type: String
+      desc: |
+        The path expression to locate the sought data in the source structure.
+        This can be a JSONPath or JMESPath expression.
+      sgyml: &path_sgyml_ppty
+        tags:
+          jsonpath:
+            desc: Using `!jsonpath` overrides default `jmespath` for `$config.path_lang`.
+          jmespath:
+            desc: Using `!jmespath` overrides default `jsonpath` for `$config.path_lang`.
+    tplt_ppty: &tplt_ppty
+      type: Template
+      desc: |
+        The template expression to transform the data retrieved by the path expression (as the variable `path`).
+        This can include various template functions, such as string manipulation, formatting, etc.
+      sgyml: &tplt_sgyml_ppty
+        tags:
+          liquid:
+            desc: Using `!liquid` overrides default `erb` setting established in `$config.tplt_lang`.
+          erb:
+            desc: Using `!erb` overrides default `liquid` setting established in `$config.tplt_lang`.
+  properties:
+    $meta:
+      req: [changes_array_path] 
+      acc: [_config, tick, hash, part, note, summ, tags, lead, auths]
+    $config:
+      desc: Data about how to process and interpret the other properties.
+      type: Map
+      properties:
+        path_lang:
+          type: String
+          desc: |
+            The language used for path expressions.
+            Can be `jsonpath` or `jmespath`).
+
+            This is how to point to specific parts of the source data structure to retrieve data for populating a target property.
+          default: jmespath
+        tplt_lang:
+          type: String
+          desc: |
+            The template syntax used for transforming the input string.
+            Can be`liquid` or `erb`.
+          default: liquid
+        desc:
+          type: String
+          desc: |
+            A brief description of the mapping.
+        vrsn:
+          type: Scalar
+          desc: |
+            The version of the mapping schema.
+
+            May be a sequential number or a descriptive string.
+        note:
+          type: String
+          desc: |
+            Additional notes or comments about the mapping.
+            This can include information about versioning/divergence.
+    # The following properties are the ones that will be mapped from the
+    #  source data structure to the RHYML format.
+    changes_array_path:
+      desc: |
+        The path expression to locate the array of changes in the source data structure.
+
+        This is typically `$.issues` or `$.items` and must be an Array of Objects (in JSON parlance).
+      type: String
+      sgyml: *path_sgyml_ppty
+
+    note_pattern:
+      desc: |
+        Pattern for extracting release notes from the note field.
+        
+        The pattern can be specified in any of these formats:
+        
+        . Regexp literal with flags: `/pattern/flags` +
+        Example: '/## Release Notes\n(?<note>.*?)(?=\n##|\z)/ms'
+
+        . Plain pattern (flags applied via config): +
+        Example: '## Release Notes\n(?<note>.*?)(?=\n##|\z)'
+
+        . `%r{}` syntax:
+        Example: '%r{## Release Notes\n(?<note>.*?)(?=\n##|\z)}ms'
+
+        The pattern should include a named capture group 'note' or a single capture group.
+        Common flags:
+        
+        * `m`: multiline mode (`^` and `$` match line start/end)
+        * `s`: dot matches newline
+      type: String
+
+    head_pattern:
+      desc: |
+        Pattern for extracting heading from note content.
+        
+        Like note_pattern, supports multiple formats:
+        
+        . `/pattern/flags` +
+        Example: `/^## (?<head>.*?)$/m`
+        
+        . Plain pattern
+        Example: `^## (?<head>.*?)$`
+        
+        . `%r{pattern}flags` +
+        Example: `%r{^## (?<head>.*?)$}m`
+
+        Should include a named capture group 'head' or a single capture group.
+        The `m` flag is commonly used to make `^` and `$` match line boundaries.
+      type: String
+
+    tick:
+      desc: |
+        The issue ticket number for the change.
+        This is typically a unique identifier for the change request or issue.
+      properties:
+        _meta: {req: [path]}
+        path:
+          <<: *path_ppty
+          docs:
+            examples:
+              - code: "$.issueId"
+                lang: jsonpath
+              - code: "iid"
+                lang: jmespath
+        tplt:
+          <<: *tplt_ppty
+          docs:
+            text: Rarely used on the `tick` property, which is typically a String and should remain identical to the upstream source.
+            examples:
+              - code: "{{ path | append: '' }}"
+                lang: liquid
+                desc: Ensures the path is treated as a string.
+    type:
+      desc: |
+        The source field for change type designation.
+        This usually indicates the kind of change being made (bug fix, new feature, etc) and is typically a parameter called `type`.
+        The `path` property does not yield a simple string
+      properties:
+        _meta: {req: [path]}
+        path: 
+          <<: *path_ppty
+          docs:
+            examples:
+              - code: "$.type"
+                lang: jsonpath
+              - code: "type"
+                lang: jmespath
+        tplt:
+          <<: *tplt_ppty
+          docs:
+            examples:
+              - code: "{{ path | default: 'task' }}"
+                lang: liquid
+                desc: Provides a default value if no type is found.
+              - code: "path.nil? ? 'task' : path.first"
+                lang: erb
+                desc: Provides a default value if no type is found.
+
+    hash:
+      desc: |
+        The Git commit SHA256 "`hash`" String associated with the merge commit, or whichever commit adds this change to the product in the Git repository.
+      properties:
+        _meta: {req: [path]}
+        path:
+          <<: *path_ppty
+          docs:
+            examples:
+              - code: "$.commit.sha"
+                lang: jsonpath
+              - code: "hash"
+                lang: jmespath
+              - code: "$.head_commit.id"
+                lang: jsonpath
+        tplt:
+          <<: *tplt_ppty
+          desc: |
+            The template expression to transform the hash value retrieved by the path expression.
+            This is usually a direct string representation of the hash.
+
+            While technically these hash Strings can be shortened and still be valid, they are better off _stored_ complete and truncated upon display.
+          docs:
+            examples:
+              - code: "{{ path | default: 'unknown' }}"
+                lang: liquid
+                desc: Provides a default value if no hash is found.
+              - code: "path.nil? ? 'unknown' : path.first"
+                lang: erb
+                desc: Provides a default value if no hash is found.
+              - code: "{{ path | slice: 0, 7 }}"
+                lang: liquid
+                desc: Shortens the hash to the first 7 characters, commonly used in Git but not recommended for the RHYML `hash` properties.
+    part:
+      desc: |
+        The component, interface, or feature of the product affected by the change.
+        This is typically derived from a label or tag in the source data structure.
+      properties:
+        _meta: {req: [path]}
+        path:
+          <<: *path_ppty
+          docs:
+            examples:
+              - code: "$.labels[?starts_with(@, 'component:')]"
+                lang: jsonpath
+              - code: "labels[?contains(@, 'component:')]"
+                lang: jmespath
+        tplt:
+          <<: *tplt_ppty
+          docs:
+            examples:
+              - code: "{{ path | first | split: ':' | last | strip }}"
+                lang: liquid
+                desc: Extracts the last part of the label after splitting by colon.
+              - code: "path.first.split(':').last.strip"
+                lang: erb
+                desc: Extracts the last part of the label after splitting by colon.
+    parts:
+      desc: |
+        When more than one component, interface, or feature of the product is affected by the change, and you wish all such "`parts`" to be noted.
+
+        This is typically derived from a label or tag in the source data structure.
+      properties:
+        _meta: {req: [path]}
+        path:
+          <<: *path_ppty
+          docs:
+            examples:
+              - code: "$.labels[?starts_with(@, 'component:')]"
+                lang: jsonpath
+              - code: "labels[?contains(@, 'component:')]"
+                lang: jmespath
+        tplt:
+          <<: *tplt_ppty
+          docs:
+            examples:
+              - code: "{{ path | map: 'split', ':' | map: 'last' | map: 'strip' }}"
+                lang: liquid
+    note:
+      desc: |
+        The body or content of the change request or issue.
+        This is typically a description or detailed information about the change.
+
+        Presence of content here designates inclusion in the "`Release Notes`" section/document in typical cases.
+
+        The `note` property captures the entire note body, which is usually further filtered/transformed based on configuration settings.
+      properties:
+        _meta: {req: [path]}
+        path:
+          <<: *path_ppty
+          type: String
+          templating:
+            default: liquid
+            delay: false
+          docs:
+            examples:
+              - code: "$.body"
+                lang: jsonpath
+              - code: "description"
+                lang: jmespath
+              - code: '!liquid $.fields.{{  }}'
+        tplt:
+          <<: *tplt_ppty
+          docs:
+            text: |
+              Most formatting is done using configuration settings or template output.
+              If the intended note content is a subset or converted form of the body captured by the note `path`, you most likely want to handle that in the config or template.
+    summ:
+      desc: |
+        Usually the issue title, this property maps a summary string from the source to the corresponding element in RHYML.
+      properties:
+        _meta: {req: [path]}
+        path:
+          <<: *path_ppty
+          docs:
+            examples:
+              - code: "$.title"
+                lang: jsonpath
+              - code: "summary"
+                lang: jmespath
+        tplt:
+          <<: *tplt_ppty
+          docs:
+            examples:
+              - code: "{{ path | default: 'No Title' | truncate: 50, '' }}"
+                lang: liquid
+                desc: Provides a default value if the title is not present.
+              - code: "path.nil? || path.empty? ? 'No Title' : path.first[0...50]"
+                lang: erb
+                desc: Provides a default value if the title is not present.
+
+    tags:
+      desc: |
+        An array of tags associated with the change.
+        These are typically derived from "`labels`" or "`tags`" in the source data structure.
+
+        This tags property must be an Array of Scalars in RHYML.
+        But each tag in the RHYML model may be constructed uniquely, in cases where not all tags are the same.
+
+        Any property of this object named like `_<tagname>` will be treated as defining the source and mapping the value of that tag.
+
+        For any implementation of RHYML, tags will be mapped to their corresponding value names in the source, but the tag values themselves must be retrieved and mapped to strings the RHYML definition can reference.
+        The final RHYML `tags` property will only include tags registered in the config.
+      properties:
+        _meta:
+          req: [path]
+          arb: true
+        path:
+          <<: *path_ppty
+          docs:
+            examples:
+              - code: "$.labels"
+                lang: jsonpath
+              - code: "tags"
+                lang: jmespath
+        tplt: 
+          <<: *tplt_ppty
+          docs:
+            examples:
+              - code: "path.map(&:downcase).uniq"
+                lang: erb
+                desc: Converts all tags to lowercase and removes duplicates.
+        <_tagname>:
+          key:
+            regexp: /^_([\w-]{2,25})$/
+          properties:
+            _meta: 
+              req: [path]
+            path:
+              <<: *path_ppty
+              desc: |
+                The path expression to locate the specific tag in the source data structure.
+                This is most often used when the RHYML tag maps to something other than an item in a `labels` Array.
+
+                Any tag defined this way is added to the `tags` Array when retrieved.
+            tplt:
+              <<: *tplt_ppty
+              desc: |
+                The template expression to transform the tag value retrieved by the path expression.
+              docs:
+                examples:
+                  - code: |
+                      if path && !path.empty?
+                        path.first.name
+                      else
+                        nil
+                      end  
+                    desc: Conditionally expresses a tag name based on the value of the custom checkbox in the source data.
+                    lang: erb
+    lead:
+      desc: |
+        The lead or primary assignee for the change request or issue.
+        This is typically derived from the assignee or owner of the change.
+
+        The `lead` property is used to identify the main point of contact for the change.
+        It may or may not be expressed in public-facing release histories.
+      properties:
+        _meta: {req: [path]}
+        path:
+          <<: *path_ppty
+          docs:
+            examples:
+              - code: "$.assignee"
+                lang: jsonpath
+              - code: "$.assignees[0]"
+                lang: jsonpath
+              - code: "assignees[0]"
+                lang: jmespath
+          desc: |
+            The path expression to locate the lead or primary assignee in the source data structure.
+        tplt:
+          <<: *tplt_ppty
+          docs:
+            examples:
+              - code: "{{ path.login | default: 'Unassigned' }}"
+                lang: liquid
+                desc: Provides a default value if no assignee is found.
+              - code: "path.nil? ? 'Unassigned' : path.first.login"
+                lang: erb
+                desc: Provides a default value if no assignee is found.
+    auths:
+      desc: |
+        An array of authors or contributors associated with the change request or issue.
+        This is typically derived from the authors, owners, reviewers, or contributors of the change and is not typically made public.
+      properties:
+        _meta: {req: [path]}
+        path:
+          <<: *path_ppty
+          docs:
+            examples:
+              - code: "$.assignees"
+                lang: jsonpath
+              - code: "authors"
+                lang: jmespath
+              - code: |
+                  [assignee.displayName, creator.displayName, reporter.displayName]
+                lang: jmespath
+                desc: Makes an array out of the assignee.displayName, creator.displayName, and reporter.displayName.
+          desc: |
+            The path expression to locate the authors or contributors in the source data structure.
+
+
+

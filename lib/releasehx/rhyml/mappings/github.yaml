@@ -1,0 +1,60 @@
+# GitHub Issues API to RHYML mapping configuration
+# Maps GitHub Issues API response to RHYML Change entries
+
+$config:
+  desc: "GitHub Issues API to RHYML mapping"
+  path_lang: jmespath
+  tplt_lang: liquid
+
+# GitHub Issues API returns an array of issues directly
+# But some payloads may have an {issues: [...]} wrapper
+changes_array_path: "issues || @"
+
+# Map each issue to RHYML Change properties
+tick:
+  path: "number"
+
+# hash:
+#   path: $nil # GitHub Issues API doesn't include git commit hashes
+
+summ:
+  path: "title"
+
+note:
+  path: "body"
+
+# Extract type from the native GitHub Issues type field (modern approach)
+type:
+  path: "issue_type.name"
+
+# Derive `parts` from labels using direct key matching or slug override
+parts:
+  path: "labels[].name"
+  ruby: |
+    labels = path.is_a?(Array) ? path : [path]
+    parts_defs = config['parts'] || {}
+    label_prefix = parts_defs['label_prefix'] || ''
+
+    label_to_part = parts_defs.each_with_object({}) do |(part_key, part_config), memo|
+      if part_config.is_a?(Hash)
+        slug = part_config['slug']
+        memo[part_key.to_s.downcase] = part_key
+        memo[slug.to_s.downcase] = part_key if slug
+      end
+    end
+
+    found_parts = labels.map do |label|
+      l = label.to_s.downcase
+      if !label_prefix.to_s.empty? && l.start_with?(label_prefix.to_s.downcase)
+        l = l.sub(/^#{Regexp.escape(label_prefix)}/i, '')
+      end
+      label_to_part[l]
+    end
+
+    found_parts.compact.uniq
+
+tags:
+  path: "labels[].name"
+
+lead:
+  path: "assignee.login"

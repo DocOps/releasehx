@@ -1,0 +1,54 @@
+{%  raw %}
+{%- if config.modes.wrapped != false -%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config.history.head | default: "Release History" }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        .release-section { margin-bottom: 3rem; }
+        .changelog-section, .notes-section { margin-bottom: 2.5rem; }
+        .release-note { margin-bottom: 1.5rem; }
+        .meta-icon { margin-right: 0.25rem; }
+        .meta-label { margin-right: 0.5rem; }
+        .change-entry { margin-bottom: 1rem; }
+        .change-metadata { font-size: 0.9rem; color: #6c757d; }
+        .note-link { margin-left: 0.5rem; }
+        .git-link, .issue-link { margin-left: 0.25rem; }
+    </style>
+</head>
+<body class="container py-4">
+{%- endif -%}
+
+{%- if config.modes.html_frontmatter -%}
+{%-   assign frontmatter = config.history.html_frontmatter | render: vars -%}
+{%-   if frontmatter and frontmatter != "" -%}
+<!-- {{ frontmatter }} -->
+{%-   endif -%}
+{%- endif -%}
+
+<div class="release-history">
+    <h1 class="mb-4">{{ config.history.head | render: vars | default: "Release History" }}</h1>
+
+    {%- for release in var.releases %}
+    {%-   assign config  = var.config %}
+    {%-   assign release = var.release %}
+    {%-   assign changes = var.changes %}
+    {%-   assign sorted  = var.sorted -%}
+    {%-   include release.html.liquid
+           release=release
+           config=config
+           level=2 %}
+    {%- endfor %}
+</div>
+
+{%- if config.modes.wrapped != false -%}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{%- endif -%}
+
+{% endraw %}

@@ -1,0 +1,71 @@
+= DocOpsLab MCP Migration: Placeholder PRD
+:toc: macro
+:toclevels: 2
+:status: draft
+:last-updated: 2025-02-12
+
+This placeholder PRD sketches the intended migration of the ReleaseHx MCP module into the DocOps Lab repository.
+It is intentionally brief and will be expanded when the migration is scheduled.
+
+toc::[]
+
+== Context
+
+ReleaseHx currently ships an MCP server and manifest-driven resources to improve configuration discovery for agents.
+The long-term goal is to centralize this MCP layer in the DocOps Lab repo so multiple gems can share the same MCP machinery while keeping product-specific assets local.
+
+== Goals
+
+* Define a shared MCP core under `DocOpsLab::MCP` suitable for reuse across DocOps Lab gems.
+* Preserve the current ReleaseHx MCP behavior and resource IDs.
+* Establish a clear dependency chain for build-time assets and runtime MCP behavior.
+
+== Non-goals
+
+* No refactor of ReleaseHx configuration or schema systems beyond MCP integration points.
+* No new MCP tools beyond the current resource + `config.reference.get` scope.
+* No release automation or packaging overhaul in this placeholder phase.
+
+== Proposed Dependency Chain
+
+`schemagraphy`:: Runtime config/schema processing, CFGYML reference handling, JSON Pointer resolution.
+`docopslab-dev` (dev-only):: Build-time tooling, doc asset generation, AsciiDoc-to-Markdown conversions, validation checks.
+`docopslab-mcp`:: MCP server, manifest/resource abstraction, and wiring to load packaged assets.
+
+== Module Layout (Target)
+
+* `DocOpsLab::MCP::Server`
+* `DocOpsLab::MCP::Manifest`
+* `DocOpsLab::MCP::ResourcePack`
+* `DocOpsLab::MCP::AssetPackager`
+
+ReleaseHx will keep:
+
+* its resource manifest and assets
+* the `rhx-mcp` executable
+* ReleaseHx-specific resource identifiers and documentation
+
+== Migration Approach (Brief)
+
+. Mirror the current MCP core into `DocOpsLab::MCP` while keeping ReleaseHx names intact.
+. Replace ReleaseHx internal MCP classes with a thin wrapper around `DocOpsLab::MCP`.
+. Move shared MCP tests and minimal fixtures into the lab repo; keep product-specific tests local.
+. Document the new dependency chain and build-time asset requirements.
+
+== Acceptance Criteria
+
+* ReleaseHx MCP server behavior is unchanged after the move.
+* Product gems can provide a manifest + assets and run an MCP server with no code duplication.
+* Build-time doc assets can be generated via `docopslab-dev` without maintaining Markdown copies.
+
+== Risks
+
+* Namespace drift between ReleaseHx and DocOpsLab MCP modules.
+* Overcoupling to ReleaseHx assumptions in the shared MCP layer.
+* Build-time asset dependencies becoming required at runtime.
+
+== Open Questions
+
+* Should `docopslab-mcp` be a runtime dependency for product gems or a dev-only packaging tool?
+* Should MCP servers be launched by product executables or a shared launcher that reads per-gem manifests?
+* What is the minimal asset packaging contract for a gem to be MCP-ready?

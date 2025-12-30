@@ -1,0 +1,57 @@
+{%- assign pname = include.property[0] %}
+{%- assign pbody = include.property[1] %}
+{%- assign pid   = include.ppty_path | replace: "__", "_" | replace: "<", "_" | replace: ">", "_" | replace: "$", "DOLLARSIGN_" | prepend: "conf_ppty_" %}
+{%- assign ppath = include.ppty_path | replace: "__", "." | replace: "DOLLARSIGN_", "$" %}
+{%- case include.tier %}
+{%- when 1 %}
+{%-   assign dlchars = "::" %}
+{%- when 2 %}
+{%-   assign dlchars = ":::" %}
+{%- when 3 %}
+{%-   assign dlchars = "::::" %}
+{%- else %}
+{%-   assign dlchars = ";;" %}
+{%- endcase %}
+
+[[{{ pid }},config.{{ ppath }}]]
+{{ ppath }}{{ dlchars }}
++
+--
+{{ pbody.desc }}
+{%- if pbody.docs %}
+{{ pbody.docs }}
+{%- endif %}
+
+[horizontal]
+{%-   if pbody.type %}
+type;; {{ pbody.type }}
+{%-   endif %}
+{%-   if pbody.templating %}
+templating;; {% if pbody.templating.default %}{{ pbody.templating.default }}{% if pbody.templating.delay %}, {% endif %}{% endif %}{% if pbody.templating.delay %} delayed{% else %} immediate{% endif %} rendering
+{%-   endif %}
+{%-   if pbody.dflt != nil %}
+default;;
++
+{%-     if pbody.dflt.first %}
+{%-       if pbody.dflt.size > 0 %}
+....
+{%-         for item in pbody.dflt %}
+- {{ item }}
+{%-         endfor %}
+....
+{%-       else %}
+[_empty array_]
+{%-       endif %}
+{%-     else %}
+{%-       if pbody.dflt contains '
+' or pbody.dflt.size > 20 %}
+....
+{{ pbody.dflt | trim }}
+....
+{%-        else %}
+`+++{{ pbody.dflt | trim }}+++`
+{%-        endif %}
+{%-     endif %}
+{%-   endif %}
+path;; `xref:{{ pid }}[{{ ppath | prepend: "config." }}]`
+--

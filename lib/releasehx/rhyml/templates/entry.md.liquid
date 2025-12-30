@@ -1,0 +1,25 @@
+{%- embed metadata-entry.md.liquid -%}
+{%- assign frame = content_config.items.frame | default: "unordered" %}
+{%- assign summ = change.summ %}
+{%- case frame %}
+{%-   when "unordered" %}
+{%-     assign bullet = "- " %}
+{%-   when "ordered" %}
+{%-     assign bullet = "1. " %}
+{%-   when "basic" %}
+{%-     assign bullet = "- " %}
+{%-   else %}
+{%-     assign bullet = "" %}
+{%- endcase %}
+
+{%- if frame == "basic" %}
+
+{{ bullet }}{{ change.summ | trim }}{% if change_metadata != "" %} ({{ change_metadata | trim | replace: " | ", ", " }}){% endif %}{% if change.note and change.note != "" %} [NOTE](#note-{{ change.chid }}){% endif %}
+{%- elsif frame == "paragraph" %}
+
+{{ change.summ | trim }}{% if change_metadata != "" %} ({{ change_metadata | trim }}){% endif %}{% if change.note and change.note != "" %} [NOTE](#note-{{ change.chid }}){% endif %}
+{%- else %}
+
+{{ bullet }}{{ change.summ | trim }}{% if change_metadata != "" %} ({{ change_metadata | trim }}){% endif %}{% if change.note and change.note != "" %} [NOTE](#note-{{ change.chid }}){% endif %}
+{%- endif %}
+

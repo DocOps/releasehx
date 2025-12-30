@@ -1,0 +1,97 @@
+
+{%- assign changes_listed = "" | split: "," %}
+{%- if section_type == "notes" %}
+{%-   assign allow_redundant = note_allow_redundant %}
+{%- else %}
+{%-   assign allow_redundant = entry_allow_redundant %}
+{%- endif %}
+{%- if grouping1.size > 0 %}
+{%-   for group1 in grouping1 %}
+{%-     assign group = group1 %}
+{%-     assign group1_kind = group1 | split: ":" | first %}
+{%-     assign group1_slug = group1 | split: ":" | last %}
+{%-     assign grouping1_header_level = dflt_next_header_level | default: 3 %}
+{%-     embed groupby.liquid %}
+{%-     case section_type %}
+{%-     when "notes" %}
+{%-       assign group1_changes = sorted.by[group1_kind][group1_slug] | where_exp: "c", "c.note != nil" %}
+{%-     else %}
+{%-       assign group1_changes = sorted.by[group1_kind][group1_slug] %}
+{%-     endcase %}
+{%-     assign group1_heading = group_heading %}
+{%-     assign group1_heading_shown = false %}
+{%-     if grouping2.size > 0 %}
+{%-       assign grouping2_header_level = grouping1_header_level | plus: 1 %}
+
+{%-       for group2 in grouping2 %}
+{%-         assign group = group2 %}
+{%-         assign group2_kind = group2 | split: ":" | first %}
+{%-         assign group2_slug = group2 | split: ":" | last %}
+{%-         embed groupby.liquid %}
+{%-         assign group2_heading = group_heading %}
+{%-         assign group2_heading_shown = false %}
+
+{%-         for change in group1_changes %}
+{%-           if !allow_redundant and changes_listed contains change.chid %}
+{%-             continue %}
+{%-           endif %}
+{%-           assign note_trimmed = change.note | trim %}
+{%-           if section_type == "notes" and note_trimmed == ""  %}
+{%-             continue %}
+{%-           endif %}
+
+{%-           assign match2 = false %}
+
+{%-           if group2_kind == "tag" and change.tags contains group2_slug %}
+{%-             assign match2 = true %}
+{%-           elsif group2_kind == "type" and change.type == group2_slug %}
+{%-             assign match2 = true %}
+{%-           elsif group2_kind == "part" and change.parts contains group2_slug %}
+{%-             assign match2 = true %}
+{%-           endif %}
+
+{%-           if match2 %}
+{%-             unless group1_heading_shown %}
+{%-               assign group1_heading_shown = true %}
+{%-               include header.liquid 
+                    format=format
+                    level=grouping1_header_level
+                    text=group1_heading %}
+{%-             endunless %}
+{%-             unless group2_heading_shown %}
+{%-               assign group2_heading_shown = true %}
+{%-               include header.liquid 
+                    format=format
+                    level=grouping2_header_level
+                    text= group2_heading %}
+{%-             endunless %}
+{%-             assign chid_arrayed = change.chid | split: "," %}
+{%-             assign changes_listed = changes_listed | concat: chid_arrayed | uniq %}
+{%-             embed item.liquid %}
+{%-           endif %}
+{%-         endfor %}
+{%-       endfor %}
+{%-     else %}
+{%-       for change in group1_changes %}
+{%-         if !allow_redundant and changes_listed contains change.chid %}
+{%-           continue %}
+{%-         endif %}
+{%-         embed groupby.liquid %}
+{%-         unless group1_heading_shown %}
+{%-           assign group1_heading_shown = true %}
+{%            include header.liquid
+                format=format
+                level=grouping1_header_level
+                text=group1_heading %}
+{%-         endunless %}
+{%-         assign chid_arrayed = change.chid | split: "," %}
+{%-         assign changes_listed = changes_listed | concat: chid_arrayed | uniq %}
+{%-         embed item.liquid %}
+{%-       endfor %}
+{%-     endif %}
+{%-   endfor %}
+{%- else %}
+{%-   for change in changes %}
+{%-     embed item.liquid %}
+{%-   endfor %}
+{%- endif %}

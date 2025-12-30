@@ -1,0 +1,31 @@
+# Jira REST API Client Configuration
+# Jira Cloud API with ADF (Atlassian Document Format) support
+name: jira
+desc: |
+  Jira Cloud REST API client for fetching issues and creating release notes.
+  Supports ADF format in description and custom fields.
+
+auth:
+  mode: basic
+  header: Authorization
+  format: "Basic {{ env.JIRA_USERNAME | append: ':' | append: env.JIRA_API_TOKEN | base64 }}"
+
+# Jira REST API endpoint template
+# Variables available: origin.project, version, env
+href: "{{ env.JIRA_HOST | default: 'https://your-domain.atlassian.net' }}/rest/api/3/search/jql"
+
+# Query parameters for filtering issues
+query_params:
+  jql: 'project="{{ origin.project | default: env.JIRA_PROJECT }}" AND fixVersion="{{ version }}" ORDER BY updated DESC'
+  fields: "key,summary,description,issuetype,components,labels,fixVersions,assignee"
+
+# Pagination settings for large result sets
+pagination:
+  param: startAt
+  page_size_param: maxResults
+  page_size: 50
+  max_pages: 20
+
+# Response format expectation
+response_format: json
+root_issues_path: issues

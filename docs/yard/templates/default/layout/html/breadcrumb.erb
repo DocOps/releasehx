@@ -1,0 +1,57 @@
+<div id="menu">
+  <% if @file %>
+    <%
+      # Always use "ReleaseHx" as the main project name
+      project_name = "ReleaseHx"
+      
+      # Extract API name from title, removing version info
+      api_name = if options.title && options.title.include?('API')
+        # Remove version info like "(v0.1.0)" and extract just the API name
+        clean_title = options.title.gsub(/\s*\(v[\d\.]+\)/, '').strip
+        if clean_title.include?('API')
+          clean_title
+        else
+          "#{clean_title} API"
+        end
+      else
+        "ReleaseHx API"  # fallback
+      end
+    %>
+    <a href="/"><%= project_name %></a> &raquo; 
+    <a href="index.html"><%= api_name %></a> &raquo; 
+    <span class="title"><%= @file.title %></span>
+  <% elsif @object && @object.respond_to?(:namespace) && @object != Registry.root %>
+    <%
+      # Calculate path back to module root based on how deep we are
+      parts = @object.path.split('::')
+      # Remove the root module name, count remaining parts
+      depth = parts.length - 1
+      back_path = depth > 0 ? '../' * depth : ''
+      
+      # Always use "ReleaseHx" as the main project name
+      project_name = "ReleaseHx"
+      
+      # Extract API name from title, removing version info
+      api_name = if options.title && options.title.include?('API')
+        # Remove version info like "(v0.1.0)" and extract just the API name
+        clean_title = options.title.gsub(/\s*\(v[\d\.]+\)/, '').strip
+        if clean_title.include?('API')
+          clean_title
+        else
+          "#{clean_title} API"
+        end
+      else
+        "#{parts.first} API"  # fallback to root module + API
+      end
+    %>
+    <a href="/"><%= project_name %></a> &raquo; 
+    <a href="<%= back_path %>index.html"><%= api_name %></a>
+    <% if @object.namespace && @object.namespace != Registry.root %>
+      &raquo; <%= linkify(@object.namespace, @object.namespace.path) %>
+    <% end %>
+    &raquo; <span class="title"><%= @object.name %></span>
+  <% else %>
+    <a href="/">ReleaseHx</a> &raquo; 
+    <span class="title"><%= @page_title || "Documentation" %></span>
+  <% end %>
+</div>

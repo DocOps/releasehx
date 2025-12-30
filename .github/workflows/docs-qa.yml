@@ -1,0 +1,59 @@
+name: Documentation Quality Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  vale-linting:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vale
+        run: |
+          wget -O vale.tar.gz https://github.com/errata-ai/vale/releases/download/v3.12.0/vale_3.12.0_Linux_64-bit.tar.gz
+          tar -xzf vale.tar.gz
+          sudo mv vale /usr/local/bin/
+          vale --version
+
+      - name: Run Vale on AsciiDoc files
+        run: |
+          vale sync || true
+          vale --output=line README.adoc docs/*.adoc || echo "Vale suggestions emitted"
+
+  docs-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+
+      - name: Generate prebuild artifacts
+        run: |
+          gem install bundler
+          bundle install
+          bundle exec rake prebuild
+
+      - name: Install dependencies
+        run: bundle install --jobs 4
+
+      - name: Build docs
+        run: |
+          bundle exec rake docs
+
+      - name: Archive built site
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: build/docs/_site

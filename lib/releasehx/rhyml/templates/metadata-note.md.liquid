@@ -1,0 +1,30 @@
+{%- capture change_metadata -%}
+{%- assign metadata_parts = "" | split: "," -%}
+{%- if note_show_lead and change.lead -%}
+  {%- capture lead_text -%}
+    {%- if note_show_lead_links and config.links.user.href -%}
+      [{{ change.lead }}]({{ config.links.user.href | replace: '{{user}}', change.lead }})
+    {%- else -%}
+      {{ change.lead }}
+    {%- endif -%}
+  {%- endcapture -%}
+  {%- assign metadata_parts = metadata_parts | push: lead_text -%}
+{%- endif -%}
+{%- if note_show_issue_links and change.tick and config.links.web.href -%}
+  {%- capture issue_link -%}[{{ config.links.web.text | render: change }}]({{ config.links.web.href | render: change }}){%- endcapture -%}
+  {%- assign metadata_parts = metadata_parts | push: issue_link -%}
+{%- elsif change.tick -%}
+  {%- assign metadata_parts = metadata_parts | push: change.tick -%}
+{%- endif -%}
+{%- embed parts-listing.liquid -%}
+{%- if parts_listing and parts_listing != "" -%}
+  {%- assign metadata_parts = metadata_parts | push: parts_listing -%}
+{%- endif -%}
+{%- embed tags-listing.liquid -%}
+{%- if tags_listing and tags_listing != "" -%}
+  {%- assign metadata_parts = metadata_parts | push: tags_listing -%}
+{%- endif -%}
+{%- if metadata_parts.size > 0 -%}
+({{ metadata_parts | join: ", " }})
+{%- endif -%}
+{%- endcapture -%}

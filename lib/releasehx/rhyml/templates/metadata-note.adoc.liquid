@@ -1,0 +1,56 @@
+{%- assign show_labels = note_metadata_labels %}
+{%- assign show_icons = note_metadata_icons %}
+{%- assign metadata_kinds = 'type,part' | split: ',' %}
+{%- assign format = "asciidoc" %}
+{%- embed tags-listing.liquid %}
+{%- embed parts-listing.liquid %}
+{%- capture change_metadata %}
+{%-   if parts_listing != "" and note_show_parts_label %}
+{{-     parts_listing | trim }}
+{%-   elsif change.parts and change.parts.size > 0 and note_show_parts_label == false %}
+{%-     for part in change.parts %}
+{%-       unless part == "changelog" or part == "release_note_needed" %}
+{{ config.parts[part]['text'] | default: part }}
+{%-       endunless %}
+{%-     endfor %}
+{%-   endif %}
+{%-   if change.type %}
+{%-     assign type_config = config.types[change.type] %}
+{%-     if note_show_type_label %}
+[.meta-label.type-label]*{{ labeling_type_label }}:*
+{%-     endif %}
+{%-     if type_config.icon and show_icons and show_icons == "before" %}
+icon:{{ type_config.icon | default: 'tag' }}[role=meta-icon]
+{%-     endif %}
+{{ type_config.text | default: change.type }}
+{%-     if type_config.icon and show_icons and show_icons == "after" %}
+icon:{{ type_config.icon | default: 'tag' }}[role=meta-icon]
+{%-     endif %}
+{%-   endif %}
+{%-   if tags_listing != "" and note_show_tags_label %}
+{{- tags_listing | trim }}
+{%-   elsif change.tags and change.tags.size > 0 and note_show_tags_label == false %}
+{%-     for tag in change.tags %}
+{%-       unless tag == "changelog" or tag == "release_note_needed" %}
+{{ config.tags[tag]['text'] | default: tag }}
+{%-       endunless %}
+{%-     endfor %}
+{%-   endif %}
+{%-   if note_show_lead and change.lead %}
+{%-     if note_show_lead_label %}
+[.meta-label.lead-label]*{{ labeling_lead_label }}:*
+{%-     endif %}
+{%-     if note_user_link_template %}
+link:{{ note_user_link_template | render: change }}[icon:user[]{{ change.lead }}]
+{%-     else %}
+icon:user[]{{ change.lead }}
+{%-     endif %}
+{%-   endif %}
+{%-   if config.links.web.href and config.links.web.href != "" %}
+link:{{ config.links.web.href | render: change }}[icon:{{ config.links.web.icon }}[]{{ config.links.web.text | render: change }}]
+{%-   endif -%}
+{%-   if note_show_git_links and config.links.git.href and config.links.git.href != "" %}
+link:{{ config.links.git.href | render: change }}[icon:{{ config.links.git.icon | default: 'code-fork' }}[]{{ change.hash | slice: 0, 7 }}]
+{%-   endif %}
+{%- endcapture %}
+{%- assign catch_metadata_error = change_metadata %}

@@ -1,0 +1,1426 @@
+properties:
+  $meta:
+    desc: |
+      The metadata settings for the configuration file.
+    properties:
+      markup:
+        type: String
+        desc: |
+          The markup format used in strings in this configuration file.
+          May be `asciidoc` or `markdown`.
+
+          This probably matters less than you might imagine, as ReleaseHx will use AsciiDoc-style `+++_italic_+++` and `+++*bold*+++` syntax, and there should not be much call for divergent syntax like for links or images.
+          All default values are cross-compatible.
+        dflt: "{default_markup}"
+      slug_type:
+        type: String
+        desc: |
+          The format of slugs used in your application, for use with `sluggerize` Liquid filter.
+
+          Must be `kebab` (ex: `hyphen-delimited-slug`) or `snake` (ex: `underscore_delimited_slug`).
+        dflt: "{default_slug_type}"
+      tplt_lang:
+        type: String
+        desc: |
+          The default format used in fields of `Template` type.
+          Must be `liquid` or `erb`.
+        dflt: "{default_tplt_lang}"
+  origin:
+    desc: |
+      The API or file source for the issues.
+    properties:
+      source:
+        type: String
+        desc: |
+          The type of API or file to use for the issues source.
+          May be `jira`, `github`, `gitlab`, or `rhyml`.
+        cmmt: Issue source API type (jira, github, gitlab, rhyml)
+        dflt: rhyml
+        docs: |
+          The `jira`, `github`, and `gitlab` types are all REST APIs that return an individualized JSON payload upon request, to be converted to RHYML format.
+
+          Alternately, you may use a file directly written in <<rhyml,RHYML-style YAML>> (`rhyml`).
+
+          If you wish to mix Git and API sources, this field should still reference the API.
+
+          Custom APIs are also available, but you will need to create a custom client in the `_apis` directory (<<conf_ppty_paths_api_clients_dir>>), and a custom mapping in the `_mappings` directory (<<conf_ppty_paths_mappings_dir).
+      project:
+        type: Slug
+        desc: |
+          The string used to identify the project in the remote API.
+          Only required if the API requires a project identifier.
+      href:
+        type: URI
+        desc: |
+          The local or remote URI for the API or JSON file.
+          Either the REST API endpoint path or the path to a local or remote JSON file containing the issues data.
+
+          This field may be templated, accepting Liquid placeholders like `{{ proj }}` (the sibling `project` property) or `{{ version }}` (the argued release version code).
+        templating:
+          delay: false
+      auth:
+        desc: |
+          Properties related to API authentication.
+
+          This block should be unnecessary if you use a supported API (Jira, GitHub, GitLab), unless you wish to use differently named environment variables for API credentials.
+        properties:
+          mode:
+            desc: |
+              The type of authentication to use.
+
+              Options are: `basic`, `token`, `bearer`, `header`, `query`, `none`.
+          header:
+            type: String
+            desc: |
+              The header to use for authentication.
+              Only used if `origin.auth.mode` is `header`.
+          cred_uri:
+            type: URI
+            desc: |
+              The location of the API credentials file for declaring API authentication arguments without environment variables.
+
+              The value can be a local path with read access or an HTTP path (not recommended unless ReleaseHx is always executed on an organizational VPN).
+            docs: |
+              The default order of credential strings defaults to:
+
+              ....
+              API_KEY
+              USERNAME
+              ORGANIZATION
+              ....
+
+              However, this format can be customized using <<conf_ppty_cred_key_line>>, <<conf_ppty_cred_user_line>>, and <<conf_ppty_cred_org_line>>.
+
+              Note that each of these lines can be overridden with an environment variable: <<conf_ppty_origin_auth_key_env>>, <<conf_ppty_origin_auth_user_env>>, and <<conf_ppty_origin_auth_org_env>>.
+
+              [IMPORTANT]
+              This file should probably be added to `.gitignore` in your application repo.
+            dflt: "{default_api_cred_env}"
+          cred_key_line:
+            type: Number
+            desc: |
+              Number of the line of the credentials file (at <<conf_ppty_origin_auth_cred_uri>>) on which the key or token string appears.
+            dflt: 1
+          cred_user_line:
+            type: Number
+            desc: |
+              Number of the line of the credentials file (at <<conf_ppty_origin_auth_cred_uri>>) on which the user string appears.
+            dflt: 2
+          cred_org_line:
+            type: Number
+            desc: |
+              Number of the line of the credentials file (at <<conf_ppty_origin_auth_cred_uri>>) on which the org string appears.
+            dflt: 3          
+          key_env:
+            type: String
+            desc: |
+              Name of the environment variable containing the API key or token.
+              Will override the key line in an existing credentials file (see <<conf_ppty_origin_auth_cred_uri>>).
+            dflt: "{default_api_key_env}"
+          user_env:
+            type: String
+            desc: |
+              Name of the environment variable containing the API username.
+              Will override the user line in an existing credentials file (see <<conf_ppty_origin_auth_cred_uri>>).
+            dflt: "{default_api_user_env}"
+          org_env:
+            type: String
+            desc: |
+              Name of the environment variable containing the organization credential.
+              Will override the org line in an existing credentials file (see <<conf_ppty_origin_auth_cred_uri>>).
+            dflt: "{default_api_org_env}"
+
+  conversions:
+    desc: |
+      Details about content origination, as well as markup sources and conversion.
+      Used to assist mapping between API source payloads and the corresponding properties of their target RHYML _change_ records.
+    properties:
+      summ:
+        type: String
+        desc: |
+          The source of the summary (Changelog) content.
+          Must be `issue_heading`, `custom_field`, or `commit_message_heading`.
+
+          If `issue_heading`, the summary or title field will be used.
+          If `commit_message_heading`, the first line of the Git commit will be used.
+        dflt: issue
+      head:
+        type: String
+        desc: |
+          The source of release-note headlines, when it is not the same as the summary.
+
+          Unless a `head` is available in the RHYML source, the `summ` will be used.
+          By default, ReleaseHx does not generate a `head` property for work items.
+
+          Potential values: `issue_heading`, `release_note_heading`, or `commit_message_heading`.
+        docs: |
+          When set to *`issue_heading`*, the RHYML `head` property will derive from the issue title or summary.
+
+          When set to *`release_note_heading`* or *`commit_message_heading`*, the `head` property will derive from the first line of the release note or commit message, respectively, so long as it matches the Regular Expression set in `ppty.release_note_heading_pattern`.
+          When set to `commit_message_heading`, the RHYML `head` property will derive from the first line of the commit message.
+      note:
+        type: String
+        desc: |
+          The source of the release notes content.
+          Must be `issue_body`, `custom_field`, or `commit_message`.
+
+          Defaults to `issue_body` for GitHub and GitLab, but to `custom_field` for Jira.
+      note_custom_field:
+        type: String
+        desc: |
+          The name of the custom field to use for the release notes content.
+          Only used if `conversions.note` is `custom_field`.
+
+          This purposely has no default, as you will probably have to look up the actual field ID, which will be something like `customfield_10010`.
+      note_pattern:
+        type: RegExp
+        desc: |
+          The Regular Expressions pattern to match in the body of an issue or commit message, after which all content is considered the release `note` matter.
+
+          Defaults to a Markdown or AsciiDoc header or HTML comment with the case-insensitive string `release note` in it.
+
+          Uses Capture group `note` in the Regular Expression to establish the entire note content.
+
+          See the `conversions.head_pattern` property for details on extracting a heading (`head` in RHYML) from the `note` content.
+        dflt: '/^((#|=)+ (Draft )?Release Note.*)|(<!-- (draft )?release note -->)\n(?<note>\w(.|\n)+)/gmi'
+      head_pattern:
+        type: RegExp
+        desc: |
+          The Regular Expressions pattern to match in the `note` text to be used to establish a heading for the note (`head`).
+          This text is removed from the `note` value during a draft operation, if the pattern matches.
+
+          Defaults to a Markdown or AsciiDoc header or HTML comment with the case-insensitive string `release note` in it.
+
+          The `head` capture group is snipped from text matching this pattern.
+        dflt: /^(?<head>[A-Z].*[^.!])\n\n[A-Z].*/gm
+
+      
+      markup:
+        type: String
+        desc: |
+          The origin markup format for notes.
+          May be `markdown` or `asciidoc`.
+        dflt: markdown
+      engine:
+        type: String
+        desc: |
+          The markup converter to use for the issues.
+          Defaults to `asciidoctor` for AsciiDoc and `redcarpet` for Markdown.
+          Options include `asciidoctor`, `redcarpet`, `commonmarker`, `kramdown`, or `pandoc`.
+
+  extensions:
+    desc: Default file extensions.
+    properties:
+      markdown:
+        desc: File extension for Markdown drafts.
+        type: String
+        dflt: 'md'
+      asciidoc:
+        desc: File extension for AsciiDoc drafts.
+        type: String
+        dflt: 'adoc'
+      yaml:
+        desc: File extension for YAML drafts.
+        type: String
+        dflt: 'yml'
+
+  types:
+    type: Map
+    desc: |
+      Issue types to include in the release history, in the order of display.
+
+      List as many as you wish to match up with corresponding metadata at the source.
+    properties:
+      label_prefix:
+        type: String
+        desc: |
+          The prefix used in issue labels to identify type labels.
+          For example, 'type:' would match labels like 'type:feature', 'type:bug'.
+          Another common pattern is 'kind:' for labels like 'kind:feature', 'kind:enhancement'.
+
+          If set to an empty string or null, type detection will only look for direct label matches
+          against the configured type slugs (e.g., looking for 'bug', 'feature' labels directly).
+        dflt: ''
+        docs: |
+          This setting allows you to customize how your organization names type labels.
+          The mapping system will look for labels that start with this prefix to determine the type of each change.
+
+          Examples:
+
+          * `type:` matches `type:feature`, `type:bug`
+          * `kind:` matches `kind:enhancement`, `kind:defect` 
+          * `category-` matches `category-feature`, `category-bugfix`
+
+          When no prefix is configured (empty string), the system will look for labels that directly match
+          the `slug` property of each configured type.
+      feature:
+        desc: |
+          A new capability, functionality, or interface element.
+        properties:
+          slug: &type_slug_ppty
+            type: String
+            desc: |
+              The literal string used in the Issues system for tagging or labeling an issue to be handled, if different than the key name.
+            dflt: feature
+          text: &type_text_ppty
+            type: String
+            desc: |
+              The display label for the type in the release history output.
+              Defaults to the capitalized key name.
+            dflt: New feature
+          head: &type_head_ppty
+            type: String
+            desc: |
+              The header for the type in the release history output.
+              Defaults in templates to the `text` property pluralized.
+            dflt: New features
+          icon: &type_icon_ppty
+            type: String
+            desc: |
+              The icon to use for issues of this type.
+            dflt: plus-square-o
+      bug:
+        desc: |
+          A fix for a previously reported issue.
+        properties:
+          slug:
+            <<: *type_slug_ppty
+            dflt: bug
+          text:
+            <<: *type_text_ppty
+            dflt: Bug fix
+          head:
+            <<: *type_head_ppty
+            dflt: Bug fixes
+          icon:
+            <<: *type_icon_ppty
+            dflt: bug
+      improvement:
+        desc: |
+          An enhancement to an existing capability, functionality, or interface element.
+        properties:
+          slug:
+            <<: *type_slug_ppty
+            dflt: improvement
+          text:
+            <<: *type_text_ppty
+            dflt: Improvement
+          head:
+            <<: *type_head_ppty
+            dflt: Improvements
+          icon:
+            <<: *type_icon_ppty
+            dflt: wrench
+      documentation:
+        desc: |
+          An update to the documentation.
+        properties:
+          slug:
+            <<: *type_slug_ppty
+            dflt: documentation
+          text:
+            <<: *type_text_ppty
+            dflt: Documentation
+          head:
+            <<: *type_head_ppty
+            dflt: Docs Changes
+          icon:
+            <<: *type_icon_ppty
+            dflt: book
+      <type_name>:
+        desc: |
+          The corresponding issue type.
+
+          The key should be a simple string for referencing the slug in RHYML and ReleaseHx templates.
+          This is what will be entered in a change's `type` property in RHYML.
+        properties:
+          slug:
+            <<: *type_slug_ppty
+            dflt: null
+          text: &type_text_ppty
+            type: String
+            desc: |
+              The display label for the type in the release history output.
+              Defaults to the capitalized key name.
+            dflt: null
+          head:
+            <<: *type_head_ppty
+            dflt: null
+          icon:
+            <<: *type_icon_ppty
+            dflt: null
+
+  parts:
+    type: Map
+    desc: |
+      The map of product components to include in the release history, in the order of display.
+
+      List as many as you wish to match up with corresponding metadata at the source.
+    properties:
+      label_prefix:
+        type: String
+        desc: |
+          The prefix used in issue labels to identify component/part labels.
+          For example, 'part:' would match labels like 'part:frontend', 'part:backend'.
+          Another common pattern is 'component:' for labels like 'component:ui', 'component:api'.
+        dflt: 'part:'
+        docs: |
+          This setting allows you to customize how your organization names component labels.
+          The mapping system will look for labels that start with this prefix to determine which parts/components are affected by each change.
+
+          Examples:
+
+          * `part:` matches `part:frontend`, `part:backend`
+          * `component:` matches `component:ui`, `component:api`
+          * `area-` matches `area-security`, `area-performance`
+      <part_name>:
+        desc: |
+          The corresponding product component.
+
+          The key should be a simple string for referencing the slug in RHYML and ReleaseHx templates.
+          This is what will be entered in a change's `part` property in RHYML.
+        type: Map
+        properties:
+          slug:
+            type: String
+            desc: |
+              The literal string used in the Issues system for tagging or labeling an issue to be handled, if different than the key name.
+
+              [NOTE]
+              This technically does not have to be a "`Slug`" String, if the system permits spaces, colons, etc.
+              It just needs to _exactly_ match whatever String the remote API returns to represent the label/tag.
+          text:
+            type: String
+            desc: |
+              The display text for the component in the release history output.
+              Defaults to the capitalized key name.
+          head:
+            type: String
+            desc: |
+              The header for the component in the release history output.
+              Defaults in templates to the `text` property pluralized.
+          icon:
+            type: String
+            desc: |
+              The icon to use for issues that affect this component.
+
+  tags:
+    type: Array
+    desc: |
+      Handling for tags, labels, or toggles associated with source Issues.
+
+      Subordinate property keys (other than `include` and `exclude`) represent individual tag names, with the default set documented here.
+      The property `<your_tag_name>` represents arbitrarily named tags, any number of which you are welcome to add.
+
+      This block serves to filter out any unrelated labels/tags ingested from APIs during the conversion from payload to RHYML draft.
+      Only tags with their own property here will be ported from the issue source to the RHYML change record's `tags` Array.
+    properties:
+      _include:
+        type: Array
+        desc: |
+          The tags, labels, or toggles that trigger inclusion in the release history.
+        dflt: [highlight, deprecation, removal, breaking, experimental, changelog]
+      _exclude:
+        type: Array
+        desc: |
+          The list of tags that cause a change/issue to be excluded from the release history.
+        dflt: []
+      highlight:
+        desc:
+          The tag, label, or toggle that indicates an issue is to be highlighted or prioritized in sorts.
+        properties:
+          head: &tag_head_ppty
+            desc: How this tag will display as a grouping title.
+            type: String
+            dflt: Highlights
+          text: &tag_text_ppty
+            desc: How this tag will display as a label.
+            type: String
+            dflt: highlight
+          slug: &tag_slug_ppty
+            type: String
+            desc: |
+               The literal string used in the Issues system for tagging or labeling an issue to be handled, if different than the key name.
+
+               [NOTE]
+               This technically does not have to be a "`Slug`" String, if the system permits spaces.
+               It just needs to exactly match whatever String the remote API returns to represent the label/tag.
+            dflt: highlighted
+          icon: &tag_icon_ppty
+            type: String
+            desc: |
+              The icon to use for issues so-tagged.
+            dflt: star
+          drop: &tag_drop_ppty
+            type: Boolean
+            desc: |
+              Whether to drop this tag when creating a RHYML object from API source.
+              Basically decides whether this tag is user-facing.
+            dflt: false
+          groupable: &tag_groupable_ppty
+            type: Boolean
+            desc: |
+              Whether this tag can be used to group issues in the release history.
+            dflt: true
+      breaking:
+        desc:
+          The tag, label, or toggle that indicates a potentially disruptive change.
+        properties:
+          head:
+            <<: *tag_head_ppty
+            dflt: Breaking Changes
+          text:
+            <<: *tag_text_ppty
+            dflt: Breaking
+          slug:
+            <<: *tag_slug_ppty
+            dflt: breaking
+          icon:
+            <<: *tag_icon_ppty
+            dflt: exclamation-triangle
+          drop: *tag_drop_ppty
+          groupable: *tag_groupable_ppty
+      removal:
+        desc:
+          The tag, label, or toggle that indicates a change includes a feature removal.
+        properties:
+          head:
+            <<: *tag_head_ppty
+            dflt: Feature Removals
+          text:
+            <<: *tag_text_ppty
+            dflt: Removed
+          slug:
+            <<: *tag_slug_ppty
+            dflt: removal
+          icon:
+            <<: *tag_icon_ppty
+            dflt: sign-out
+          drop: *tag_drop_ppty
+          groupable:
+            <<: *tag_groupable_ppty
+      deprecation:
+        desc:
+          The tag, label, or toggle that indicates an issue includes a feature discontinuation announcement.
+        properties:
+          head: 
+            <<: *tag_head_ppty
+            dflt: Deprecations
+          text:
+            <<: *tag_text_ppty
+            dflt: Deprecated
+          slug:
+            <<: *tag_slug_ppty
+            dflt: deprecation
+          icon:
+            <<: *tag_icon_ppty
+            dflt: exclamation-triangle
+          drop: *tag_drop_ppty
+          groupable: *tag_groupable_ppty
+      security:
+        desc: |
+          The tag, label, or toggle that indicates a change includes a security-related alteration.
+        properties:
+          head:
+            <<: *tag_head_ppty
+            dflt: Security Fixes
+          text:
+            <<: *tag_text_ppty
+            dflt: Security
+          slug:
+            <<: *tag_slug_ppty
+            dflt: security
+          icon:
+            <<: *tag_icon_ppty
+            dflt: shield
+          drop: *tag_drop_ppty
+          groupable: *tag_groupable_ppty
+      experimental:
+        desc:
+          The tag, label, or toggle that indicates a feature that is not yet stable or may not be permanent.
+        properties:
+          head:
+            <<: *tag_head_ppty
+            dflt: Experimental Features
+          text:
+            <<: *tag_text_ppty
+            dflt: Experimental
+          slug:
+            <<: *tag_slug_ppty
+            dflt: experimental
+          icon:
+            <<: *tag_icon_ppty
+            dflt: flask
+          drop: *tag_drop_ppty
+          groupable: *tag_groupable_ppty
+      internal:
+        desc:
+          The tag, label, or toggle that indicates an issue documents a feature that is not intended for "`public`" use or visibility.
+        properties:
+          head:
+            <<: *tag_head_ppty
+            dflt: Internal Changes
+          text:
+            <<: *tag_text_ppty
+            dflt: Internal
+          slug:
+            <<: *tag_slug_ppty
+            dflt: internal
+          icon:
+            <<: *tag_icon_ppty
+            dflt: lock
+          drop: *tag_drop_ppty
+          groupable: *tag_groupable_ppty
+      changelog:
+        desc: |
+          The tag, label, or toggle that indicates an issue should appear in the Changelog even if it does not have a Release Note.
+
+          There is no icon associated with changelog-tagged issues, as it is only declaring that an issue belongs in the Changelog.
+        properties:
+          slug:
+            <<: *tag_slug_ppty
+            dflt: changelog
+          drop:
+            <<: *tag_drop_ppty
+            dflt: true
+          groupable:
+            <<: *tag_groupable_ppty
+            dflt: false
+      release_note_needed:
+        desc:
+          The tag, label, or toggle that indicates an issue requires a release note to be written.
+          This is used by the `rhx` CLI to determine which issues are expected to contain release notes when the release-note content is empty.
+
+          This tag can be automatically removed, and it does not show up in published Changelog or Release Notes (unless you add it).
+        properties:
+          slug:
+            <<: *tag_slug_ppty
+            dflt: release_note_needed
+          drop:
+            <<: *tag_drop_ppty
+            dflt: true
+          groupable:
+            <<: *tag_groupable_ppty
+            dflt: false
+      <your_tag_name>:
+        desc:
+          Unlimited custom tags of your choosing, associated with a tag, label, or toggle in the Issues system _or_ manually assignable in RHYML.
+        docs: |
+          These property represents any arbitrarily named tags you might wish to add.
+          No `slug` sub-property is available because the name of this property should exactly match your tag/label.
+        properties:
+          head:
+            <<: *tag_head_ppty
+            dflt: null
+          text:
+            <<: *tag_text_ppty
+            dflt: null
+          icon:
+            <<: *tag_icon_ppty
+            dflt: null
+          drop: 
+            <<: *tag_drop_ppty
+            dflt: null
+          groupable:
+            <<: *tag_groupable_ppty
+            dflt: null
+
+  links:
+    desc: |
+      Path templates and other metadata for building links to online references like issues (web) and commits (git).
+    properties:
+      web:
+        desc: Properties to enable linking to issue-management system ticket URLs corresponding to individual changes.
+        properties:
+          href:
+            type: Liquid
+            desc: |
+              The URL template for the links to the issue-management system ticket URL.
+              May include `{{ tick }}` placeholder or any other from the change object.
+            docs: |
+              For example:
+
+              * `https://jira.example.com/issues/{{ tick }}`
+              * `https://github.com/example/project/issues/{{ tick }}`
+
+              Web links must still be enabled in <<conf_ppty_history_items_show_issue_links>>, <<conf_ppty_changelog_items_show_issue_links>>, or <<conf_ppty_notes_items_show_issue_links>> properties.
+          icon:
+            type: String
+            desc: The icon to use for the issue links.
+            dflt: ticket
+          text:
+            type: Liquid
+            desc: |
+              The text label to use for the issue links.
+              May include placeholders for any variables in the `change` object.
+            dflt: '{{ tick }}'
+      git:
+        desc: |
+          Properties to enable linking to the Git commit URL corresponding to individual changes.
+        properties:
+          href:
+            type: Liquid
+            desc: |
+              The URL template for the git links in the release history listings.
+              May include `{{ hash }}` placeholder.
+            docs: |
+              For example:
+
+              * `https://git.example.com/project/commit/{{ hash }}`
+              * `https://github.com/example/project/commit/{{ hash }}`
+
+              Git links must still be enabled in <<conf_ppty_history_items_show_git_links>>, <<conf_ppty_changelog_items_show_git_links>>, or <<conf_ppty_notes_items_show_git_links>> properties.
+          icon:
+            type: String
+            desc: The icon to use for the git links.
+            dflt: code-fork
+          text:
+            type: Liquid
+            desc: |
+              The text label to use for the git links.
+              May include `{{ hash }}` placeholder.
+            dflt: '{{ hash | slice: 0, 7 }}'
+      user:
+        properties:
+          href:
+            type: Template
+            desc: |
+              A template for forming links to bio or homepages for the lead contributor of a change.
+              May include `{{ username }}` placeholder.
+            docs: |
+              For example:
+
+              * `https://github.com/{{ username }}`
+            templating:
+              delay: true
+              default: liquid
+          icon:
+            type: String
+            desc: The icon to use for the user links.
+            dflt: user
+          text:
+            type: Liquid
+            desc: |
+              The text label to use for the user links.
+              May include `{{ username }}` placeholder.
+            dflt: '{{ username }}'
+      get:
+        desc: |
+          Properties to enable linking to the download or installation instructions for the release.
+        properties:
+          href:
+            type: Liquid
+            desc: |
+              The URL template for the release download page.
+              May include `{{ code }}` (version ID) as placeholder.
+            docs: |
+              For example:
+
+              * `https://example.com/releases/{{ code }}`
+              * `https://example.com/dl/{{ code | replace: '.', '-' }}`
+
+              The existence of this property causes the download link or element to appear in the Release History page.
+          icon:
+            type: String
+            desc: The icon to use for the download links.
+            dflt: download
+          text:
+            type: Liquid
+            desc: |
+              The text label to use for the download links.
+              May include `{{ code }}` (version ID) as placeholder.
+            dflt: 'Download {{ code }}'
+
+  paths:
+    desc: |
+      The configuration for the paths to include in the release history listings.
+    properties:
+      drafts_dir:
+        type: Path
+        desc: |
+          The path to the output directory for generated drafts (YAML, Markdown, AsciiDoc).
+        dflt: "{default_drafts_dir}"
+      enrich_dir:
+        type: Path
+        desc: |
+          The path to the output directory for enriched files (HTML, PDF).
+        dflt: "{default_enrich_dir}"
+      output_dir:
+        type: Path
+        desc: |
+          The base directory from which any other output paths are relative.
+          This is the parent directory for <<conf_ppty_paths_drafts_dir>> and <<conf_ppty_paths_enrich_dir>>.
+          It also serves as a base path for any argued files.
+
+          Example: If this property is set to `_output`, and <<conf_ppty_paths_drafts_dir>> is `_drafts`, then running `rhx 1.1.0 --md --yaml --asciidoc`  would generate the files at `_releasehx/_drafts/`.
+        dflt: "{default_output_dir}"
+      draft_filename:
+        type: FileName
+        desc: |
+          The filename template for the draft files.
+        docs: |
+          May include `{{ version }}` and `{{ format_ext }}` as placeholders, where `format_ext` is determined at file-write time and based on preferences defined in the `config.extensions` block.
+        dflt: '{{ version }}.{{ format_ext }}'
+        templating:
+          delay: true
+          default: liquid
+      enrich_filename:
+        type: FileName
+        desc: |
+          The filename template for the enriched files.
+        docs: |
+          May include `{{ version }}` and `{{ format_ext }}` as placeholders, where `format_ext`.
+
+          Published file extensions must be: `.html`, `.pdf`.
+          They can be set with <<conf_ppty_extensions_html>> and <<conf_ppty_extensions_pdf>> properties, respectively.
+        dflt: 'release-history-{{ version }}.{{ format_ext }}'
+        templating:
+          delay: true
+          default: liquid
+      payloads_dir:
+        type: Path
+        desc: |
+          The path to the directory for storing API payloads.
+          This is used to store the raw API responses for debugging and reference.
+        dflt: "{default_payloads_dir}"
+      cache:
+        desc: |
+          Settings for the ReleaseHx application cache.
+        properties:
+          enabled:
+            type: Boolean
+            desc: |
+              Enable automatic caching of API responses to improve performance and reduce API calls.
+            dflt: false
+          ttl_hours:
+            type: Integer
+            desc: |
+              Time-to-live for cached API responses in hours.
+              After this time, cached responses will be considered stale and fresh data will be fetched from the API.
+            dflt: 24
+          dir:
+            type: Path
+            desc: |
+              The directory where cached API responses are stored.
+              Cache files are organized by API type, project, and version.
+            dflt: "{default_cache_dir}"
+          prompt_gitignore:
+            type: Boolean
+            desc: |
+              Quietly check the project's git status after writing to cache and, if cache is found untracked, suggest adding this cache path to .gitignore or deleting and disabling caching.
+            dflt: true
+      templates_dir:
+        type: Path
+        desc: |
+          The path to the templates directory.
+        dflt: "{default_templates_dir}"
+      mappings_dir:
+        type: String
+        desc: |
+          The path to the directory containing user-defined API mappings.
+
+          ReleaseHx checks here first for a file named `<origin_source_name>.yaml` or `<origin_source_name>.yml`, where `<origin_source_name>` is set in the `origin.source` property.
+          If no file is found, the mapping is expected to be supplied by the gem (see `<GEM_ROOT>/mappings/`).
+        dflt: "{default_mappings_dir}"
+      api_clients_dir:
+        type: String
+        desc: |
+          The path to the directory containing user-defined API client definitions.
+
+          ReleaseHx checks here first for a file named `<api_from_name>.yaml`, where `<api_from_name>` is set in the <<conf_ppty_origin_source>>` property.
+          If no file is found, the client class is expected to be supplied by the gem (see `<GEM_ROOT>/lib/releasehx/apis/`).
+        dflt: "{default_api_clients_dir}"
+
+  modes:
+    desc: |
+      Default settings for `rhx` command executions.
+    properties:
+      wrapped:
+        type: Boolean
+        desc: |
+          Include (or exclude) head, header, and footer elements when enriching to HTML.
+        dflt: false
+      html_frontmatter:
+        type: Boolean
+        desc: |
+          Include frontmatter in the rendered HTML.
+
+          See the `templates.page_frontmatter` property for details.
+        dflt: true
+      markdown_frontmatter:
+        type: Boolean
+        desc: |
+          Include frontmatter in Markdown drafts.
+
+          Uses the `templates.markdown_frontmatter` template.
+        dflt: false
+      asciidoc_frontmatter:
+        type: Boolean
+        desc: |
+          Include frontmatter in AsciiDoc drafts.
+
+          Uses the `templates.asciidoc_frontmatter` template.
+      fetch:
+        type: String
+        desc: |
+          What to fetch when gathering issues from API.
+
+          Valid entries:
+
+          * `all-tagged` -- fetches issues with `release_note_needed` tag.
+        dflt: notes-only
+      remove_excess_lines:
+        type: Integer
+        desc: |
+          Reduces _N_+ consecutive blank lines to _N_ lines.
+        dflt: 1
+
+  rhyml:
+    desc: |
+      Settings related to RHYML data objects and documents.
+    properties:
+      # authoring properties
+      markup:
+        type: String
+        desc: |
+          The markup format for the `note` or `memo` properties of RHYML objects.
+
+          Change to `asciidoc` to convert upstream Markdown to AsciiDoc.
+
+          This setting can be set (and overridden) with the `$config.markup` property in any given RHYML document.
+        dflt: markdown
+      # drafting properties
+      chid:
+        type: Slug
+        desc: |
+          The template for automatic change ID/slug construction, if available at draft-time.
+        docs: |
+          A liquid template with access to local variables including:
+
+          Release variables::
+
+          * `release.code`
+          * `release.date`
+          * `release.hash`
+
+          Work/change item variables::
+
+          * `change.tick`
+          * `change.hash`
+          * `change.type`
+          * `change.part`
+          * `change.summ`
+
+          The template established here is only for drafting `chid` slugs.
+          It is not used down the line to validate `chid` entries, which will be valid as long as they are Slug-formatted strings.
+
+        dflt: |
+          {{- change.tick }}-{{ change.summ | truncate: 20 | slugify }}
+        templating:
+          delay: true
+          default: liquid
+      empty_notes:
+        type: String
+        desc: |
+          What to do for issues that lack a release note but have the `release_note_needed` tag (or a label otherwise declared in <<conf_ppty_tags_release_note_needed_slug>>).
+
+          * `skip` the issue when drafting notes (can update with `--amend`)
+          * `empty` include the issue with an empty note
+          * `dump` the complete issue body/description and commit message as the `note` property
+          // * `ai` generate a note using generative AI
+        dflt: skip
+      empty_notes_content:
+        type: String
+        desc: |
+          The content to use for empty notes when <<conf_ppty_rhyml_empty_notes>> is set to 'empty'
+        dflt: RELEASE NOTE NEEDED
+      max_parts:
+        type: Integer
+        desc: |
+          The maximum number of affected _part_ categories that can be recorded for a single change.
+
+          When `0`, _part_ records are disabled for all changes.
+          When `1`, only one _part_ is allowed per change (String).
+          When `2` or more, a single affiliated _part_ category may be recorded using the `part` property, but more than one must be recorded using the `parts` property (Array).
+        dflt: 1
+      pasterize_summ:
+        type: Boolean
+        desc: |
+          Whether to convert verbs in the `summ` property to past tense when drafting.
+          Replaces common words like `adds` with `added`, `fix` with `fixed`, etc.
+        dflt: false
+      pasterize_head:
+        type: Boolean
+        desc: |
+          Whether to convert verbs in the `head` property to past tense when drafting.
+          Replaces common words like `adds` with `added`, `fix` with `fixed`, etc.
+        dflt: false
+      # git_version_tag:
+      #   type: Liquid
+      #   desc: |
+      #     For "`raw Git`" setups, this is the Git-tag label format for the version.
+      #     Uses the variable `version` as the _argued version_.
+      #   dflt: 'v{{ version }}'
+      #   docs: |
+      #     All commits from (1) the previous instance of a tag matching the `templates.git_version_tag_pattern` expression to (2) the instance of the tag matching the _argued version_, all (3) from the `templates.git_branch_name`, will be collected as potential entries for Changelog/Release Notes.
+      #
+      #     Take the following example: 
+      #     _this property_ is set to the default template and the sibling `git_version_tag_pattern` property is set to its default.
+      #
+      #     Running `rhx 1.1.2 --yaml` will collect _all_ commits prior to the _argued_ version tag (`v1.1.2`) and the previous Git tag that matches the pattern.
+      #
+      #     Tags like `v1.1.1-alpha` will not operate as a boundary unless they are incorporated into the pattern.
+      # git_version_tag_pattern:
+      #   type: RegExp
+      #   desc: |
+      #     The Regular Expressions pattern to count as a previous version in the Git history, for "`raw Git`" setups.
+      #   dflt: /^v\d+\.\d+\.\d+$/
+      #   docs: |
+      #     The 
+      # git_branch_name:
+      #   type: Liquid
+      #   desc: |
+      #     For "`raw Git`" setups, this is the Git-branch name format for the determining version.
+      #     All commits on this branch will be considered potential entries for Changelog/Release Notes.
+      #
+      #     When using Git tags to determine version, this property should be set to a branch like `main` or `trunk` `release`.
+      #   dflt: 'v{{ version }}'
+
+  history:
+    desc: |
+      Configurations for the overall document, when applicable.
+    properties:
+      head:
+        type: String
+        desc: |
+          The header for the release history output.
+        dflt: Release History -- {{ release.code }} - {{ release.date }}
+        templating:
+          delay: true
+          default: liquid
+      htag:
+        type: String
+        desc: |
+          The heading level (H1, H2, etc) for the release history header.
+        dflt: h1
+      markdown_frontmatter:
+        type: Liquid
+        desc: |
+          Designates the content inserted at the top of Markdown files as document-level metadata.
+        docs: |
+          A Liquid template to be prepended at the top of Markdown draft files.
+
+          Templates may contain the following variables, automatically generated, as applicable:
+
+          * `date` (DateTime)
+          * `version` (String)
+          * `title` (String)          
+        dflt: &markdown_frontmatter_tplt |
+          ---
+          title: Release History for {{ release.code }}
+          version: {{ release.code }}
+          date: {{ release.date }}
+          ---
+      asciidoc_frontmatter:
+        type: Liquid
+        desc: |
+          Designates the way front-matter is inserted at the top of AsciiDoc files.
+          Several variables are available to templates.
+
+          AsciiDoc frontmatter templates may also contain AsciiDoc attribute placeholders.
+        dflt: |
+          :page-title: Release History for {{ release.code }}
+          :page-version: {{ release.code }}
+          :page-date: {{ release.date }}
+      html_frontmatter:
+        type: Liquid
+        desc: |
+          Designates the way front-matter is inserted at the top of _unwrapped_ rendered HTML.
+        docs: |
+          The `frontmatter` property is a Liquid template that is inserted at the top of the rendered HTML file.
+
+          It may include `{{ title }}`, `{{ version }}`, `{{ date }}`, as well as any `vars`-scoped variables as you pass in.
+        dflt: *markdown_frontmatter_tplt
+      items:
+        desc: |
+          Settings pertaining to displayed items across Changelog and Release Notes sections.
+
+          Most of these settings can be defined separately for each section under <<conf_ppty_changelog_items>> and <<conf_ppty_notes_items>>.
+          If an identically named setting exists, it will override the primary designator defined in this `config.history.items` block.
+        properties:
+          allow_redundant: &allow_redundant_ppty
+            type: Boolean
+            desc: |
+              Whether to allow duplicate entries in a given section, for instance across groups for `part:group` sorts where a change affects multiple parts.
+            dflt: false
+          show_issue_links: &show_issue_links_ppty
+            type: Boolean
+            desc: |
+              Whether to include web links in item metadata.
+
+              Requires `links.web` to be defined.
+            dflt: false
+          show_git_links: &show_git_links_ppty
+            type: Boolean
+            desc: |
+              Whether to include git links in item metadata.
+
+              Requires `links.git` to be defined.
+            dflt: false
+          metadata_labels: &metadata_labels_ppty
+            type: String
+            desc: |
+              If and where to display icons in relation to labels in item metadata.
+
+              Use `before` or `after` to choose a spot, `none` or `'$nil'` to disable.
+            dflt: before
+          metadata_icons: &metadata_icons_ppty
+            type: Boolean
+            desc: |
+              Whether to include icons for metadata in item metadata.
+            dflt: before
+          show_lead: &show_lead_ppty
+            type: Boolean
+            desc: |
+              Whether to include the lead-in text for the section in the item metadata.
+              This is useful for displaying the section header in the item metadata.
+            dflt: false
+          show_type_label: &show_type_label_ppty
+            type: Boolean
+            desc: |
+              Whether to show the type label in the item metadata output.
+              If `false`, the type will be listed unlabeled in the output, for templates that support this option.
+
+              Corresponds to the <<conf_ppty_history_labeling_type_label>> property, which defines the content displayed when this property is `true` for a given section of the history output.
+            dflt: false
+          show_parts_label: &show_parts_label_ppty
+            type: Boolean
+            desc: |
+              Whether to show the parts label in the item metadata output.
+              If `false`, parts will be listed unlabeled in the output, for templates that support this option.
+
+              Corresponds to the <<conf_ppty_history_labeling_parts_label>> property (and optionally the <<conf_ppty_history_labeling_part_label>>), which defines the content displayed when this property is `true` for a given section of the history output.
+            dflt: false
+          show_tags_label: &show_tags_label_ppty
+            type: Boolean
+            desc: |
+              Whether to show the tags label in the item metadata output.
+              If `false`, tags will be listed unlabeled in the output, for templates that support this option.
+
+              Corresponds to the <<conf_ppty_history_labeling_tags_label>> property (and optionally the <<conf_ppty_history_labeling_tag_label>>), which defines the content displayed when this property is `true` for a given section of the history output.
+            dflt: false
+          show_lead_label: &show_lead_label_ppty
+            type: Boolean
+            desc: |
+              Whether to show the lead label in the item metadata output.
+              If `false`, the lead will be listed unlabeled in the output, for templates that support this option.
+
+              Corresponds to the <<conf_ppty_history_labeling_lead_label>> property, which defines the content displayed when this property is `true` for a given section of the history output.
+            dflt: false
+          show_auths_label: &show_auths_label_ppty
+            type: Boolean
+            desc: |
+              Whether to show the authors label in the item metadata output.
+              If `false`, authors will be listed unlabeled in the output, for templates that support this option.
+
+              Corresponds to the <<conf_ppty_history_labeling_auth_label>> property, which defines the content displayed when this property is `true` for a given section of the history output.
+            dflt: false
+      labeling:
+        desc: |
+          Settings for labeling items in the release history output.
+          These properties establish how metadata and other elements apply to a given subject's nomenclature.
+          If you want to refer to "`tags`" as "`labels`" or "`parts`" as "`components`", map those namespaces here.
+        properties:
+          singularize_labels:
+            type: Boolean
+            desc: |
+              Whether to singularize labels in the output _when only one instance_ of the category is present.
+              For instance, if a change has only one part and the `conf_ppty_history_labeling_part_label` is set to `Part`, the output will use labeling like *Part:* instead of *Parts:*.
+
+              This also applies to `tag_label` and `auth_label` as well as the `part_label`.
+              The `type` and `lead` labels are not affected by this setting.
+            dflt: true
+          type_label:
+            type: String
+            desc: |
+              The label to use for the type of change.
+              Defaults to the `type.text` property of the change.
+            dflt: type
+          type_icon: 
+            type: String
+            desc: |
+              The icon to use for the type of change.
+              Defaults to the `type.icon` property of the change.
+          parts_label:
+            type: String
+            desc: |
+              The label to use for the part/component affected by the change.
+            dflt: Components
+          part_label:
+            type: String
+            desc: |
+              The label to use for the _singular_ part/component affected by the change, when only one part is permitted.
+
+              This value will apply either when <<conf_ppty_rhyml_max_parts>> is set to `1` or when the change has only one part _and_ <<conf_ppty_history_labeling_singularize_labels>> is `true`.
+            dflt: Part
+          parts_icon:
+            type: String
+            desc: |
+              The icon to use for the part/component affected by the change.
+            dflt: puzzle-piece
+          tags_label:
+            type: Array
+            desc: |
+              The tags associated with the change, if any.
+              Defaults to an empty array.
+            dflt: Tags
+          tag_label:
+            type: String
+            desc: |
+              The label to use for the _singular_ tag associated with the change, when only one tag is permitted.
+
+              This value will apply either when <<conf_ppty_rhyml_max_parts>> is set to `1` or when the change has only one tag _and_ <<conf_ppty_history_labeling_singularize_labels>> is `true`.
+
+              In supporting templates, this label will only be displayed if the show_tags_label` setting is `true` for the relevant section.
+            dflt: Tag
+          tags_icon:
+            type: String
+            desc: |
+              The icon to use for the tags associated with the change.
+            dflt: tags
+          lead_label:
+            type: String
+            desc: |
+              The label to use for the lead contributor of the change.
+            dflt: Contributed by
+          lead_icon:
+            type: String
+            desc: |
+              The icon to use for the lead contributor of the change.
+            dflt: user
+          auths_label:
+            type: String
+            desc: |
+              The label to use for the authors of the change.
+              This is used when multiple authors are present.
+            dflt: Contributors
+          auth_label:
+            type: String
+            desc: |
+              The label to use for the _singular_ author of the change, when only one author is listed and <<conf_ppty_history_labeling_singularize_labels>> is `true`.
+          join_string:
+            type: String
+            desc: |
+              The string to use to join multiple tags, parts, or authors in the output.
+              Defaults to a comma and space (`, `).
+            dflt: ', '
+
+  changelog:
+    desc: |
+      The configuration for the changelog output.
+    properties:
+      head:
+        type: String
+        desc: |
+          The header for the changelog output.
+        dflt: Changelog
+        templating:
+          delay: true
+          default: liquid
+      text:
+        type: String
+        desc: |
+          The text for the changelog output.
+          Change to `null` to hide.
+        dflt: |
+          Summaries of all user-facing changes made since the previous release.
+        templating:
+          delay: true
+          default: liquid
+      htag:
+        type: String
+        desc: |
+          The heading level (H1, H2, etc) for the changelog section header.
+        dflt: h2
+      spot:
+        type: Integer
+        desc: |
+          Where in the document to place the changelog (`1` = top, `2` = bottom).
+        dflt: 2
+      sort:
+        type: Array
+        desc: |
+          The sort order for the changelog output.
+        docs: &sort_docs_property |
+          Indicate whether you wish to _group_ output by this sort criterion, or else just order by that criteria, with or without a label denoting the criterion.
+
+          If `<criterion>:group` (default), the output will be grouped into sections with the group instance 
+          If `<criterion>:grouping1`, the criterion will be added to the first of 2 grouping tiers into which the output will be divided.
+          If `<criterion>:grouping2`, the criterion will be added to the second of 2 grouping tiers into which the output will be divided.
+          If `<criterion>:label`, the output will be order by the criterion, with a label indicating the criterion.
+          If `<criterion>:none`, the output will be ordered by the criterion, with no label.
+
+          For example:
+
+          [source,yaml]
+          ----
+          sort:
+            - 'part:group'
+            - 'type:label'
+          ----
+
+          Would produce something like:
+
+          [source,markdown]
+          ----
+          ## Web UI
+
+          - Feature description or summary [New feature]
+
+          - Another feature description or summary [New feature]
+
+          - Improvement description or summary [Improvement]
+
+          ## Backend
+
+          - Feature description or summary [New feature]
+
+          - Bug fix description or summary [Bug Fixes]
+          ----
+
+          For 2-tiered grouping arrangements, use something like:
+
+          [source,yaml]
+          ----
+          sort:
+            - 'part:grouping1'
+            - 'type:grouping2'
+          ----
+
+          This would output for instance:
+
+          [source,markdown]
+          ----
+          ## Web UI
+
+          ### New features
+          - Feature description or summary
+          - Another feature description or summary
+
+          ### Improvements
+          - Improvement description or summary
+          ----
+
+          You may also use tag-based groupings, but the tags must be listed explicitly.
+
+          [source,yaml]
+          ----
+          sort:
+            - 'breaking:group'
+            - 'deprecation:group'
+            - 'type:group'
+            - 'part:label'
+          ----
+
+          This would output something akin to:
+
+          [source,markdown]
+          ----
+          ## Breaking Changes
+          - We are breaking this thing! [Web UI]
+
+          ## Deprecations
+          - We are deprecating this thing! [Backend]
+
+          ## New features
+          - Feature description or summary [Web UI]
+          - Another feature description or summary [Web UI]
+
+          ## Improvements
+          - Improvement description or summary [Backend]
+          ----
+
+        dflt: ['part:grouping1']
+      items: # was items
+        desc: |
+          Settings that affect the frame/shape and arrangement of individual changelog entries.
+        properties:
+          frame:
+            type: String
+            desc: |
+              The layout for the changelog entry display.
+
+              Can be `ordered`, `unordered`, `paragraph`, or `basic`.
+            dflt: unordered
+          allow_redundant: *allow_redundant_ppty
+          show_git_links: *show_git_links_ppty
+          show_issue_links: *show_issue_links_ppty
+          metadata_labels: *metadata_labels_ppty
+          metadata_icons: *metadata_icons_ppty
+          show_lead: *show_lead_ppty
+          show_type_label: *show_type_label_ppty
+          show_parts_label: *show_parts_label_ppty
+          show_tags_label: *show_tags_label_ppty
+          show_lead_label: *show_lead_label_ppty
+          show_auths_label: *show_auths_label_ppty
+
+  notes:
+    desc: |
+      The configuration for the Release Notes listing section.
+    properties:
+      head:
+        type: String
+        desc: |
+          The header for the notes output.
+        dflt: Release Notes
+        templating:
+          delay: true
+          default: liquid
+      text:
+        type: String
+        desc: |
+          The text for the release notes output.
+          Change to `null` to hide.
+        dflt: |
+          Descriptions of any specially notable changes or additions since the previous release.
+        templating:
+          delay: true
+          default: liquid
+      htag:
+        type: String
+        desc: |
+          The heading level (H1, H2, etc) for the release notes section header.
+        dflt: h2
+      spot:
+        type: Integer
+        desc: |
+          Where in the document to place the Release Notes relative to the Changelog.
+        dflt: 1
+      sort:
+        type: Array
+        desc: |
+          The sort *order* for the release notes output.
+        docs: *sort_docs_property
+        dflt: ['highlight:grouping1', 'deprecation:grouping1', 'removal:grouping1', 'breaking:grouping1', 'type:grouping1', 'part:grouping2']
+      items:
+        desc: |
+          Settings that affect the frame/shape and arrangement of individual release-note item displays.
+        properties:
+          frame:
+            type: String
+            desc: |
+              The layout for the release-note item display.
+
+              Can be `table-cols-1`, `table-cols-2`, `desc-list`, or `admonition`.
+            dflt: table-cols-1
+          allow_redundant: *allow_redundant_ppty
+          show_git_links: *show_git_links_ppty
+          show_issue_links: *show_issue_links_ppty
+          metadata_labels: *metadata_labels_ppty
+          metadata_icons: *metadata_icons_ppty
+          show_lead: *show_lead_ppty
+          show_type_label: *show_type_label_ppty
+          show_parts_label: *show_parts_label_ppty
+          show_tags_label: *show_tags_label_ppty
+          show_lead_label: *show_lead_label_ppty
+          show_auths_label: *show_auths_label_ppty

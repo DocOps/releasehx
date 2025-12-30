@@ -1,0 +1,2915 @@
+:page-layout: default
+:page-permalink: /docs
+:page-nav_order: 1
+[[releasehx]]
+= ReleaseHx
+// tag::ai-prompt[]
+// Collects AsciiDoc content for presenting to a generative AI prompt
+// Other AI-only prompt matter could go here
+// tag::globals[]
+:docopslab_git_www: https://github.com/DocOps
+:this_prod_slug: releasehx
+:releasehx_prod_repo: {docopslab_git_www}/{this_prod_slug}
+:releasehx_demo_repo: {docopslab_git_www}/releasehx-demo
+:this_prod_repo: {releasehx_prod_repo}
+:this_prod_vrsn_major: 0
+:this_prod_vrsn_minor: 1
+:this_prod_vrsn_major-minor: {this_prod_vrsn_major}.{this_prod_vrsn_minor}
+:this_prod_vrsn_patch: 0
+:this_prod_vrsn: {this_prod_vrsn_major-minor}.{this_prod_vrsn_patch}
+:next_prod_vrsn: 0.2.0
+:tagline: Generate formatted release histories from Jira, GitHub, GitLab, YAML, or JSON sources.
+:description: pass:q[CLI utility and Ruby API for generating structured release notes and changelog documents from various issue-tracking platforms or YAML definitions into plaintext drafts (*AsciiDoc*, *Markdown*, *YAML*) and rich-text output (*HTML* and *PDF*).]
+:gem_config_definition_path: ./specs/data/config-def.yml
+:app_default_config_path: ./.releasehx.yml
+// Default configuration values - single source of truth for config-def.yml
+:default_markup: markdown
+:default_slug_type: kebab
+:default_tplt_lang: liquid
+:default_drafts_dir: _drafts
+:default_enrich_dir: _publish
+:default_output_dir: .
+:default_payloads_dir: _payloads
+:default_templates_dir: _templates
+:default_mappings_dir: _mappings
+:default_api_clients_dir: _apis
+:default_cache_dir: .releasehx/cache
+:default_api_cred_env: RELEASEHX_API_CRED
+:default_api_key_env: RELEASEHX_API_KEY
+:default_api_user_env: RELEASEHX_API_USER
+:default_api_org_env: RELEASEHX_API_ORG
+:markdown_extensions: .md, .markdown
+:asciidoc_extensions: .adoc, .ad, .asciidoc
+:yaml_extensions: .yml, .yaml, .rhyml
+:draft_source_file_types: AsciiDoc, Markdown, YAML
+:draft_source_extensions: {markdown_extensions}, {asciidoc_extensions}, {yaml_extensions}
+:enrich_file_types: HTML, PDF
+:enrich_extensions: .html, .pdf
+:docker_base_command: docker run -it --rm --user $(id -u):$(id -g) -v $(pwd):/workdir docopslab/releasehx rhx
+:this_prod_repo_branch: {this_prod_repo}/tree/release/{this_prod_vrsn_major-minor}
+ifdef::env-github[]
+:docs_extn: .adoc
+:releasehx_www: https://releasehx.docopslab.org
+:releasehx_docs_www: {releasehx_www}/docs
+:default-config_www: {releasehx_docs_www}/sample-config.html
+:this_prod_docs_www: {releasehx_docs_www}
+endif::[]
+ifndef::env-github[]
+:docs_extn: 
+endif::[]
+// end::globals[]
+:toc: macro
+:toclevels: 3
+
+// tag::intro[]
+{tagline}
+
+{description}
+// end::intro[]
+
+[NOTE]
+This README serves as the both landing page and documentation for *Version {this_prod_vrsn}*.
+
+[IMPORTANT]
+This repository is for the {this_prod_vrsn} version of ReleaseHx.
+NOT ALL FEATURES are available.
+
+
+[[overview]]
+== Overview
+
+Generate lightweight drafts and rich-text output for your Release Notes or Changelog documents using simple commands with powerful results!
+
+[[example-workflow]]
+=== Example Workflow
+
+Your workflow might look like this example:
+
+. *Check for issues with missing release notes*.
+Looks for issues marked `release_note_needed` or similar.
++
+[.prompt]
+ rhx 2.1.0 --check
+ > Missing required release notes:
+ > - JIRA-3412: Fix the thing (JoePSmith)
+ > - JIRA-3482: Add this cool thing (RaeMDoe)
+
+. While you are waiting for Joe and Rae to get their outstanding notes entered into Jira... *retrieve Jira issues* for version 2.1.0.
+[.prompt]
+ rhx 2.1.0 --yaml
++
+[NOTE]
+You can edit your Release Notes in Markdown or AsciiDoc files, or in YAML files with AsciiDoc or Markdown text formatting.
+Whatever you prefer.
+
+. When Joe and Rae finally post their notes... *append them to the YAML doc*.
++
+[.prompt]
+ rhx 2.1.0 --append
+
+. *Generate a Markdown variant* to your website source directory.
++
+[.prompt]
+ rhx 2.1.0 --md
+
+. *Generate a PDF* to a documents archive.
++
+[.prompt]
+ rhx 2.1.0 --pdf
+
+And you're ready to publish in HTML and PDF format!
+
+ReleaseHx can accommodate _numerous permutations_ of workflows.
+It is *adaptable by design*, but if you are just starting or revamping your ReleaseNotes/Changelog setup, there is a *<<strategy-overview,recommended strategy/workflow>>*, as well.
+
+[[powerful-potential]]
+=== Powerful Potential
+
+Numerous backends enable flexible conversions from any source format to HTML or PDF output.
+
+ReleaseHx can convert data into content through various processes, which you can adapt to your preferred workflow.
+
+....
+API → Markdown/AsciiDoc/YAML → HTML/PDF
+....
+
+OR, use your Markdown/AsciiDoc-based *static-site generator (SSG)* to perform the final enrichment to HTML!
+// end::ai-prompt[]
+
+[[features]]
+=== Features
+
+ReleaseHx is already packed with capabilities.
+
+// tag::features-list[]
+// tag::ai-prompt[]
+
+* Generate [.key]*Release Notes* and/or [.key]*Changelogs* from your Issues tracker or Git+++*+++.
+* Source in [.buzz]*Jira*, [.buzz]*GitHub*, [.buzz]*GitLab*, [.key]*Git commits*+++*+++, or our special YAML syntax: *RHYML*.
+* Readily configurable to use *your Issue Management API*.
+* Draft in [.key]*Markdown*, [.key]*AsciiDoc*, or [.key]*YAML*.
+* Render to [.key]*HTML* or [.key]*PDF* with *Asciidoctor*, *Pandoc*, and other converters.
+* Use [.buzz]*Docker* to run ReleaseHx in any environment.
+* Customize output with [.buzz]*Liquid* templates.
+* Configure output without touching templates using advanced settings ([.buzz]*low-code*).
+* Ensure qualifying issues all have release notes.
+* *Link-back* from notes or Changelog entries to issues and Git commits.
+* Use [.key]*Git* to track changes in your release history documents.
+* Auto-update drafts with late-breaking release notes (RHYML only).
+* Group and sort entries by *issue type*, subject *component*, or various *tags*.
+* Invoke labels/tags such as *breaking*, *deprecation*, *experimental*, *highlight*, and *internal*.
+* Use Issue labels or *checkboxes* to indicate Changelog inclusion or Release Note requirement.
+* Use as a [.key]*CLI* or as a [.key]*Ruby API*.
+* Run a local [.key]*MCP server* (`rhx-mcp`) so AI agents can better aid in using ReleaseHx.
+* Extend by configuring a *custom API client* and issue mapping.
+* Convert changelog summaries to past-tense with the *pasterize* filter.
+* Full support for [.buzz]*Jira v3 API* with [.key]*ADF* conversion to Markdown/AsciiDoc.
+
++++*+++ Sourcing issues in Git commits is not yet available but is planned for a future (pre-1.0) version.
+
+// end::ai-prompt[]
+// end::features-list[]
+
+You can begin editing in YAML and update the file without losing changes, then generate a final draft in Markdown or AsciiDoc.
+
+ rhx 2.1.0 --yml
+ rhx 2.1.0 --append
+ rhx 2.1.0 --adoc
+
+The second line adds any late-arriving issues from the cloud.
+The third line uses that `.yml` file to generate a `.adoc` file, but you can go directly from YAML to HTML or PDF as well as drafting in Markdown.
+
+toc::[]
+
+
+[[getting-started]]
+== Getting Started
+
+To use ReleaseHx in your own projects, you will need either Ruby or Docker.
+Use either the `rhx` CLI utility or the ReleaseHx Ruby API.
+
+The only other prerequisite is possibly Git, if wish to draw any content/metadata from Git commits.
+
+[[non-ruby-starter]]
+=== Non-Ruby Users Setup
+
+If you are not already a Ruby user, the `rhx` utility may be best used from our Docker image.
+
+[NOTE]
+You will need *Docker Desktop* installed link:https://docs.docker.com/desktop/setup/install/mac-install/[directly on MacOS] or link:https://docs.docker.com/desktop/features/wsl/[with WSL2 backend on Windows].
+For Linux, use the link:https://docs.docker.com/engine/install/[Docker Engine install docs] if you're not already using Docker.
+
+With Docker installed and running...
+
+. Pull the Docker image.
++
+[.prompt]
+ docker pull docopslab/releasehx
+
+. Run the `rhx` command.
++
+[.prompt,subs=+attributes]
+ {docker_base_command}
++
+This mounts your local directory to be writeable by the Docker container.
+Everything after `rhx` accepts the standard <<rhx,arguments and options>> of the ReleaseHx utility.
+
+[TIP]
+====
+Optionally alias the base Docker command.
+
+[.prompt,subs=+attributes]
+ alias rhx='{docker_base_command}'
+====
+
+Try the <<demo-setup,demo configs and data>> to get a feel for how ReleaseHx works.
+
+[[ruby-starter]]
+=== Ruby Users Setup
+
+ReleaseHx can be installed as a Ruby gem, for either CLI or API usage.
+
+Option 1: System-wide installation::
+[.prompt]
+ gem install releasehx
+
+Option 2: Project installation::
++
+--
+. Add the following line to your `Gemfile`:
++
+[source,ruby]
+[subs="attributes+"]
+----
+gem 'releasehx'
+----
+
+. Install the gem.
++
+[.prompt]
+ bundle install
+
+. Use `bundle exec rhx` to execute.
+--
+
+[[mcp-setup]]
+=== MCP Server Setup (Optional)
+
+ReleaseHx provides an experimental interface for model context protocol (MCP) service over STDIO (local "`server`").
+This should save considerably on the resources required for your preferred LLM client/agent system to learn and use ReleaseHx.
+
+[NOTE]
+This experimental MCP server focuses on aiding <<custom-configuration,application configuration>> of your ReleaseHx instance.
+It does not provide assistance for command-line actions or other configurations such as <<custom-source-rhyml-mapping,RHYML mapping>>.
+
+For your LLM client (such as Copilot, Claude Code, Codex, Cursor, etc) to interact with this service, it must be configured using a general MCP syntax.
+This data is usually added to a `mcp.json` file or another object.
+
+Generic MCP config (global gem install)::
+[source,json]
+----
+{
+  "servers": {
+    "releasehx": {
+      "command": "rhx-mcp"
+    }
+  }
+}
+----
+
+Generic MCP config (Docker)::
++
+--
+Use the Docker image for maximum compatibility across environments.
+This is the **recommended approach** for most users.
+
+[source,json]
+----
+{
+  "servers": {
+    "releasehx": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "docopslab/releasehx:latest", "rhx-mcp"]
+    }
+  }
+}
+----
+--
+
+VS Code MCP configuration (Docker)::
++
+--
+Create or update `~/.config/Code/User/mcp.json` (Linux/Mac) or `%APPDATA%\Code\User\mcp.json` (Windows).
+
+[source,json]
+----
+{
+  "servers": {
+    "releasehx": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "docopslab/releasehx:latest", "rhx-mcp"]
+    }
+  }
+}
+----
+--
+
+VS Code MCP configuration (global gem install)::
++
+--
+If you have ReleaseHx installed globally (`gem install releasehx`), you can use this simpler configuration:
+
+[source,json]
+----
+{
+  "servers": {
+    "releasehx": {
+      "command": "rhx-mcp"
+    }
+  }
+}
+----
+--
+
+Local repo MCP config (Bundler + cwd)::
+[source,json]
+----
+{
+  "servers": {
+    "releasehx-dev": {
+      "command": "bundle",
+      "args": ["exec", "rhx-mcp"],
+      "cwd": "/path/to/releasehx"
+    }
+  }
+}
+----
+
+[NOTE]
+====
+If your MCP client does not honor `cwd`, `bundle exec rhx-mcp` will fail with "Could not locate Gemfile".
+Install the gem globally (`gem install releasehx`) and use `command: rhx-mcp`.
+====
+
+[[configuration-basics]]
+=== Configuration Basics
+
+Once installed, you will need to configure ReleaseHx to connect to your issue-management service (IMS) and to define how you want to organize your release history output.
+
+In fact, ReleaseHx has three different forms of "`configuration`": the _application config_, the _API-client config_, and the _issue-mapping config_.
+
+application config::
+The main, central settings, split into nested groups like *api*, *sources*, *tags*, *modes*, *rhyml*.
+By default, these are set in the file at `{app_default_config_path}` in your application repo.
+See the <<config-ref>> for complete details on available properties.
+
+API-client config::
+This YAML file enables custom configurations of unsupported issue-management system APIs.
+See <<custom-rest-config>> for details.
+
+[NOTE]
+To use an alternate config file, provide a path at runtime using `--config PATH/TO/FILE`.
+Ex: `rhx 1.1.0 --config confs/releasehx.yml`.
+
+If you are ready to set up your remote issue management system's API, skip to <<issue-sources>>.
+
+Otherwise, the <<demo-setup,ReleaseHX Demo>> may be a good way to understand how everything comes together.
+
+[[mcp-server]]
+==== MCP Server Usage (AI Config Assistance)
+
+The `rhx-mcp` command starts a local MCP server that exposes ReleaseHx configuration resources for AI clients over STDIO.
+MCP is still new, so use the setup guidance below.
+
+Resources::
+`releasehx://agent/guide`:: Short guide for agent usage and navigation.
+`releasehx://config/sample`:: Sample config tree with defaults and comments.
+`releasehx://config/schema`:: Authoritative CFGYML definition.
+`releasehx://config/reference.json`:: JSON reference document for tooling.
+`releasehx://config/reference.adoc`:: AsciiDoc reference document.
+
+Tool::
+`config.reference.get`:: Accepts a JSON Pointer (example: `/properties/origin`) and returns the reference entry.
+
+Choose how to run the MCP server:
+
+Docker (recommended)::
+[.prompt]
+ docker run -i --rm docopslab/releasehx:latest rhx-mcp
+
+Bundled gem::
+[.prompt]
+ bundle exec rhx-mcp
+
+Global gem::
+[.prompt]
+ rhx-mcp
+
+[[mcp-troubleshooting]]
+===== MCP Troubleshooting
+
+If your MCP server isn't working in VS Code or Copilot:
+
+. **Verify Docker image exists**: Run `docker images | grep releasehx` to confirm the image is available.
+
+. **Test MCP server manually**: Run the following to verify the server responds:
++
+[.prompt]
+----
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}' | docker run -i --rm docopslab/releasehx:latest rhx-mcp
+----
++
+You should see a JSON response with `"serverInfo":{"name":"releasehx-mcp"}`
+
+. **Check VS Code MCP config**: Ensure `~/.config/Code/User/mcp.json` exists and uses the correct command format (see examples above).
+
+. **Restart VS Code**: After changing `mcp.json`, restart VS Code completely for changes to take effect.
+
+. **Check VS Code logs**: Open Output panel (Ctrl+Shift+U) and look for errors related to MCP or the releasehx server.
+
+[TIP]
+====
+Ask your agent to read `releasehx://agent/guide` first.
+Then have it consult `releasehx://config/sample` as a table of contents before using `config.reference.get`.
+====
+
+[[demo-setup]]
+==== Demo Repo Setup
+
+If you want to play around with ReleaseHx before connecting it to your own Issues source via API, use the `link:{releasehx_demo_repo}[DocOps/releasehx-demo]` repository as instructed in this section.
+
+Alternately, skip to <<issue-sources>> to begin configuring your own project/environment.
+
+[TIP]
+We recommend performing the demo steps to get a feel for the project.
+
+[IMPORTANT]
+This demo assumes you have either installed ReleaseHx with `gem install releasehx` or you have aliased the `docker run` command prefix to `rhx`, as instructed in <<non-ruby-starter>>.
+
+. Clone the demo repository.
++
+[.prompt]
+ git clone git@github.com:DocOps/releasehx-demo.git
+
+. Change to the new repo directory.
++
+[.prompt]
+ cd releasehx-demo
+
+. Install ReleaseHx and dependencies.
++
+[.prompt.testable]
+ bundle install
+
+. Run the `rhx` command with special arguments.
+For example:
++
+[.prompt.testable]
+ bundle exec rhx 1.1.0 --config configs/jira-customfield.yml --api-data _payloads/jira-customfield-note-1.1.0.json --md demo-1.1.0.md
++
+Prepend `bundle exec` if using the local project Ruby installation.
+
+In this example, the `jira-customfield-note-1.1.0.json` file fills in for the version 1.1.0 issue tickets in a Jira project, drafting them as a local Markdown file.
+
+The demo repo contains several JSON files that simulate the data returned by the Jira, GitHub, and GitLab APIs.
+
+// AGENT: DUPLICATE SOURCE WARNING; Re-verify these paths with every release
+.Demo data versions in `_payloads/` directory
+[cols="4m,2,1",options="header"]
+|===
+| File path
+| Note field
+| Tags source
+
+| jira-customfield-note-1.1.0.json
+| custom field
+| labels
+
+| jira-description-note-1.1.0.json
+| description field
+| labels
+
+| github-1.0.0-issues.json
+| description field
+| labels
+
+| github-checkbox-tags-1.1.0.json
+| description field
+| checkboxes
+
+| github-label-tags-1.1.0.json
+| description field
+| labels
+
+| github-live-actual.json
+| description field
+| labels
+
+| gitlab-checkbox-tags-1.1.0.json
+| description field
+| checkboxes
+
+| gitlab-label-tags-1.1.0.json
+| description field
+| labels
+
+| generic-1.1.1.json
+| description field
+| labels
+
+| generic-1.1.2.json
+| description field
+| labels
+
+| generic-1.2.0.json
+| description field
+| labels
+|===
+
+The demo repository also comes with a number of configuration arrangements, which you may switch to or freely edit.
+
+// AGENT: DUPLICATE SOURCE WARNING; Re-verify these paths with every release
+.Demo Configurations in `configs/`
+[cols="2m,3"]
+|===
+| jira-customfield.yml
+| Release Notes and Changelog, default sort
+
+| jira-description.yml
+| Uses description field instead of custom field for release notes
+
+| jira-customfield-resorted.yml
+| Same content as jira-customfield.yml, differently sorted
+
+| jira-customfield-changelog.yml
+| Changelog only
+
+| jira-customfield-heavy.yml
+| Feature-rich configuration with extensive customization
+
+| github-basic.yml
+| Release Notes and Changelog, default sort
+
+| github-label-tags.yml
+| GitHub configuration using issue labels for categorization
+
+| gitlab-basic.yml
+| Release Notes and Changelog, default sort
+
+| gitlab-label-tags.yml
+| GitLab configuration using issue labels for categorization
+
+| kitchen-sink.yml
+| Fully loaded configuration demonstrating all available features
+|===
+
+Try the following series of commands and steps to see ReleaseHx in action.
+
+[NOTE]
+====
+These commands assume global installation or an <<non-ruby-starter,aliased Docker run command>>.
+They effectively run after alias assignment like:
+
+[.testable.hidden]
+ alias rhx='bundle exec rhx'
+====
+
+. Check for issues missing release notes.
++
+[.prompt.testable]
+ rhx 1.1.0 --config configs/jira-customfield.yml --api-data _payloads/jira-customfield-note-1.1.0.json --check
++
+Out of the box, there are two issues in the `jira-customfield-note-1.1.0.json` file that are marked `release_note_needed` yet have no release note filled out.
+
+. Generate a YAML draft.
++
+[.prompt.testable]
+ rhx 1.1.0 --config configs/jira-customfield.yml --api-data _payloads/jira-customfield-note-1.1.0.json --yaml
+
+. Edit the YAML draft in any way, then save.
+
+. Add release notes to the two issues that were missing them in `_payloads/jira-customfield-note-1.1.0.json`.
+
+. Update the YAML draft with the new issues.
++
+[.prompt.testable]
+ rhx 1.1.0 --config configs/jira-customfield.yml --api-data _payloads/jira-customfield-note-1.1.0.json --append
+
+. Generate a Markdown draft.
++
+[.prompt.testable]
+ rhx 1.1.0 --config configs/jira-customfield.yml --api-data _payloads/jira-customfield-note-1.1.0.json --md
+
+. Edit the Markdown draft in any way.
+
+. Generate HTML and PDF output.
++
+[.prompt.testable]
+ rhx 1.1.0 --config configs/jira-customfield.yml --api-data _payloads/jira-customfield-note-1.1.0.json --html --pdf
+
+For more on the demo repo, visit its README at {releasehx_demo_repo}.
+
+[[custom-configuration]]
+==== Custom Configuration
+
+Your own application will require at least some customization.
+Once configured, the commands you use day-to-day, or release-to-release, will become relatively simple.
+
+[TIP]
+====
+If you use an LLM client to code, consider having it engage with ReleaseHx's <<mcp-setup,built-in MCP service>>.
+====
+
+If any of the demo configs seems like the right arrangement for you, copy it to your project directory and modify it to further suit your needs.
+
+.Example -- copy a demo config and rename it to default
+[.prompt,subs=+attributes]
+ cp releasehx-demo/configs/github-basic.yml {app_default_config_path}
+
+See the <<config-ref>> for an annotated list of available settings.
+
+[[strategy-overview]]
+=== Recommended Release History Strategy
+
+If you came here without a strong opinion about how to approach managing and publishing a Release History, read our <<rh-strategy>>.
+
+If that's *tl;dr*, here are some key points:
+
+:rhstrategy_release-history: pass:q[Publish a unified document called something like *_Release History_*, with entries for each sequential release of your product.]
+
+:rhstrategy_changelog: pass:q[Publish a *_Changelog_* or *_Change Log_* containing summaries for all user-facing product changes.]
+
+:rhstrategy_release-notes: pass:q[Publish a *_Release Notes_* section containing an entry for any user-facing product change that requires _explanation_ or deserves special _highlighting_.]
+
+:rhstrategy_changelog-entry: pass:q[Use the *_summary/title field_* of your issue-management system as the draft Changelog entry.]
+
+:rhstrategy_release-entry: pass:q[Use a *_custom field_* (Jira) or the *issue body* to designate and draft a release note.]
+
+:rhstrategy_tags: pass:q[Use labels in your issue-management system to "`tag`" issues as *_belonging in the Changelog_* or *_needing a release note_* draft.]
+
+:rhstrategy_check: pass:q[Use `rhx &lt;v.r.sn&gt; --check` to ensure all issues with a release note requirement have a release note.]
+
+:rhstrategy_draft-yaml: pass:q[Generate and edit a *_YAML draft_* of your Release History until all release notes are drafted.]
+
+:rhstrategy_draft-markup: pass:q[Generate a *_final draft_* in the format you use for the rest of your docs.]
+
+:rhstrategy_publish: pass:q[*_Publish_* your Release History to your website or other distribution channels.]
+
+Recommended output:::
+* {rhstrategy_release-history}
+* {rhstrategy_changelog}
+* {rhstrategy_release-notes}
+
+Manage issues like so:::
+* {rhstrategy_changelog-entry}
+* {rhstrategy_release-entry}
+* {rhstrategy_tags}
+* {rhstrategy_check}
+
+Use these procedures for each version:::
+* {rhstrategy_draft-yaml}
+* {rhstrategy_draft-markup}
+* {rhstrategy_publish}
+
+For a more-thorough breakdown, see <<rh-strategy>>.
+
+ReleaseHx is flexible enough to conform to nearly any series of steps you may already be following.
+This is merely the recommended approach.
+
+[[issue-sources]]
+=== Establishing Issues Source
+
+ReleaseHx is source agnostic.
+Your release history can start in any of the following sources:
+
+* <<jira-issues>>
+* <<github-issues>>
+* <<gitlab-issues>>
+* <<custom-api,Any issue-tracking system with a REST API>>
+// * <<issues-commits,Any combination of Issues and Git commits>>
+// * <<raw-git,Git alone>>
+* <<rhyml,A YAML document ("`RHYML`")>>
+
+For each instance of ReleaseHx, you will need to configure one source or combination of sources from which to derive Changelog and Release Note content and metadata.
+
+The three cloud services (Jira, GitHub, GitLab) are configured similarly.
+
+.Example API configuration in `{app_default_config_path}`
+[source,yaml]
+----
+api:
+  from: jira
+  href: https://jira.example.com/rest/api/2
+----
+
+[NOTE]
+If you wish to configure an API other than Jira, GitHub, or GitLab, see <<custom-api>>.
+
+[[rest-api-auth]]
+==== REST API Authentication
+
+ReleaseHx uses platform-specific environment variables for API authentication. 
+Set the appropriate variables for your platform:
+
+[[github-authentication]]
+===== GitHub Authentication
+
+[.prompt]
+ export GITHUB_TOKEN="ghp_your_personal_access_token"
+
+Creating a GitHub Token::
+
+. Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+. Click "Generate new token (classic)"
+. Select scopes: `repo` (required), `read:org` (optional but recommended)
+. Copy and set the token as shown above
+
+[[gitlab-authentication]]
+===== GitLab Authentication
+
+[.prompt]
+ export GITLAB_TOKEN="glpat-your_personal_access_token"
+
+Creating a GitLab Token::
+
+. Go to GitLab → User Settings → Access Tokens
+. Create token with `read_api` scope
+. Copy and set the token as shown above
+
+[[jira-authentication]]
+===== Jira Authentication
+
+[source,bash]
+----
+export Jira_USERNAME="your.email@company.com"
+export Jira_API_TOKEN="your_api_token"
+----
+
+Note the capitalization: `Jira_USERNAME` and `Jira_API_TOKEN` (not `JIRA_*`).
+
+Creating a Jira API Token::
+
+. Go to https://id.atlassian.com/manage-profile/security/api-tokens
+. Click "Create API token"
+. Use your Atlassian account email as `Jira_USERNAME`
+. Copy the token and set as `Jira_API_TOKEN`
+
+[[making-environment-variables-permanent]]
+===== Making Environment Variables Permanent
+
+[TIP]
+====
+To make environment variables permanent, add them to your shell profile:
+
+[source,bash]
+----
+echo 'export GITHUB_TOKEN=ghp_your_token' >> ~/.zshrc
+source ~/.zshrc
+----
+====
+
+[[testing-api-authentication]]
+===== Testing API Authentication
+
+Test your API setup using the authentication test suite:
+
+[.prompt]
+ ruby specs/tests/api-auth-test.rb
+
+This validates that your tokens work and can fetch issues from the configured repositories/projects.
+
+[[security-considerations]]
+===== Security Considerations
+
+[IMPORTANT]
+====
+* Never commit API tokens to version control
+* Use tokens with minimal required permissions
+* Rotate tokens regularly
+* Consider using separate tokens for testing vs. production
+====
+
+For detailed API setup instructions and troubleshooting, see link:specs/tests/API-INTEGRATION-SETUP.adoc[API Integration Setup Guide].
+
+[[advanced-environment-variable-configuration]]
+===== Advanced Environment Variable Configuration
+
+ReleaseHx uses a **layered approach** to environment variable handling that provides flexibility for both simple setups and advanced configurations:
+
+. *App Configuration Layer* (`config.origin.auth.*`)
+. *Standard Environment Variables* (`RELEASEHX_API_*`)
+. *Service-specific Environment Variables* (`GITHUB_TOKEN`, `GITLAB_TOKEN`, etc.)
+. *Default Values* (in API client definitions)
+
+Standard ReleaseHx variables::
++
+--
+ReleaseHx defines these standard environment variable names as defaults:
+
+[source,bash]
+----
+export RELEASEHX_API_KEY="your_api_token"        # API key/token
+export RELEASEHX_API_USER="your_username"        # Username (for Jira)
+export RELEASEHX_API_ORG="your_organization"     # Organization
+----
+--
+
+Configuration override::
++
+--
+You can override which environment variables to use in your app configuration:
+
+[source,yaml]
+----
+api:
+  from: github
+  auth:
+    key_env: GITHUB_TOKEN      # Use GitHub-specific variable instead
+----
+--
+
+Template Variable Access::
++
+--
+API client templates access environment variables using this pattern:
+
+[source,liquid]
+----
+# Primary: Use configured environment variable name
+{{ env[origin.auth.key_env] }}
+
+# Fallback: Use service-specific environment variable  
+{{ env[origin.auth.key_env] | default: env.GITHUB_TOKEN }}
+----
+--
+
+This layered approach ensures compatibility with both standardized ReleaseHx environment variables and existing service-specific naming conventions.
+
+[[jira-issues]]
+==== Jira Issues
+
+ReleaseHx can connect to the Jira REST API to fetch issues that match the release version.
+
+The Issue *summary* field is used to draft the Changelog/title, and a custom field called `release_note` is used for the Release note.
+
+[TIP]
+Alternatively, configure your custom field with *<<conf_ppty_conversions_note_custom_field>>*.
+
+In Jira, what ReleaseHx calls "`tags`" can be assigned using either Jira labels or checkbox custom fields.
+
+[[jira-adf-support]]
+===== ADF (Atlassian Document Format) Support
+
+ReleaseHx provides full support for Jira's ADF format used in Jira Cloud API.
+
+Issue descriptions and custom fields return rich text content in ADF (JSON format).
+ReleaseHx automatically detects ADF and converts it to Markdown, which can then be further converted to AsciiDoc, HTML, or PDF.
+
+Supported ADF Elements::
+
+* *Text formatting* (bold, italic, code, links, strikethrough)
+* *Paragraphs and headings* (headings excluded from release notes by default)
+* *Lists* (bullet lists, ordered lists, task lists, including nested lists)
+* *Code blocks* with language syntax
+* *Blockquotes*
+* *Panels* (converted to AsciiDoc admonitions: NOTE, TIP, WARNING, CAUTION)
+* *Tables* (converted to AsciiDoc/Markdown tables)
+* *Hard breaks* and horizontal rules
+
+Configuration for ADF::
++
+--
+.Configure note extraction
+[source,yaml]
+----
+origin:
+  source: jira
+
+sources:
+  note_heading: "Release Note"  # For description-based extraction
+  # OR
+  note_custom_field: customfield_10039  # For custom field-based
+----
+
+For *description-based* release notes, use `sources.note_heading` to specify the heading that marks the release note section (e.g., "Release Note", "Draft Release Note").
+The converter will extract everything after that heading until the next same-level heading.
+
+For *custom field-based* release notes, the entire ADF content in the custom field is converted to Markdown.
+No heading extraction is performed.
+--
+
+See link:{releasehx_demo_repo}[releasehx-demo] repository for working examples with ADF payloads and configurations.
+
+[[github-issues]]
+==== GitHub Issues
+
+ReleaseHx can connect to the GitHub Issues API to fetch issues from the release version.
+
+The issue *title* field is used to draft the Changelog/title, and any text in the body that follows text like `# Release Note` is used for the Release note.
+
+In GitHub, what ReleaseHx calls "`tags`" can be assigned using labels or checkboxes embedded after the Release Note text.
+
+[[gitlab-issues]]
+==== GitLab Issues
+
+ReleaseHx can connect to the GitLab Issues API to fetch issues from the release version.
+
+The issue *title* field is used to draft the Changelog/title, and any text in the body that follows text like `# Release Note` is used for the Release note.
+
+In GitLab, what ReleaseHx calls "`tags`" can be assigned using labels or checkboxes embedded after the Release Note text.
+
+[[custom-api]]
+==== Custom API
+
+ReleaseHx is extensible.
+While it officially supports Jira, GitHub, and GitLab, you can configure it to connect to any issue-tracking system with a REST API.
+
+Use the application config file to designate an API endpoint and any required authentication.
+Then provide a mapping file at `_mappings/<api_from_name>.yml` (or the path configured at *<<conf_ppty_paths_mappings_dir>>*) to define the data conversion to RHYML.
+
+See <<custom-rest-config>> for details.
+
+// [[issues-commits]]
+// ==== Issues Plus Git Commits
+
+// Assuming your Jira instance is integrated with your Git host (which is automatically the case if you use GitLab or GitHub Issues) and you are working in the related repository, you can connect issues to Git commits.
+
+// When sourcing Release Note content from Git commits, you will need a few config settings.
+
+// .Example `{app_default_config_path}` properties
+// [source,yaml]
+// ----
+// conversions:
+//   note: commit_message
+//   pattern: '^RELEASE NOTE:'
+//   summary: commit_message
+// ----
+
+// If `note` is set to `commit_message`, ReleaseHx will extract the content from everything following the `pattern` text in the commit message referenced by the commit SHA/hash in the Issue metadata.
+// To use the entire "`body`" of the commit message as the note, set the `pattern` to `^`.
+
+// [NOTE]
+// ReleaseHx expects commit messages to be formatted with the summary/header on the first line, followed by a blank line, then the body.
+// Note content is expected to be the entire body or embedded at the end of it, delineated by the value of [.ppty]*<<conf_ppty_conversions_note_pattern>>*.
+
+// If you are not using content from the Git commit as your Changelog/Release Notes entry material, the relationship is just for metadata.
+// Release notes and Changelog entries can reference and/or link to the Git commit when so configured.
+// To enable this, fill out the [.ppty]*<<conf_ppty_links_web>>* and [.ppty]*<<conf_ppty_links_git>>* properties in your config file.
+
+// During drafting, ReleaseHx will strip from the `note` property any lines that begin with `#`.
+
+// [[raw-git]]
+// ==== Raw Git Commits
+// NOT YET SUPPORTED
+
+// You can source a Release History entirely inside Git commits, with largely the same capacity, as long as you are willing to format your commits precisely.
+
+// See the explanation in <<issues-commits>> for designating Release Note content in a commit message "`body`", but note you may also replace the labels/tags aspect of issue-management systms, as follows.
+
+// Use `\#tagname` or `#tagkind:taglabel` strings to assign tags.
+// ReleaseHx can be configured to detect such tags anywhere in the commit message "`body`", but will strip from the `note` property content any lines that begin with `#`.
+
+// During drafting, ReleaseHx will drop from the final note any line that begins with a `#` character from the content, including a line that might be `#changelog`.
+
+// The limitations of working this way should be obvious.
+// It is difficult and typically unwise to edit commits after they have been merged, so tags and such would need to be added to the initial merge commit for the changed feature itself.
+
+// .Example Git commit string ReleaseHx can parse
+// ....
+// commit a3b14d8e9c2f5e7b0d1a2c3d4e5f6a7b8c9d0e1
+// Author: John Smith <jsmith@example.com>
+// Date:   Thu Mar 21 15:32:14 2024 -0400
+
+// Add new user authentication flow
+
+// Introduces a complete overhaul of the user authentication system.
+
+// RELEASE NOTE:
+// The login process now supports multi-factor authentication and single sign-on options. 
+// Users will need to re-authenticate on their next login to set up these new security features.
+
+// #breaking #highlight #type:improvement #component:auth #component:ui
+// ....
+
+// This method requires more discipline on the part of developers, but it is arguably the most streamlined option, especially for working without an issue-tracking system.
+
+[[rhyml]]
+==== RHYML
+
+Use a locally stored YAML file as the source of your Release History and Changelog content.
+This is essentially the same document that is drafted from a REST API source by the `--yaml` flag for the `rhx` command.
+
+[NOTE]
+RHYML is referred to as an API source throughout most ReleaseHx documentation, even though it is not a remote/HTTP API.
+
+All issues associated with a given release are nested together under a `work:` property without further hierarchy.
+Since the entries are _data_, they can be organized here however you wish, then re-sorted upon generating a Markdown or AsciiDoc draft, or going directly to PDF or HTML.
+
+The advantage of this method is working without an API.
+Contributors can simply add their notes to a unified file via Git, and that file can be edited in place.
+
+The RHYML content can be connected to Issues and Git commits, but only tangentially.
+The summary and note content needs to be listed in the YAML document.
+Links back to the source issue or commit are possible but optional.
+
+
+[[usage]]
+== Usage
+
+ReleaseHx can either be used as a command-line tool or as a Ruby library.
+In both cases it can be powerfully configured with regard to its source matter and its output formats.
+
+We will first look at what ReleaseHx can _do_, then we will explore _how_ to make ReleaseHx achieve these goals.
+
+[[terms-of-art]]
+=== Terminology
+
+ReleaseHx settles on some "`terms of art`" to describe its various components and operations.
+Let's examine these in order to reduce confusion.
+
+[[text-transformation-terms]]
+==== Text Transformation Terms
+
+draft/drafting::
+The process of creating a file in lightweight markup format, such as AsciiDoc, Markdown, or YAMLL, _which is intended to be manually edited by the user_.
+Drafting operations happen to use templates to _render_ output, but we use the term _draft_ whenever the output format is lightweight markup intended for manual editing.
+
+enrich/enrichment::
+These terms describe the process of turning data or a draft into a rich-text output format, such as HTML or PDF.
++
+Some utilities consider this "`rendering`", but _render_ is a term hard-coded into Liquid and Tilt operations, so we use it to describe the act of generating text with a templating engine.
+Likewise, the term "`convert`" is integral to Asciidoctor and Pandoc operations, and we don't want to confuse them.
+
+render/rendering::
+The final step in converting a template (such as Liquid and ERB) into its target format (such as Markdown, AsciiDoc, or HTML).
+Render operations transform textual content but do not necessarily change formats.
+The focus is on the _process_, not the output.
++
+In ReleaseHx, you will see this mostly in the context of templated configuration fields and the like, even though _drafting_ operations all technically involve rendering.
+
+convert/conversion::
+Generally the transformation from one file format to another.
+We reserve these terms for specific use with respect to third-party tools such as Asciidoctor and Pandoc.
+Converters read _standardized markup_ to produce a wide variety of outputs.
+This typically means converting Markdown or AsciiDoc to HTML or PDF, but it is also used to refer to transforming Markdown to AsciiDoc and other such operations.
+
+[[issues-changes-versions-and-releases]]
+==== Issues, Changes, Versions, and Releases
+
+We use the term _issues_ to describe the tasks tracked by your cloud-based issue-management system (IMS), such as Jira or GitHub Issues.
+
+A _change_ is the ReleaseHx term for the report that something is changed in the subject product.
+
+ReleaseHx uses _issue_ to refer to the state in the source/API, and _change_ to refer to the record of a product change in *RHYML* -- the Release History YAML-based Modeling Language.
+Issues get turned into changes, a subtle but important difference.
+
+Likewise, _version_ and _release_ are somewhat interchangeable.
+_Version_ is the associative reference, typically the way software changes are identified in Git (branch), GitHub Issues (`milestone`) or Jira (`fixVersion`).
+
+Whereas _release_ is more of the concept of a revision of the subject product, and it is represented by a property in RHYML listed in an Array called `releases`.
+
+Typically, ReleaseHx refers to a _release_ as the subject of a "`Release History`", and _version_ or version `code` is the way a release is identified.
+
+A _code_ is the literal string used to identify a version or release.
+In RHYML, `code` is the property of a _release_ that identifies the _version_.
+
+[[api-and-source-disambiguation]]
+==== API and Source Disambiguation
+
+REST API::
+A remote, HTTP-based service, in our case used as the source for _issue_ data.
+In certain contexts, this is shorthanded as simply _API_.
+
+ReleaseHx API::
+The Ruby library that provides the ReleaseHx functionality for downstream Ruby applications, including the `rhx` CLI (command-line interface).
+
+source::
+In ReleaseHx parlance, this is the means, location, and format of the data that will be used to generate a Release History.
+Typically a REST API, this could also be a local YAML file or a Git repository.
+
+API client::
+A local utility or component that is able to connect to a REST API and retrieve data from it.
+
+[[output-strategy]]
+=== Output Strategy
+
+You can output ReleaseHx-generated histories as HTML or PDF, each with styling capabilities.
+
+Other options include which history types to output: Changelog, Release Notes, or hybrid.
+If outputting both sequentially, in which order, and what exactly to include in each resource.
+
+[NOTE]
+If all you ever want to report is a 1-line summary of changes, you just need a Changelog.
+
+Some logic rules that may help you decide:
+
+Upstream/Source rules::
+
+. Any issue with a Release Note entry will also be included in the Changelog.
+. For issues with no Release Note entry, a `changelog` label or checkbox is needed for inclusion.
+
+Output rules/policies::
+
+. Changelog entries will link to any corresponding release note.
+. Changelogs and Release Notes sections may be organized and ordered distinctly.
+. The entries within each section (Changelog or Release Notes) may be arranged and sorted according to different rules.
+
+[[output-configuration]]
+==== Output Configuration
+
+For designating _what_ to output, the following blocks or properties in the config file are relevant:
+
+`history`::
+This block defines the overall document and establishes defaults that apply to `notes` and `changelog` sections.
+
+`notes`::
+This block defines the Release Notes output.
+
+`changelog`::
+This block defines the Changelog output.
+
+For more, see <<config-ref>> and <<advanced-template-configuration>>.
+
+[[output-templates]]
+==== Output Templating
+
+Place templates in the directory established in `*paths.templates_dir*` in the config (defaults to `./_templates`).
+
+Templates replace their namesakes built into the ReleaseHx application or API.
+
+By default, ReleaseHx expects templates to be formatted in link:https://shopify.github.io[Liquid], but it uses the Jekyll-enhanced Liquid 4.
+See <<templating>> for details.
+
+[[sourcing-strategy]]
+=== Sourcing Strategy
+
+Where will your release history content come from, and in what format(s) will you _edit_ it?
+
+[[source-issue-tracking]]
+==== Issue-tracking Source
+
+If your team uses a supported issue-management system (Jira, GitHub Issues, or GitLab Issues), you will almost certainly wish to integrate that platform.
+
+Additionally, assuming your team uses Git, you _may_ wish to derive content from Git commits.
+This is only the case if your commit messages are suited to including drafts of release notes or changelog entries, which is fairly rare.
+
+Generally, you will derive change summaries, notes, and metadata from your IMS, but hybrid sourcing (with Git) is readily configurable.
+Since you operate ReleaseHx in your product repository, it _uses Git directly on your system_ rather than relying on your cloud-hosted Git service.
+
+[[source-flat-file]]
+==== Local Flat-file Source
+
+Once the relevant "`issues`" have been derived from your API or Git, they become "`changes`" in ReleaseHx terminology, and they are held as a data object in RHYML format.
+
+At this point, these changes can be converted to YAML, Markdown, or AsciiDoc so you can tinker with them.
+This process is called "`drafting`" -- it compiles your changes into one document.
+
+The recommended procedure is to use YAML at this phase.
+Only the YAML format maintains the changes as data and as a single source of truth.
+If you make a change in the RHYML/YAML document, you can still readily convert to Markdown or AsciiDoc at any point.
+
+Edit-at-source method::
+However, if you are confident in the overall shape of your issues at the source, drafting directly to Markdown or AsciiDoc, or even converting directly to HTML or PDF, are available options.
++
+Indeed, _if you wish to do all of your editing in the IMS interface_, this is the way to go.
+You can generate Markdown or HTML, review, and make further changes to the IMS issues, then re-fetch and generate anew.
+
+[[rh-strategy]]
+=== Recommended Strategy for Release Documentation
+
+We stand behind the following design principles, but ReleaseHx can enable all this and more.
+
+We highly recommend the sites link:https://keepachangelog.com[keep a changelog] and link:https://common-changelog.org[Common Changelog] for guidance.
+
+For guidance on Release Notes authoring, check out link:https://www.releasepad.io/the-complete-guide-to-release-notes-what-are-they-and-what-are-they-used-for/[ReleasePad's "`Complete Guide`"] and link:https://www.prodpad.com/blog/release-notes/[ProdPad's "`How-to`" article], and this link:https://medium.com/@DigitalGov/the-life-changing-magic-of-writing-release-notes-4c460970565[Digital.gov essay].
+
+{rhstrategy_release-history}::
+The constituent documents, Changelog and Release Notes, are both part of the Release History.
+The recommended order is Changelog first, Release Notes second, with links from applicable Changelog entries to corresponding Release Notes.
++
+The hybrid strategy would basically be an annotated Changelog, where every designated summary is listed with relevant metadata and a release note, when available.
+
+{rhstrategy_changelog}::
+Any and all changes that affect users _must_ be listed here.
++
+A separate, more complete changelog can be published for developers, with issues marked `internal` also displayed, possibly annotated as such.
+Using `rhx &lt;v.r.sn&gt; --md --internal` will include internal issues in the (Markdown) draft.
+
+{rhstrategy_release-notes}::
+The general rule of thumb is that any change that is not obvious from its summary should have a release note.
++
+Release notes can be fairly involved, including short bulleted lists or tables.
+Anything longer than a few sentences or a short list or table should link to documentation or a release appendix.
+
+{rhstrategy_changelog-entry}::
+Alternatively, use the first line of Git commits or the release-note body as the Changelog entry draft.
++
+If original entries are in present tense or imperative, you can use the [.ppty]*<<conf_ppty_rhyml_pasterize_summ>>* property to convert verbs to past tense.
+
+{rhstrategy_release-entry}::
+A distinct field is optimal, but on any platform you can demarcate release-note content with a comment like `<!-- release note +++-->+++` or a heading like `## Release note`.
+
+{rhstrategy_tags}::
+Jira supports custom checkboxes, and GitHub/GitLab enable Markdown checboxes, all of which ReleaseHx can scan.
++
+Also mark issues with tags like `breaking`, `deprecation`, `experimental`, `highlight`, and `internal`.
+
+{rhstrategy_check}::
+As long as you have marked relevant issues with the `release_note_needed` tag, you can use the `--check` option to ensure all issues with that tag have a release note.
++
+The exact tag is configurable at [.ppty]*<<conf_ppty_tags_release_note_needed>>*.
+
+{rhstrategy_draft-yaml}::
+This means generating an RHYML document and editing it in place if release notes are still streaming in from the IMS.
+Use `--append` to integrate last-minute release notes before generating a final draft.
+
+{rhstrategy_draft-markup}::
+When all the release notes have been added, generate a final draft in your preferred lightweight markup format.
+This is the best place to perform a final once-over and see the content more or less as it will be published.
++
+Generate rich-text drafts as needed.
+These are easy to overwrite.
+
+{rhstrategy_publish}::
+ReleaseHx makes it possible to generate full web pages, but you probably want to situate the content in your static-site generator.
++
+If you wish to edit in one markup format (Markdown or AsciiDoc) but your SSG expects the other format, you can use the flags `--html --no-wrap --frontmatter` to generate the innards of a page, which most SSGs can publish wrapped in an HTML layout.
+
+These recommendations are of course flexible, but they largely reflect the _default_ setup for a minimally configured ReleaseHx instance.
+The more your structure and policies deviate from these basic tenets, the more configuration you will need to do.
+
+But ReleaseHx can probably handle your customizations.
+
+[[ci-cd-strategy-caveats]]
+==== CI/CD Strategy Caveats
+
+If your team works in a continuous-deployment environment, you may wish to maintain one ongoing Release History.
+
+To do so, modify your API request template with some logical filter, and always use the `--append` option, drafting to YAML.
+
+Continuous deployment environments will likely get better treatment in this application prior to the 1.0 release.
+I just don't have enough experience with them to predict the optimal workflow.
+
+[NOTE]
+DocOps Labs' YAML-extension framework (SGYML) will support serializing large Arrays like one might have for an ongoing changelog.
+
+[[rhx]]
+=== The `rhx` Utility
+
+For usage outside (or within) a Ruby development environment, ReleaseHx provides the `rhx` command-line tool.
+
+.Help screen
+// tag::helpscreen[]
+// tag::helpscreen_attrs[]
+:cli_option_message_md: Draft to Markdown
+:cli_option_message_adoc: Draft to AsciiDoc
+:cli_option_message_yaml: Draft to YAML
+:cli_option_message_html: Enrich to HTML
+:cli_option_message_pdf: Enrich to PDF
+:cli_option_message_output_dir: Establish base target path for generated files
+:cli_option_message_api_data: Ingest from a JSON file instead of REST response
+:cli_option_message_config: Config location (default: ./{app_default_config_path})
+:cli_option_message_mapping: Alternate API mapping location
+:cli_option_message_payload: Store payload as JSON file at PATH or default
+:cli_option_message_fetch: Refresh data from source
+:cli_option_message_append: Add any new issues to the end of local YAML source
+:cli_option_message_over: Overwrite any existing files without prompting
+:cli_option_message_check: Find issues with missing release note
+:cli_option_message_emptynotes: Set/reverse policy on issues "awaiting notes"
+:cli_option_message_internal: Include issues marked internal or likewise
+:cli_option_message_wrap: Enrich HTML with/out head and body tags
+:cli_option_message_frontmatter: Enrich or draft with/out frontmatter
+:cli_option_message_manpage: Show the full manpage documentation
+:cli_option_message_verbose: Express each step to console
+:cli_option_message_debug: Express each step and show inferred states
+:cli_option_message_debug_dump: Complete debugging with raw data
+:cli_option_message_quiet: Suppress all output, including warnings
+:cli_option_message_version: Display the ReleaseHx version code
+:cli_option_message_check_long: Scans issues for those missing release notes and reports findings.
+
+// end::helpscreen_attrs[]
+[subs="attributes+"]
+....
+Usage: rhx VERSION|FILE [options]
+
+Options:
+  --md [PATH]            {cli_option_message_md}
+  --adoc, --ad [PATH]    {cli_option_message_adoc}
+  --yaml, --yml [PATH]   {cli_option_message_yaml}
+  --html [PATH]          {cli_option_message_html}
+  --pdf [PATH]           {cli_option_message_pdf}
+  --output-dir PATH      {cli_option_message_output_dir}
+  --api-data PATH        {cli_option_message_api_data}
+
+  --config PATH          {cli_option_message_config}
+  --mapping PATH         {cli_option_message_mapping}
+  --payload PATH         {cli_option_message_payload}
+  --fetch                {cli_option_message_fetch}
+  --append               {cli_option_message_append}
+  --over, --force        {cli_option_message_over}
+  --check, --scan        {cli_option_message_check}
+  --empty, -e [RULE]     {cli_option_message_emptynotes}
+  --internal             {cli_option_message_internal}
+  --[no-]wrap            {cli_option_message_wrap}
+  --[no-]frontmatter     {cli_option_message_frontmatter}
+
+  --manpage, --man       {cli_option_message_manpage}
+  --verbose              {cli_option_message_verbose}
+  --debug                {cli_option_message_debug}
+  --debug-dump           {cli_option_message_debug_dump}
+  --quiet                {cli_option_message_quiet}
+  --version              {cli_option_message_version}
+....
+// end::helpscreen[]
+
+See <<cli-options-ref>> for detailed descriptions of each option.
+
+[[workflows]]
+==== Potential Workflows
+
+ReleaseHx enables several workflow combinations for drafting and enriching release histories.
+
+....
+API → Markdown
+API → Markdown → HTML
+API → Markdown → PDF
+API → AsciiDoc
+API → AsciiDoc → HTML
+API → AsciiDoc → PDF
+API → YAML     → HTML
+API → YAML     → AsciiDoc → HTML
+API → YAML     → AsciiDoc → PDF
+API → YAML     → Markdown → HTML
+API → YAML     → Markdown → PDF
+....
+
+The *API* element of the above workflows could be a *RHYML* file, in which case the *API → YAML* conversions are unnecessary, as the YAML step in those workflows is a proper RHYML document already.
+
+.Why RHYML drafts?
+****
+Some reasons you might wish to use *RHYML (YAML) drafts* as an interim state:
+
+If you expect late-arriving issues, but you want to get started copy editing the ones that exist.
+
+Going directly from YAML to HTML gives more control over the final output, as Markdown and even AsciiDoc are quite limited in the semantic HTML they can produce.
+
+You may even come to prefer editing serialized short content in YAML, as I have.
+****
+
+Most of the workflow cases can be executed using fairly straightforward command combinations.
+
+Take this *API → Markdown → HTML/PDF* workflow for instance:
+
+. Ensure all release notes are added in the IMS source.
++
+ rhx 2.1.0 --check
+
+. Create a Markdown draft from API data.
++
+ rhx 2.1.0 --md
+
+. Edit and save the Markdown draft.
+
+. Enrich HTML and PDF files from the Markdown draft.
++
+ rhx 2.1.0 --html --pdf
+
+But for cases where you wish to draft/edit in YAML and then in Markdown or AsciiDoc, such as *API → YAML → AsciiDoc → HTML/PDF*, the following series of steps is exemplary:
+
+. Create a YAML draft from API data.
++
+ rhx 2.1.0 --yaml
+
+. Edit and save the YAML draft.
+
+. Add any newly annotated issues to the end of the YAML draft.
++
+ rhx 2.1.0 --append
+
+. Create an AsciiDoc draft from the YAML draft.
++
+ rhx 2.1.0 --adoc
++
+NOTE: ReleaseHx looks for `2.1.0.yml` and creates an AsciiDoc draft like `2.1.0.adoc`.
+
+. Edit that draft as AsciiDoc and save.
+
+. Enrich HTML and PDF from the AsciiDoc draft.
++
+ rhx 2.1.0 --html --pdf
++
+NOTE: ReleaseHx finds both `2.1.0.yml` and `2.1.0.adoc`, choosing the latter.
+
+It is also possible to *source directly in RHYML* files and draft to Markdown or AsciiDoc or else directly to HTML/PDF.
+
+[[cli-sourcing-priority]]
+==== CLI Sourcing Priority
+
+Certain CLI arguments and options will take precedence over others, especially in determining what sources are actively used during a given operation.
+
+ReleaseHx determines the data source using the following priority order, where higher priority options override lower priority ones:
+
+.Source Determination Priority (Highest to Lowest)
+[cols="1,2,3"]
+|===
+|Priority |Source Type |How Determined
+
+|1 |Local YAML file |File path argument ends with `.yml` or `.yaml`
+|2 |JSON data file |`--api-data PATH` option provided
+|3 |REST API |Configuration `origin.source` set to `github`, `gitlab`, or `jira`
+|4 |Default API |Configuration `origin.source` defaults to `json` (requires `--api-data`)
+|===
+
+[[source-override-examples]]
+===== Source Override Examples
+
+.Uses configured API (from config)
+[.prompt]
+ rhx 1.2.0 --md
+
+.Overrides to use JSON file instead
+[.prompt]
+ rhx 1.2.0 --api-data issues.json --md
+
+.Overrides to use YAML file instead  
+[.prompt]
+ rhx _drafts/1.2.0.yml --md
+
+File extension determines source type directly::
+[.prompt]
+ rhx my-issues.yml --md
+
+API data option forces JSON source::
+[.prompt]
+ rhx 1.2.0 --api-data cached-issues.json --md
+
+[[source-determination-logic]]
+===== Source Determination Logic
+
+The source determination follows this logic in `CLI#determine_payload_type`:
+
+. *File Extension Check:* If the identifier (first argument) ends with `.yml` or `.yaml`, use YAML source.
+. *CLI Option Check:* If `--api-data` option is provided, use JSON source.
+. *Default to API:* Otherwise, use the REST API source (determined by configuration).
+
+This allows users to override the configured default source at runtime while maintaining predictable behavior based on file extensions.
+
+[[cli-options-ref]]
+==== Full CLI Options Reference
+
+The following options are available for the `releasehx`/`rhx` commands.
+
+// tag::cli_options[]
+// tag::ai-prompt[]
+:drafts_path_key: pass:q[Where `&lt;drafts_dir>` is the value of `paths.drafts_dir` in the config, and `&lt;template>` is the value of `templates.drafts_filename` in the config.]
+
+*--adoc, --ad* [_PATH_]::
+{cli_option_message_adoc}.
+Outputs to `<drafts_dir>/<file_template>` or `<PATH>`.
++
+{drafts_path_key}
+
+*--api-data* _PATH_::
+{cli_option_message_api_data}.
+Point to any local JSON source file that is formatted like a response payload for your configured API (see <<conf_ppty_origin_source>>); this overrides the normal REST request even if `--fetch` is argued (though a warning will appear if you pass both options).
+
+*--append*::
+{cli_option_message_append}.
++
+When drafting in YAML, adds new issues to the end of the file.
+Be sure to save edits before appending.
+
+*--check, --scan*::
+{cli_option_message_check}.
+{cli_option_message_check_long}
+
+*--config* _PATH_::
+{cli_option_message_config}.
+Use the configuration file at the specified path instead of the default location (`{app_default_config_path}`).
+
+*--debug*::
+{cli_option_message_debug}.
+Conveys all INFO and DEBUG messages.
+
+*--debug-dump*::
+{cli_option_message_debug_dump}.
+Includes all INFO and DEBUG output, as well as raw data objects.
+
+*--empty, -e* [_RULE_]::
+{cli_option_message_emptynotes}.
++
+Argue a specific drafting policy, or argue the "`opposite`" policy, for handling issues that are marked as `release_note_needed` but no note is provided.
+Set a specific rule (`skip`, `empty`, `dump`, or `ai``) to have ReleaseHx include the issue when converting issues to changes, even if no expected note content has been added.
++
+Using `-e dump` will draft the issue with the entire issue body and commit message as the note content, for any qualifying change entry.
+Whereas `-e ai` will use generative AI to draft note properties from issue body and commit message.
++
+Otherwise use just `--empty` or `-e` to toggle between `skip` and `empty`, if either of those is your default in [.ppty]*<<conf_ppty_rhyml_empty_notes>>*.
+If your default is `blank`, `dump`, or `ai`, using `--empty` or `-e` with no argument will toggle a `skip` policy.
+
+*--fetch*::
+{cli_option_message_fetch}.
++
+Retrieves fresh data rather than using cached/draft files when converting to HTML/PDF.
+Typically used like:
++
+ rhx 1.1.0 --fetch --html
++
+The fetch procedure does write a cached RHYML document before generating final output.
+
+*--frontmatter, --no-frontmatter*::
+{cli_option_message_frontmatter}.
+When generating drafts or enriching to HTML output, _include_ (`--frontmatter`) or _exclude_ (`--no-frontmatter`) frontmatter.
+
+*--html* [_PATH_]::
+{cli_option_message_html}.
+Writes to `<output_path>/<file_template>` or `<PATH>`.
+
+*--internal*::
+{cli_option_message_internal}.
+Include issues marked as internal or similarly restricted when drafting content.
+Has no effect on enrichment operations.
+
+*--api-data* _PATH_::
+{cli_option_message_api_data}.
+For API responses, this option saves the payload as PATH.
+During normal output generating, this option writes a copy of RHYML object to PATH.
+
+*--md* [_PATH_]::
+{cli_option_message_md}.
+Outputs to `<drafts_dir>/<file_template>` or `<PATH>`.
++
+{drafts_path_key}
+
+*--manpage, --man*::
+{cli_option_message_manpage}.
+Includes this options reference and other documentation, all in the terminal.
++
+TIP: Use `q` to quit back to prompt.
+
+*--mapping*::
+{cli_option_message_mapping}.
+File must be a valid RHYML mapping config, usually stored at `_mapping/<apiname>.yaml`.
++
+The mapping base directory can be changed in [.ppty]*<<conf_ppty_paths_mappings_dir>>*, but this option must include a complete relative or absolute path.
+
+*--payload* [_PATH_]::
+{cli_option_message_payload}
+If no path is argued, defaults to that set in *<<conf_ppty_paths_payloads_dir>>*.
+
+*--output-dir* _DIRECTORY_::
+{cli_option_message_output_dir}.
+
+*--over, --force*::
+{cli_option_message_over}.
+When writing files, overwrite existing files without prompting for confirmation.
+
+*--pdf* [_PATH_]::
+Enriches to PDF from default or designated source.
+Writes to `<output_path>/<file_template>` or `<PATH>`.
+
+*--scan, --check*::
+{cli_option_message_check}.
+{cli_option_message_check_long}.
+
+*--verbose*::
+{cli_option_message_verbose} during execution.
+
+*--version*::
+{cli_option_message_version}.
+
+*--wrap, --no-wrap*::
+{cli_option_message_wrap}.
+When enriching to HTML, _include_ (`--wrap`) or _exclude_ (`--no-wrap`) the `<head>` and `<body>` tags and their content.
+For use when the opposite value is set in the config file ([.ppty]*<<conf_ppty_modes_wrapped>>*).
+
+*--quiet*::
+{cli_option_message_quiet}.
+
+*--yaml, --yml* [_PATH_]::
+{cli_option_message_yaml}.
+Outputs to `<drafts_dir>/<file_template>` or `<PATH>`.
++
+{drafts_path_key}
+// end::cli_options[]
+// end::ai-prompt[]
+
+[[advanced-rhyml]]
+=== Advanced RHYML
+
+The RHYML syntax is designed specifically for tracking product changes and collecting them as "`releases`".
+
+RHYML is also designed particularly for YAML so it can be read, edited, and even authored by humans, including non-programmers.
+
+A complete Release History is a collection of planned product releases as, including patch releases, so RHYML has blocks for major/minor releases and for their subordinate patch releases.
+
+The basic RHYML structure is:
+
+// tag::basic-rhyml-example[]
+[source,yaml]
+----
+releases: # Optional key to contain multiple releases
+  - # Array (sequence) of releases
+    code: 1.2.1 # Required key for an individual release
+    date: 2025-07-21 # Optional key for release date
+    memo: |
+      A note of any length, formatted as Markdown (default) or AsciiDoc (configured).
+    changes:    # Required key for Array of changes
+      -         # Array (seqence) of changes
+        chid: 1234 # change ID
+        tick: ACME-API-5678 # issue ticket ID
+        hash: abcdef0123456789abcdef0123456789abcdef01
+        type: feature
+        part: auth
+        summ: Added new user-authentication flow
+        note: |
+          The login process now supports multi-factor authentication and single sign-on options.
+          Users will need to re-authenticate on their next login to set up these new security features.
+        tags: # issue labels
+          - breaking
+          - highlight
+----
+// end::basic-rhyml-example[]
+
+However, here we will focus on the matter that ReleaseHx deals with: individual, sequential _releases_, which are identically structured whether for major/minor or patch releases, and _changes_ that make up a release entry.
+
+[NOTE]
+*_Ruby developers:_*
+This YAML representation of the RHYML data structure has a Ruby-native counterpart, documented at .
+
+[[rhyml-release]]
+==== Release Entries
+
+The two required properties for a release are `code` (version ID) and `changes`, but a release can also have a `date` and a `memo`.
+
+`code`::
+The version identifier string.
+(Required.)
+
+`date`::
+A proper date formatted as `YYYY-MM-DD`.
+
+`memo`::
+An open text field for any description of the release you wish to appear in the overall release entry.
+Memos can be formatted with Markdown or AsciiDoc.
+This format must be set either in an individual RHYML file or configured at [.ppty]*<<conf_ppty_rhyml_markup>>*.
+
+`changes`::
+Every valid Release object must contain an Array containing at least one change entry.
+(Required.)
+
+[[rhyml-change]]
+==== Change Entries
+
+A release may include any number of changes (including zero).
+Within each "`change`" entry, the following properties are available:
+
+`chid`::
+The change identifier.
+This is a contiguous String (no spaces) that MUST be among all changes in its own release and is recommended to be universally unique (across all releases).
+
+`tick`::
+The issue ticket number for the change.
+
+`hash`::
+The commit hash for the change.
+
+`type`::
+The type of change.
+Must be registered in the `types` block of the config.
+
+`part`::
+The component, interface, feature, or aspect of the product affected by the change.
+Must be registered in the `parts` block of the config.
++
+NOTE: If more than one part is affected, use the `parts` property instead.
+
+`parts`::
+When more than one component, interface, feature, or aspect of the product is affected by the change, and you wish all such "`parts`" to be noted, use this property instead of `part`.
+All items must be listed in the `parts` block of the config.
+
+`summ`::
+A brief summary of the change.
+Typically used as the Changelog entry.
+
+`head`::
+The headline for a release note, if the value of the `summ` property is not preferred.
+In standard templates, the headline placeholder looks for a `head` property but falls back to `summ`.
+
+`note`::
+A note about the change.
+May include markup formatting.
+
+`tags`::
+An array of tags associated with the change.
+Each must be registered in the `tags` block of the config.
+Several tags are registered by default, but you can add as many as you like.
+
+`links`::
+A list of documentation or marketing links for the change.
+The `xref` and `href` properties are mutually exclusive; `href` will supersede.
+
+`lead`::
+The primary contributor to the change.
+Associated with a username in the Issues system.
+
+`auths`::
+An array of contributors to the change.
+Each item must have a `user` property that matches a username in the Issues system, and may have a `memo` property to describe the user's role or involvement in the change.
+
+[[config-ref]]
+=== Application Configuration Reference
+
+These pertain the to the main configuration file, which is defined specifically for your _application_ of ReleaseHx.
+By default, the application config is found at `{app_default_config_path}.`
+
+The full configuration reference is published at link:{releasehx_docs_www}/config-reference{docs_extn}[].
+
+[[sample-config]]
+=== Sample Application Configurations
+
+ReleaseHx comes with a complete default configuration file as well as a series of sample configs.
+
+The complete link:{default-config_www}[default config file] displays default values with commented descriptions of all available properties.
+
+The various sample configurations stored in the link:{releasehx_demo_repo}/blob/main/configs/[demo repository] may be a good start toward establishing your own setup.
+
+[[env-vars]]
+=== Environment Variables in ReleaseHx
+
+The only stated environment variables intended to work with ReleaseHx at this time are those related to user or project private data, mainly for integrating with AIs.
+
+Most settings for customizing a given instance (application) of ReleaseHx are stored in the config.
+
+See <<rest-api-auth>> for details on how to set up authentication for the REST API client.
+
+[[custom-rest-config]]
+=== Custom REST API Client Configuration
+
+// tag::custom-rest-config[]
+
+ReleaseHx's API connections are extensible.
+As long as you can map the JSON payload returned by your preferred issue-management system provider, you are welcome to add it.
+
+[NOTE]
+A new API client probably also means a new <<custom-source-rhyml-mapping,issue-mapping configuration>>.
+
+[TIP]
+If you use a standard Jira, GitHub Issues, or GitLab Issues setup, you should NOT have to alter this file.
+
+[NOTE.plea]
+If you add a non-standard API, please consider <<contributing,contributing it>> upstream to the ReleaseHx project.
+
+ReleaseHx connects to all upstream REST APIs via YAML-based client configurations.
+
+For reference, the official configs for the three supported REST APIs are at link:{this_prod_repo}/blob/lib/releasehx/rest/clients/jira.yml[jira.yml], link:{this_prod_repo}/blob/lib/releasehx/rest/clients/github.yml[github.yml], and link:{this_prod_repo}/blob/lib/releasehx/rest/clients/gitlab.yml[gitlab.yml].
+
+To override any of these or to add your own, place a file at `.releasehx/rest/clients/<hostslug>.yml`.
+Make sure it conforms to the schema defined in `specs/data/api-client-schema.yaml`.
+
+A custom API client configuration has a few main sections:
+
+`parameters`::
+Defines the parameters that the client accepts, such as the project ID or the version number.
+
+`headers`::
+Defines the HTTP headers to be sent with each request, such as the `Content-Type` or `Authorization` headers.
+
+`requests`::
+Defines the API requests that the client can make.
+Each request has a `verb` (ex: `get`, `post`), a `path` (which can be a Liquid template), and a `params` section that maps the request parameters to the API parameters.
+
+You can use Liquid templating in the `path` and `params` sections to create dynamic requests.
+For example, you can use `{{ version }}` to insert the release version into the request path.
+
+// end::custom-rest-config[]
+
+[[regex-patterns]]
+=== Regular Expression Pattern Support
+
+ReleaseHx supports two ways to specify regular expression patterns when called for in configuration and mapping files.
+
+The traditional regular expression literal format:
++
+[source,yaml]
+----
+note_pattern: '/## Release Notes\n(?<note>.*?)(?=\n##|\z)/ms'
+----
+
+[[pattern-flags]]
+==== Pattern Flags
+
+Common flags used with ReleaseHx patterns:
+
+`m` (multi-line)::
+Makes `^` and `$` match line boundaries instead of just start/end of string.
+Important for matching within paragraphs.
+
+`s` (dotall)::
+Makes dot (`.`) match newlines.
+Often needed for note extraction across paragraphs.
+
+`i` (case insensitive)::
+Makes pattern case-insensitive.
+Rarely needed in ReleaseHx patterns.
+
+[[example-usage]]
+==== Example Usage
+
+All these are equivalent and will match a Release Note heading and capture its content:
+
+.Example traditional /pattern/flags
+[source,yaml]
+note_pattern: '/## Release Notes?\n(?<note>.*?)(?=\n##|\z)/ms'
+
+.Example %r{} syntax
+[source,yaml]
+note_pattern: '%r{## Release Notes?\n(?<note>.*?)(?=\n##|\z)}ms'
+
+.Example plain pattern
+[source,yaml]
+note_pattern: '## Release Notes?\n(?<note>.*?)(?=\n##|\z)'
+
+The RegexpUtils module will normalize any of these formats and apply the appropriate flags.
+
+[[custom-source-rhyml-mapping]]
+=== Custom Source-to-RHYML Mapping
+
+Another YAML-based format introduced by ReleaseHx is the mapping between (1) the payload from any cloud-based issue-management system (IMS) API and (2) the universal RHYML format.
+This procedure turns remote _issues_ into local RHYML _changes_.
+
+The data associated with _issues_ is translated, property-by-property, to its RHYML equivalent, all according to a YAML file.
+
+Similarly to <<custom-rest-config,REST API client configs>>, initial/default files exist for the major platforms (Jira, GitHub, and GitLab), but these will almost certainly need some customization to suit your particular IMS setup.
+
+[TIP]
+If you are just getting started with a project, you might consider using the default mapping to _Define_ how your issue management system is set up; they mostly hue to defaults from each cloud service.
+
+[IMPORTANT]
+This mapping case is strictly between the cloud service's payload and the generic RHYML data model.
+Most configuration of output (for drafting or enriching), is handled in the main application config file.
+
+For reference, the official mapping configs for the three supported REST APIs are at: 
+
+* link:{this_prod_repo}/blob/lib/releasehx/rest/mappings/jira.yaml[jira.yaml]
+* link:{this_prod_repo}/blob/lib/releasehx/rest/mappings/github.yaml[github.yaml]
+* link:{this_prod_repo}/blob/lib/releasehx/rest/mappings/gitlab.yaml[gitlab.yaml]
+
+To override any of these or to add your own, place a file at `.releasehx/rest/mappings/<hostslug>.yml`.
+
+A mapping file has two main parts: a `$config` block and a set of field mappings.
+
+`$config`::
+This block defines the `path_lang` (either `jmespath` or `jsonpath`) used to traverse the API payload and a `changes_array_path` which is the path to the array of issues within the payload.
+
+Field Mappings::
+Each subsequent top-level key in the mapping file corresponds to a field in the RHYML `change` object (ex: `tick`, `summ`, `note`).
+Each mapping specifies how to derive the value for that RHYML field from the source issue payload.
+This is done using a `path` and an optional `tplt` (template) or `ruby` script.
+
+* `path`: An expression in the declared `path_lang` (`jmespath` or `jsonpath`) to extract the raw value from the issue payload.
+
+* `tplt`: A Liquid template to format the extracted value.
+The extracted value is available as the `{{ path }}` variable.
+
+* `ruby`: A Ruby script to perform more complex transformations.
+The extracted value is available in the `path` local variable.
+
+[[sandboxed-ruby-transformations]]
+==== Sandboxed Ruby Transformations
+
+The `ruby` key provides a powerful way to perform complex data transformations using a secure, sandboxed Ruby environment.
+This sandbox is powered by the `SchemaGraphy::SafeTransform` class, which ensures that only an explicit allowlist of safe methods and language features can be used.
+
+[[sandboxed-ruby-context]]
+===== Execution Context
+
+Within the `ruby` script, the following variables are available:
+
+* `path`:: The value extracted by the corresponding `path` expression for the current field.
+* `issue`:: The full JSON object for the issue being processed.
+* `config`:: The complete application configuration hash.
+
+[[sandboxed-ruby-helpers]]
+===== Available Helper Methods
+
+You can use a combination of standard Ruby methods and custom helpers within the script.
+All method calls are validated against a strict allowlist.
+
+.Allowed Methods
+[cols="1,3"]
+|===
+| Method | Description
+
+| `dig_path(obj, *keys)`
+| Safely traverses a nested Hash or Array using a dot-separated path string.
+
+| `is_a?(obj, klass)`
+| Checks the class of an object. `klass` must be one of `Array`, `Hash`, `String`, `Integer`, etc.
+
+| `inspect(obj)`
+| Returns a string representation of an object for debugging.
+
+| `reduce(array, initial, &block)`
+| A safe wrapper around Ruby's `reduce` method.
+
+| String Methods
+| `downcase`, `upcase`, `capitalize`, `strip`, `split`, `sub`, `gsub`, `start_with?`, `end_with?`
+
+| Enumerable Methods
+| `map`, `select`, `reject`, `any?`, `uniq`, `compact`, `include?`, `empty?`, `size`
+
+| Operators
+| `+`, `-`, `*`, `/`, `%`, `==`, `!=`, `<`, `>`, `<=`, `>=`
+|===
+
+[[sandboxed-ruby-example]]
+===== Example
+
+The following example demonstrates how to extract a "part" from a list of labels in the `path` variable.
+
+[source,yaml]
+----
+part:
+  path: labels[].name
+  ruby: |
+    labels = is_a?(path, Array) ? path : [path]
+    part_labels = labels.select { |label| label.downcase.start_with?('part:') }
+    part_labels.map { |label| label.sub(/^part:/i, '') }.first
+----
+
+By creating a custom mapping file, you can adapt ReleaseHx to work with any issue tracker that provides a JSON-based REST API.
+
+[[alternate-mappings-for-legacy-api-structures]]
+==== Alternate Mappings for Legacy API Structures
+
+In some cases, the default mappings for supported APIs may not match your particular issue management setup.
+This commonly occurs when:
+
+* Your GitHub Issues don't use native issue types, relying instead on labels like `type:bug`, `type:feature`, or just `bug` and `feature`.
+* Your GitLab instance has a non-standard label taxonomy.
+* You need to extract data from different API response fields
+
+ReleaseHx addresses this through *alternate mapping configurations* that override the default field extraction logic.
+
+[[github-legacy-label-based-type-extraction]]
+===== GitHub Legacy Label-based Type Extraction
+
+The most common alternate mapping need is for GitHub repositories that don't use native issue types, instead relying on label-based type classification. 
+
+For example, if your GitHub issues use labels like:
+
+* `type:bug` for bug fixes
+* `type:feature` for new features  
+* `type:enhancement` for improvements
+
+Your ReleaseHx application will need an alternate mapping because the default GitHub mapping expects native `issue_type.name` fields.
+
+An example alternate mapping for label-based GitHub type extraction can be found at:
+
+`link:{releasehx_demo_repo}/blob/main/_mappings_/legacy-labels/github.yaml[releasehx-demo/_mappings_/legacy-labels/github.yaml]`
+
+This mapping includes Ruby logic to:
+
+* Extract types from `labels[].name` instead of `issue_type.name`
+* Match label values against configured type definitions
+* Handle label prefixes (ex: `type:`, `kind:`) configured in your application
+
+[[configuration-changes-for-alternate-mappings]]
+===== Configuration Changes for Alternate Mappings
+
+When using alternate mappings, you may also need to adjust your application configuration:
+
+Label Prefixes::
+If your labels use prefixes like `type:bug`, configure the appropriate prefix in your config:
++
+[source,yaml]
+----
+types:
+  label_prefix: 'type:'  # Strip 'type:' from labels like 'type:bug'
+  bug:
+    slug: bug
+    text: Bug Fix
+    head: Bug Fixes
+----
+
+Parts Extraction::
+Similar configuration may be needed for parts/components:
++
+[source,yaml]
+----
+parts:
+  label_prefix: 'part:'  # Handle labels like 'part:api', 'part:ui'
+  database:
+    head: database
+    text: Database
+  ui:
+    head: User Interface
+    text: UI
+----
+
+[[using-alternate-mappings]]
+===== Using Alternate Mappings
+
+To use an alternate mapping:
+
+. Place your custom mapping file in the appropriate directory (ex: `_mappings/github.yaml`) in your ReleaseHx application.
+
+. Adjust your application configuration for any label prefixes or field differences
+
+. Test with representative payload data to ensure proper extraction
+
+The link:{releasehx_demo_repo}[demo repository] contains working examples of these alternate mappings alongside their corresponding configurations and test payloads.
+
+[NOTE]
+ReleaseHx by default looks for a mapping file that matches the name of the API you are using.
+If <<conf_ppty_origin_source>> is set to `github`, ReleaseHx will first check if you have an override at `_mappings/github.yaml` before using the default `github.yaml` built into the application.
+
+[NOTE]
+The custom mappings path can be set using <<conf_ppty_paths_mappings_dir>> setting.
+
+[[templating-guide]]
+=== Templating Guide
+
+ReleaseHx generally uses enhanced *Liquid 4 templates* to generate new files and content from RHYML and configuration data.
+
+Notably, it employs *link:https://jekyllrb.com/docs/liquid/[Jekyll's extended tags and filters]*, as well as some additional tag and several filters provided by Sourcerer.
+
+Here we document the custom filters added by the Sourcerer module and ReleaseHx itself.
+
+[[advanced-template-configuration]]
+==== Advanced Template Configuration
+
+Before messing with Liquid templates at all, try experimenting with the advanced configuration features available for manipulating the output of your drafts and enriched output.
+
+Using the ReleaseHx config file, you can manipulate:
+
+* the order in which Changelog and Release Notes sections appear, or if either does not appear at all
+* the inclusion or exclusion of internal changes, experimental features, or breaking changes
+* the formatting of section headers, entry headlines, and metadata fields
+* the sorting and grouping of entries by type, component, contributor, or tags
+* the presence and formatting of links to issues, commits, or external documentation
+* the use of custom "`frames`" for release notes and changelog entries
+* the display of contributor information, such as lead developer
+* the configuration of frontmatter
+* lots more!
+
+Most of this can be manipulated using the following sections: <<conf_ppty_history>>, <<conf_ppty_changelog>>, <<conf_ppty_notes>>, <<conf_ppty_links>>, as well as within change-metadata config blocks, where you can alter labels, icons, and such: <<conf_ppty_types>>, <<conf_ppty_parts>>, <<conf_ppty_tags>>.
+
+The various sample configurations found in the link:{releasehx_demo_repo}/blob/main/configs/[demo repository] illustrate many of these options.
+
+A complete link:{default-config_www}[sample config] displays default values and commented descriptions of all available properties.
+
+[[liquid-extensions]]
+[[custom-liquid-tags]]
+==== Custom Liquid Tags
+
+ReleaseHx uses Jekyll's version of the `include` tag, rather than Liquid's.
+It also supports Jekyll's `include_relative` tag.
+
+link:https://jekyllrb.com/docs/includes/[See Jekyll's docs for more information.]
+
+This works essentially like Liquid 5's `render` tag, which is not available in ReleaseHx.
+
+ReleaseHx supports a tag called `embed` which takes no arguments and works exactly like Liquid's `include` tag.
+The embedded file has access to all the variables in the parent template and passes any newly created or modified variables back to affect any subsequent content in the parent template.
+
+[[custom-liquid-filters]]
+==== Custom Liquid Filters
+
+These filters can be added to link:https://shopify.github.io/liquid/[Liquid's prime list of filters] and link:https://jekyllrb.com/docs/liquid/filters[Jekyll's extended filters].
+Jekyll filters always supercede same-named Liquid filters, including `where`.
+
+plusify::
+Replace double line breaks (`+++\n\n+++`) with `+++\n+\n+++`.
+example:::
+`{{ note | plusify }}`
+
+md_to_asciidoc::
+Uses Kramdown-AsciiDoc (Kramdoc) to convert Markdown to AsciiDoc.
+arguments:::
+wrap::::
+How to handle line wrapping.
+Can be 'preserve', 'ventilate', or 'none'.
+The `ventilate` option presents places all sentences on their own lines.
+example:::
+`{{ note | md_to_asciidoc: "ventilate" }}`
+
+render::
+Renders a string as a Liquid template with the provided variables.
+arguments:::
+vars::::
+A Map (Hash) of variables to pass to the template.
+example:::
+`{{ note | render: vars }}`
+
+indent::
+Indents each line of the input by the specified number of spaces.
+arguments:::
+spaces::::
+The number of spaces to indent by.
+line1::::
+If true, also indents the first line.
+example:::
+`{{ note | indent: 2, true }}`
+
+sgyml_type::
++
+--
+Returns a string representing the SGYML _kind_ and _class_ of the input, separated by a colon (`:`).
+
+Response will be one of the following:
+
+* `Null:nil`
+* `Scalar:String`
+* `Scalar:Number`
+* `Scalar:DateTime`
+* `Scalar:Boolean`
+* `Compound:Array`
+* `Compound:ArrayList`
+* `Compound:ArrayTable`
+* `Compound:Map`
+* `Compound:MapTable`
+* `unknown:unknown`
+--
+
+example:::
+`{{ id | type_check }}`
+
+ruby_class::
+Returns the Ruby class name of the input.
+example:::
+`{{ id | ruby_class }}`
+
+demarkupify::
+Simplifies any Markdown and AsciiDoc syntax in the inline input.
++
+Strips `*` and `_` quotes, simplifies `+++"`+++` and `+++'`+++` quotes and UTF-8 curly quotes, and removes all backticks.
+example:::
+`{{ note | demarkupify }}`
+
+pasterize::
+Converts select verbs in the input from present/imperative to past tense.
++
+Replaces common terms like `add`/`adds` with `added`, `fix`/`fixes` with `fixed`, `build`/`builds` with `built`, etc.
+example:::
+`{{ summary | pasterize }}`
+
+inspect_yaml::
+Returns a YAML representation of the input for debugging purposes.
+example:::
+`{{ changes | inspect_yaml }}`
+
+
+[[troubleshooting]]
+== Troubleshooting
+
+Common issues and solutions for ReleaseHx configuration and content generation problems.
+
+[[empty-or-missing-content]]
+=== Empty or Missing Content
+
+[[transformed-n-changes-but-no-content-appears]]
+==== "Transformed N changes" but no content appears
+
+Symptoms::
+ReleaseHx reports successful data transformation (ex:, `INFO: Transformed 5 changes for release 1.1.0`) but generated files contain only headers and template text with no actual issue content.
+
+Root Cause::
+Invalid sort configuration syntax in `notes:` or `changelog:` sections.
+
+Solution::
+Check your config's `sort:` arrays for invalid `grouping1`/`grouping2`/`grouping3` syntax.
++
+.Invalid sort configuration
+[source,yaml]
+----
+# Will cause empty content
+sort:
+  - 'part:grouping1'
+  - 'type:grouping2'
+----
++
+.Correct sort configuration
+[source,yaml]
+----
+sort:
+  - 'part:group'
+  - 'type:group'
+----
+
+[[all-mapped-changes-were-nil-after-transformation]]
+==== "All mapped changes were nil after transformation"
+
+Symptoms::
+ReleaseHx cannot transform any data from the API payload.
+
+Root Cause::
+Incorrect tag filtering excluding all issues, or mapping/payload mismatch.
+
+Solution::
+. Check `tags._exclude` lists - never exclude `release_note_needed` (workflow flag)
+. Verify the payload file exists and matches the expected API format
+. Ensure custom mappings are correctly specified with `--mapping` option
+. Test with a simpler config without complex tag filtering
+
+[[template-processing-issues]]
+=== Template Processing Issues
+
+[[liquid-syntax-errors-during-template-rendering]]
+==== Liquid syntax errors during template rendering
+
+Symptoms::
+Errors like `Liquid::SyntaxError` or `Liquid::Error` when generating drafts or enriched output.
+
+Root Cause::
+Syntax errors in custom Liquid templates.
+
+Solution::
+. Validate Liquid syntax using online validators or IDE plugins
+. Test templates with minimal content to isolate issues
+. Review Jekyll's Liquid documentation for supported tags and filters
+
+
+ifdef::site-gen-jekyll[]
+[[apis]]
+== APIs
+
+Documntation for th ReleaseHx, SchemaGraphy, and Sourcerer APIs is available at:
+
+* link:/api/releasehx[ReleaseHx API]
+* link:/api/schemagraphy[SchemaGraphy API]
+* link:/api/sourcerer[Sourcerer API]
+
+endif::[]
+
+
+ifndef::site-gen-jekyll[]
+// tag::releasehx-api[]
+[[releasehx-api]]
+== ReleaseHx API
+
+While most users will interact with ReleaseHx via the `rhx` command-line tool, the gem can also be used as a library in your own Ruby projects.
+The full API reference will be available via RDoc comments in the source code.
+
+Here is a high-level overview of the main components to get you started:
+
+[[core-data-models-releasehx-rhyml]]
+=== Core Data Models (`ReleaseHx::RHYML`)
+
+The classes within the `ReleaseHx::RHYML` module are the core data objects for the application.
+
+`ReleaseHx::RHYML::Release`::
+Represents a single product release, containing metadata (like version code and date) and a collection of `Change` objects.
+
+`ReleaseHx::RHYML::Change`::
+Represents a single change within a release (ex: a bug fix or a new feature), containing properties like a summary, note, type, and tags.
+
+You will typically create or receive a `Release` object to work with.
+
+[[creating-a-release-releasehx-draftops]]
+=== Creating a Release (`ReleaseHx::DraftOps`)
+
+The `ReleaseHx::DraftOps` module provides methods for creating a `Release` object from a source.
+
+* Use `DraftOps.from_payload` to take a raw JSON payload from an API (like GitHub or Jira) and convert it into a `Release` object, according to a mapping configuration.
+
+[[generating-output-releasehx-enrichops-and-draftops]]
+=== Generating Output (`ReleaseHx::EnrichOps` and `DraftOps`)
+
+Once you have a `Release` object, you can generate output files.
+
+* Use `DraftOps.process_template_content` to generate a lightweight draft (like Markdown, AsciiDoc, or RHYML) from a `Release` object.
+
+* Use `EnrichOps.enrich_from_rhyml` to generate rich-text output (like HTML or PDF) from a `Release` object.
+
+* Use `EnrichOps.enrich_from_file` to generate rich-text output directly from a source file (ex: converting `my-release.md` to `my-release.html`).
+// end::releasehx-api[]
+
+
+[[development]]
+== Development
+
+ReleaseHx is free, open source, and *open for contributions*.
+Get in touch or open an issue to get involved.
+
+[NOTE]
+The remainder of this document refers to _how ReleaseHx is made_ rather than how to use it for your own product.
+
+[[quickstart]]
+=== Quickstart
+
+To work with ReleaseHx source, clone both repositories side by side for the most effective development workflow.
+
+. Clone both repositories.
++
+[.prompt]
+ git clone {releasehx_prod_repo}
+ git clone {releasehx_demo_repo}
++
+This will give you `<source_dir>/releasehx` and `<source_dir>/releasehx-demo`, side by side.
+
+[[building-the-releasehx-gem]]
+==== Building the ReleaseHx Gem
+
+From the `releasehx` repository:
+
+. Install dependencies and build the gem locally.
++
+[.prompt]
+ cd releasehx
+ bundle install
+ bundle exec rake build
++
+This creates the gem file in the `pkg/` directory.
+
+. Install the locally built gem for testing.
++
+[.prompt]
+ gem install pkg/releasehx-*.gem
++
+Alternatively, for development testing without installing:
++
+[.prompt]
+ bundle exec bin/rhx --version
+
+. Run the test suite to verify functionality.
++
+[.prompt]
+ bundle exec rake spec
+
+[[working-with-the-demo-repository]]
+==== Working with the Demo Repository
+
+From the `releasehx-demo` repository:
+
+. Install the latest gem version (published or local).
++
+[.prompt]
+ cd releasehx-demo
+ bundle install
++
+If testing a local gem build, update the `Gemfile` to point to your local gem path.
+
+. Execute `releasehx` commands against demo data.
++
+[.prompt]
+ bundle exec rhx <your arguments and options>
++
+Replace `<your arguments and options>` with whatever you are testing.
+See the `releasehx-demo` repo's README for example commands.
+
+. Generate sample outputs (for the `samples` branch).
++
+.Example commands to generate outputs
+[.prompt]
+ bundle exec rhx draft --source github --version v1.2.0
+ bundle exec rhx enrich --input _drafts/v1.2.0.rhyml --format html
++
+By convention/default, drafts are written to `_drafts/` and rich-text outputs to `_publish/`.
+These directories are ignored on the `main` branch but form the entire content of the `samples` branch.
+
+[[background]]
+=== Project Background
+
+ReleaseHx is my fourth or fifth time tackling this problem, though in previous cases I had the misfortune (luxury?) of solving it for one company at a time, and never in such a robust way that the results would be worth open sourcing.
+
+All of my employers and clients in the past 10 years needed a system like this, and some of them paid me to make one.
+But before all that, I inherited a Python script that converted Jira issue fields into AsciiDoc, for enriching to PDF and HTML.
+
+[NOTE]
+All of the code in this repository is original to this instance of my work in the broader problem/solution space.
+The ReleaseHx codebase involves no licensing infringements whatsoever.
+
+Using and hacking at that script for years of documenting GA releases for an entire enterprise software product made me appreciate the need for cloud sourcing and automation, for the benefit of all stakeholders.
+
+I also spent years hanging in the #release-notes channel of the link:https:writethedocs.org/slack[Write the Docs Slack], over and over again advising technical writers on this broad problem space.
+"`How do you convert Jira tickets to release notes?`" or "`How do you automate a changelog from Git or GitHub Issues?`" are typical inquiries there.
+
+The short answer is:
+
+. Use your team's preferred scripting language to:
+[lowerroman]
+.. connect to the REST API, then
+.. download issues for the upcoming release, then
+.. extract release notes from some pre-designated part of the issue data.
+. Use your team's favorite template engine to enrich notes or log entries into your preferred lightweight markup:
+.. Markdown *or*
+.. AsciiDoc
+. Edit the content manually in Markdown/AsciiDoc, then:
+.. commit it to your existing docs SSG *or* 
+.. push it to Confluence or the product's deployment pipeline
+
+Easier said than done, especially for TWs working with scarce developer resources.
+
+I am unaware of any utility that serves this need broadly and flexibly, and in all these years, nobody has ever recommended one in WTD Slack.
+Hopefully, ReleaseHx will fill much of this void in an adaptable and repeatable fashion.
+
+[[ddd]]
+=== Docs-driven Development
+
+The ReleaseHx gem is an example of README-first development.
+Not only is the README written in AsciiDoc, and not only is documentation done first in the README during early development, but much of the documentation and product data is single-sourced in the README as AsciiDoc _attributes_.
+
+This unorthodox approach requires some explanation.
+This method is probably better suited to large teams, but the point of DocOps Lab's broader approach is this unconventional means of coordinating docs and code.
+
+At the very beginning of the build procedure for the application's Ruby gem, (1) data is ingested and (2) snippets are harvested from the `README.adoc` file for internal or user-facing purposes in the application.
+
+For instance, the application version number is derived from the attribute `:this_prod_vrsn:` in the README.
+See, I can even place it here without fear that it will ever fall out of step:
+*{this_prod_vrsn}*.
+
+Additionally, the help screen itself is sourced here in this README and included verbatim -- after converting to rich-text with link:https://asciidoctor.org[Asciidoctor] -- in the CLI's output.
+
+The application help and manpage documentation is also sourced in this way.
+(Use `rhx --help` or `rhx --man` to reveal.)
+
+This capability is provided by the Sourcerer module introduced in this gem but intended to be spun off into it own gem for use in all my (and any of your) Ruby projects in the future.
+
+[[common-dev-tasks]]
+=== Common Dev Tasks
+
+Use `bundle exec rake --tasks` to list all available Rake tasks.
+
+Use `bundle exec rake --tasks | grep -v labdev:` to see just local tasks.
+
+Here is brief documentation for some key tasks.
+
+[[add-cli-option]]
+==== Add a new CLI Option
+
+CLI options are not defined in the traditional way.
+To maintain DRY sourcing, make your changes in the following files:
+
+. `README.adoc`: Descriptions are single sourced as AsciiDoc attributes:
+.. Add summary description to the `// tag::helpscreen_attrs[]` block.
+.. Add detailed description to the `cli-options-ref` section.
+. `lib/releasehx/cli.rb`
+.. Use the Thor DSL to define the option, referencing the AsciiDoc attributes for description.
+.. Add the handling code.
+. Add tests in `specs/tests/rspec/cli_spec.rb`.
+
+[[build-the-docs]]
+==== Build the Docs
+
+To build the documentation locally, run the following command from the project root:
+
+[.prompt]
+ bundle exec rake docs
+
+This will generate the documentation in the `build/docs` directory.
+
+[[serve-the-docs]]
+==== Serve the Docs
+
+To serve the documentation locally, run the following command from the project root:
+
+[.prompt]
+ bundle exec rake serve
+
+This will start a Jekyll server at http://localhost:8000 by default.
+
+Use `PORT=NNNN` environment argument to specify a different port. 
+
+[.prompt]
+ PORT=4000 bundle exec rake serve
+
+==== DocOps Lab Devtool (`docopslab-dev`)
+
+Special dev Rake tasks and libraries are available via the `docopslab-dev` gem.
+
+.List tasks from `docopslab-dev`
+[.prompt]
+ bundle exec rake --tasks | grep labdev:
+
+The link:{docopslab_git_www}/lab/tree/main/gems/docopslab-dev/README.adoc[DocOps Lab Devtool] or see `.agent/docs/topics/docpslab-devtool`.
+
+// tag::releasehx-api[]
+[[issue-data-mapping]]
+=== Issue-data Mapping
+
+In designing a domain-specific data model, I had to mimic the logic of the domain, which is dominated by Jira and GitHub, for better or worse.
+Here is the way fields are mapped/adapated by default for converting _issue_ data to _change_ data.
+
+// tag::mapping-table[]
+// tag::ai-prompt[]
+.Upstream/source issue data mapping table
+[cols="1a,1a,1a,1a,1a",options=header]
+|===
+
+| Jira | GitHub | GitLab | RHYML | Ruby/Liquid
+
+| N/A
+| N/A
+| N/A
+| `chid`
+| `chid`
+
+| `key`
+| `number`
+| `iid`
+| `tick`
+| `tick`
+
+| `commit` (custom field, if available)
+| associated commit hash (via PR merge or commit references)
+| commit hash from merge request or commit ref
+| `hash`
+| `hash`
+
+| `issuetype` or label matching slug in `types`
+| `type` or label matching slug in `types`
+| `issue_type` or label matching slug in `types`
+| `type`
+| `type`
+
+| `component`
+| label: `component:<component>`
+| label: `component::<component>` or scoped labels
+| `part`
+| `part`
+
+| `summary`
+| `title`
+| `title`
+| `summ`
+| `summ`
+
+| N/A
+| N/A
+| N/A
+| `head`
+| `head`
+
+| _custom field_
+| `+++## Release Note+++` in body
+| `+++## Release Note+++` in body
+| `note`
+| `note`
+
+| label: `deprecation`
+| label: `deprecation`
+| label: `deprecation`
+| `tags: [deprecation]`
+| `tags['deprecation']` / `deprecation` Boolean / `.deprecation?`
+
+| label: `breaking`
+| label: `breaking`
+| label: `breaking`
+| `tags: [breaking]`
+| `tags['breaking']` / `breaking` Boolean / `.breaking?`
+
+| label: `experimental`
+| label: `experimental`
+| label: `experimental`
+| `tags: [experimental]`
+| `tags['experimental']` / `experimental` Boolean / `.experimental?`
+
+| label: `highlight`
+| label: `highlight`
+| label: `highlight`
+| `tags: [highlight]`
+| `tags['highlight']` / `highlight` Boolean / `.highlight?`
+
+| label: `release_note_needed`
+| label: `release_note_needed`
+| label: `release_note_needed`
+| N/A
+| N/A
+
+| label: `changelog`
+| label: `changelog`
+| label: `changelog`
+| N/A
+| N/A
+
+| `fixVersions`
+| `milestone`
+| `milestone`
+| nested context
+| `version`
+
+| `assignee`
+| `assignee`
+| `assignee`
+| `lead`
+| `lead`
+
+|===
+// end::ai-prompt[]
+// end::mapping-table[]
+
+Users are not beholden to these mappings.
+A powerful custom <<custom-source-rhyml-mapping,mapping system>> is available.
+
+// end::releasehx-api[]
+
+[[codebase-structure]]
+=== Codebase Structure
+
+Here is a model of the ReleaseHx gem's codebase.
+Only major files and directories are displayed, sorted in the order we find most instructive.
+
+// tag::ai-prompt[]
+.File tree of key files
+[source,tree,line-comment=#]
+----
+releasehx.gemspec                # Gem definition
+Rakefile                         # Build tasks
+README.adoc                      # Single source of truth
+Dockerfile                       # Docker image definition
+build/                           # Untracked, ephemeral path for generated assets
+docs/                            # Documentation build source (Jekyll, YARD)
+.config/                         # Config files for various tools
+├── sourcerer.yml                # Sourcerer prebuild manifest
+└── docopslab-dev.yml            # DocOpsLab Devtool config
+specs/
+   ├── data/                     # Schema/definition files
+   │   ├── config-def.yml            # Configuration definition
+   │   ├── rhyml-schema.yaml         # RHYML schema definition
+   │   ├── api-client-schema.yaml    # API client schema definition
+   │   ├── rhyml-mapping-schema.yaml # API -> RHYML schema definition
+   │   └── mcp-manifest.yml          # Asset registry for MCP server
+   └── tests/
+       ├── README.adoc
+       ├── rspec/                # RSpec tests
+       └── configs/              # Test configs
+lib/
+├── releasehx.rb                 # Application core
+├── schemagraphy.rb              # Special YAML handling
+├── sourcerer.rb                 # Single-sourcing tool
+├── docopslab/
+│   ├── mcp/                     # MCP assets and packaging
+│   └── mcp.rb                   # DocOpsLab MCP entrypoint
+├── releasehx/
+│   ├── cli.rb                   # Thor CLI definition
+│   ├── configuration.rb         # CFGYML parsing
+│   ├── generated.rb             # Generated by prebuild (packaged)
+│   ├── helpers.rb               # Utility helpers
+│   ├── mcp/                     # MCP server assets
+│   ├── mcp.rb                   # MCP server entrypoint
+│   ├── README.adoc              # Internal developer notes
+│   ├── rhyml.rb                 # RHYML entrypoint
+│   ├── sgyml/                   # SGYML helpers
+│   │   └── helpers.rb           # module SgymlHelpers
+│   ├── transforms/              # Input transformations (ADF, etc)
+│   ├── version.rb               # Version constant
+│   ├── rest/                    # module REST
+│   │   ├── yaml_client.rb       # ReleaseHx::REST::YamlClient class
+│   │   └── clients/             # YAML files for API clients (jira.yaml, etc)
+│   ├── ops/                     # Main ReleaseHx methods 
+│   │   ├── check_ops.rb         # ReleaseHx::CheckOps module
+│   │   ├── draft_ops.rb         # ReleaseHx::DraftOps module
+│   │   ├── enrich_ops.rb        # ReleaseHx::EnrichOps module
+│   │   ├── template_ops.rb      # ReleaseHx::TemplateOps module
+│   │   └── write_ops.rb         # ReleaseHx::WriteOps module
+│   ├── rhyml/                   # module RHYML
+│   │   ├── adapter.rb           # maps from JSON using a mapping file
+│   │   ├── change.rb            # Change class
+│   │   ├── liquid.rb            # Liquid filters for RHYML
+│   │   ├── release.rb           # Release class
+│   │   ├── loaders.rb           # loads RHYML YAML or JSON from disk
+│   │   ├── mappings/            # API -> RHYML mappings
+│   │   └── templates/           # RHYML output templates
+├── schemagraphy/
+│   ├── cfgyml/                  # CFGYML (OpenCFGY) parsing
+│   ├── attribute_resolver.rb    # Resolves {attribute_name} placeholders
+│   ├── loader.rb                # `SchemaGraphy::Loader`
+│   ├── regexp_utils.rb          # Regular expression utilities
+│   ├── schema_utils.rb          # `get_schema_defaults`, etc
+│   ├── tag_utils.rb             # `detag`, `tag_of`, etc
+│   ├── templates/               # CFGYML documentation templates
+│   │   └── cfgyml/              # Config reference templates (+ sample gen)
+│   └── templating.rb            # Defines handling of parsable YAML nodes
+└── sourcerer/
+    ├── builder.rb               # Writes snippets to files at build time
+    ├── jekyll.rb                # Jekyll and Liquid handling for Sourcerer
+    ├── plaintext_converter.rb   # Pre-processes AsciiDoc source files
+    └── templating.rb            # Liquid/ERB template handling
+----
+// end::ai-prompt[]
+
+[[docopslab]]
+=== DocOpsLab (Module)
+
+This code is intended to eventually make its way upstream to the `docopslab-dev` gem or more likely a `docopslab-mcp` gem, which is housed in the DocOps/lab monorepo and available to all DocOps Lab projects.
+
+Either way, this gem will include a wrapper for the link:https://github.com/modelcontextprotocol/ruby-sdk[official Ruby SDK] for link:https://modelcontextprotocol.io/docs/getting-started/intro["`model context protocol`" (MCP)] integration.
+For now it's easier to test inside the one gem that is making immediate use of the protocol.
+
+If the MVP pans out (which is uncertain given how weak MCP tech is and how frustrating it was to get it working with various clients), I will upstream it for use in any Ruby projects.
+
+[[sourcerer]]
+=== Sourcerer
+// tag::sourcerer[]
+This gem introduces a module called Sourcerer, by which AsciiDoc files can be parsed and their contents harvested for use in the application build.
+The module also handles Liquid template processing with enhanced attribute resolution capabilities.
+
+[NOTE]
+Sourcerer is intended to be spun off as its own gem once it successfully proves the concept in this gem.
+It will probably be called _AsciiSourcerer_ and may replace an older and unmaintained utility of mine called LiquiDoc.
+
+It is invoked in the Rakefile, establishing global namespaces: 
+
+* `ReleaseHx::ATTRIBUTES[:globals]` (derived from this `README.adoc` file)
+* `ReleaseHx.read_built_snippet(:<name>)` (such as `:helpscreen`)
+
+The Sourcerer module also generates files like `build/docs/manpage.adoc`, which generates the formatted terminal manual, using content from `build/docs/config-reference.adoc` and this README (`tags="cli_options"`, for instance).
+
+It also generates an AsciiDoc-formatted configuration reference, a machine-readable JSON reference, and a sample config using the `specs/data/config-def.yml` file.
+The Sourcerer system now supports *attribute resolution* from AsciiDoc source files, enabling templates to access README attributes during rendering, ensuring configuration documentation reflects actual default values.
+
+Sourcerer also performs basic testing of select commands in the ASciiDoc file that have been assigned a `testable` role.
+
+This is mostly just showing off what Sourcerer can do, and hopefully setting into habit some best practices for my more complicated apps.
+
+Sourcerer is also where integration with Jekyll's extensions of Liquid occurs, bringing ReleaseHx's templating powers closely in line with how Jekyll's work, as described in <<custom-liquid>>.
+// end::sourcerer[]
+
+[[schemagraphy]]
+=== SchemaGraphy
+
+This gem also introduces a module that derives from an unreleased gem I have been working on for some years: SchemaGraphy.
+
+SchemaGraphy is basically an extension of YAML, enabling Ruby developers and end users more broadly to powerfully interpret and schematize YAML-based data.
+Most relevant to our case, as enabled by the `SchemaGraphy` module in this gem, is its handling of *YAML custom tags*, *attribute resolution*, and what I am calling *"`templated fields`"*, where the value of a YAML node is a String that is intended to be further processed by a templating engine like Liquid or ERB, either immediately upon ingest or later in the runtime stack, when it can be mixed with additional data.
+
+SchemaGraphy facilitates handling these and other quirky power-ups we use with our fully valid YAML files, so low-code users can pass some dynamism along in their YAML configs and so forth.
+
+[[attribute-resolution]]
+==== Attribute Resolution
+
+SchemaGraphy provides *attribute resolution* capabilities through the `AttributeResolver` component.
+This enables YAML files to reference external attributes using placeholder syntax like `{attribute_name}`.
+
+When loading YAML with `.load_yaml_with_attributes(file_path, attributes)`, SchemaGraphy:
+
+. Loads the YAML file normally
+. Searches for `{attribute_name}` patterns in String values  
+. Replaces them with corresponding values from the provided attributes Hash
+. Returns the resolved YAML data structure
+
+This is used extensively in ReleaseHx's configuration system to enable single-sourcing of defaults from README attributes.
+
+[[custom-yaml-tag-handling]]
+==== Custom YAML Tag Handling
+
+To enable end users to pass meta-instructions along with their data, wherever it will make sense to do so, SchemaGraphy offers a straightforward handling system.
+
+Wherever you parse YAML-formatted data using `.load_yaml_with_tags`, custom-tagged Scalar nodes are converted into Maps like so:
+
+.User's YAML
+[source,yaml]
+----
+some_property: !liquid "{{ some_value }}"
+----
+
+.Converted data TagMap
+[source,yaml]
+----
+some_property:
+  __tag__: liquid
+  value: "{{ some_value }}"
+----
+
+Developers may therefore conditionally interpret ingested data based on user-defined classifications, wherever the developer supports such things.
+
+Whether a Scalar has been transformed into a TagMap, you can resolve it using:
+
+[source,ruby]
+----
+SchemaGraphy::TagUtils.detag(some_property)
+# Or, with a local alias
+detag = ->(val) { SchemaGraphy::TagUtils.detag(val) }
+detag(some_property)
+----
+
+When tags are used this way, to convey a syntax/engine for processing a template or other dynamic content, SchemaGraphy can even help us handle the content in the manner designated by the tag.
+This will come up again in <<templated-fields,the next section>>.
+
+[NOTE]
+This capability is only available on Scalar node values.
+For now, tags applied to other compound node types (Arrays/sequences, Maps/mappings) will be ignored by SchemaGraphy interpreters.
+
+[WARNING]
+When you use `load_yaml_with_tags`, you will encounter errors downstream if a user places a tag on a node where you do not expect it.
+
+[[templated-fields]]
+==== Templated Property Values in YAML
+
+We are calling these "`templated fields`" to specify that we are talking about enabling end users to use Liquid, ERB, or eventually other templating syntaxes in YAML node values.
+
+In so doing, developer are able to designate that the value of certain YAML nodes should be handled by a templating engine, as well as when and how.
+
+We'll look at how this is done in <<templated-fields-handling>>.
+For now, the point is that sometimes files like `specs/data/config-def.yml` or an API-mapping file call for a little more runtime dynamism than a low-code solution like pure YAML can support.
+
+Therefore, when the value of a user-configurable or environment-deterimined "`setting`" is a string that must be generated from data defined outside that field, we parse and render the template at runtime, using data from the environment or elsewhere.
+For now, it is up to our calling code to provide the appropriate variables to the template depending on the context.
+
+[[config-def]]
+==== Configuration Definition (CFGYML)
+
+All user-configurable settings have a definition, if not also a default value.
+For single-sourcing purposes, these are defined in a YAML format called CFGYML -- a configuration-file modeling language.
+
+The file is at `{gem_config_definition_path}`.
+It is used to establish the literal default settings carried by the application, and also to document those settings for the user.
+
+This practice lets developers give end users extremely detailed configurations, always well documented.
+
+[[attribute-resolution-in-cfgyml]]
+===== Attribute Resolution in CFGYML
+
+CFGYML supports *attribute resolution* from AsciiDoc files (like this README) using placeholder syntax.
+Default values can reference README attributes using `{attribute_name}` syntax:
+
+[source,yaml]
+----
+properties:
+  $meta:
+    properties:
+      markup:
+        dflt: "{default_markup}"  # Resolved from README.adoc :default_markup: attribute
+----
+
+This enables single-sourcing of configuration defaults from README attributes, ensuring that documentation and defaults stay synchronized.
+
+[[cfgyml-schema-structure]]
+===== CFGYML Schema Structure
+
+The basic schema is somewhat straightforward.
+Essentially, you're nesting Map objects within a YAML key `properties`, and each property (setting) of the defined config file can be described and constrained.
+
+Each setting can have a type, description (`desc`), default (`dflt`), and templated-field instructions (`templating`).
+If the setting is itself a of type `Map` (YAML "`mapping`", JSON "`object`"), its own nested parameters can be established with a `properties:` block.
+
+For now, you can designate the type, which you will have to enforce in your code, as well as a default value.
+
+[[sgyml-schemas]]
+==== SGYML Schemas
+
+Similar to but more complicated than CFGYML definition files are SchemaGraphy schema files.
+This is a partially specified, partially developed, and as-yet-incomplete syntax for designating and constraining YAML documents.
+
+ReleaseHx at this time makes active use of only minimal aspects of these schemas, all of which are contained in the `specs/` directory at the root of the gem source.
+
+Each of the YAML formats used by ReleaseHx has its own schema in the repo.
+The cfgyml-schema.yaml file will eventually be spun off, but the `specs/data/rhyml-schema.yaml` and `specs/data/rhyml-mapping-schema.yaml` files will stay here, defining valid formats for the types of files they apply to.
+
+Since SchemaGraphy itself is still unreleased, CFGYML as introduced in this gem offers only a subset of what it will enable down the road.
+
+Once SchemaGraphy is generally available, this gem will call it as a dependency.
+At that point, a file like `specs/data/config-def.yml` (CFGYML) will be able to impose a more detailed `$schema` for any property.
+
+[[templated-fields-handling]]
+==== Dynamic Templated-field Handling
+
+The most powerful function of SchemaGraphy schemas that is now available in ReleaseHx is the ability to instruct how templated fields should be processed at different stages, and also to parse and render them as needed.
+
+Templated-field handling can be established between a combination of (1) CFGYML definition files or SGYML schema files and (2) configuration files to be applied at runtime.
+
+Developers can designate a given property to be `type: Template` in a schema or definition.
+This "`typing`" can be a trigger for downstream parsing/rendering of the template.
+
+[NOTE]
+Liquid uses these two stages.
+The _parse_ operation compiles a template into a `Liquid::Template` object.
+The _render_ operation applies a dataset to the loaded template, generating a String with Liquid tags resolved.
+
+[[nyi]]
+==== Not Yet Implemented
+
+Most aspects of SchemaGraphy/SGYML are not yet available in ReleaseHx, but some are worth pointing out.
+
+data types::
+As of now, the `type` node of any property in `specs/data/config-def.yml` is not particularly functional.
+I do have a whole table of "`data types`" in SGYML, most of which are extremely self-explanatory and drawn from fairly platonic, cross-language terms.
++
+However, these are entirely unenforced in ReleaseHx -- for now, data still has to be type checked explicitly in the Ruby code, and user configs are not validated against any kind of typing system.
+
+schema docs::
+The schema files do not yet generate complete reference docs for the subject files that they govern.
+So for instance, you'll have to read files like `specs/data/rhyml-schema.yaml` and `specs/data/rhyml-mapping-schema.yaml` directly to understand the format of RHYML files and how they are mapped to REST response payloads.
+// end::schemagraphy[]
+
+[[docs-deployment]]
+=== Documentation Deployment
+
+ReleaseHx end-user and developer documentation is primarily sourced in this README file.
+
+Reference documentation is generated from YAML-formatted definition files (`specs/data/config-def.yml`, for instance) and from RDoc comments in Ruby files.
+
+The documentation site is built using link:https://jekyllrb.com[Jekyll], with AsciiDoc source files processed by the link:https://github.com/asciidoctor/jekyll-asciidoc[jekyll-asciidoc plugin].
+
+The `docs/` directory has its own resources, and there are docs-related operations in `.github/workflows`.
+
+The docs are served at {releasehx_docs_www}.
+
+Documentation deployment is fully automated via GitHub Actions.
+Every push to `main` triggers the `.github/workflows/gh-pages.yml` workflow
+
+The site is served at `releasehx.docopslab.org` via the `docs/CNAME` file.
+
+endif::[]

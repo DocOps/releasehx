@@ -1,0 +1,31 @@
+# GitLab REST API Client Configuration
+# For GitLab v4 API - Issues endpoint  
+name: gitlab
+desc: |
+  GitLab REST API client for fetching issues and merge requests.
+  Supports GitLab v4 API with token-based authentication.
+
+auth:
+  mode: header
+  header: PRIVATE-TOKEN
+  format: "{{ env.GITLAB_TOKEN }}"
+
+# GitLab API endpoint template  
+# Variables available: origin.project, version, env
+href: "{{ env.GITLAB_API_HOST | default: 'https://gitlab.com' }}/api/v4/projects/{{ origin.project | default: env.GITLAB_PROJECT_ID }}/issues"
+query_type: key_value
+
+# Query parameters for filtering issues
+query_string: |
+  milestone={{ version }}&state=closed&per_page=100
+
+# Pagination settings using GitLab's offset pagination
+pagination:
+  param: page
+  page_size_param: per_page
+  page_size: 100
+  max_pages: 10
+
+# Response format expectation
+response_format: json
+root_issues_path: "."

@@ -1,0 +1,25 @@
+{%- if config.conversions.markup == "markdown" %}
+{%-   assign change_note = change.note | default: "NO RELEASE NOTE PROVIDED" | md_to_html | trim  %}
+{%- else %}
+{%-   assign change_note = change.note | default: "NO RELEASE NOTE PROVIDED" | trim %}
+{%- endif %}
+{%- include metadata-note.html.liquid %}
+
+<div class="release-note card mb-3" id="note-{{ change.chid }}">
+    <div class="card-body">
+        {%- if change.head %}
+        <h5 class="card-title">{{ change.head }}</h5>
+        {%- endif %}
+
+        <div class="card-text">
+            {{ change_note }}
+        </div>
+
+        {%- if change_metadata != "" %}
+        <div class="change-metadata mt-3 pt-2 border-top">
+            {{ change_metadata | trim }}
+        </div>
+        {%- endif %}
+    </div>
+</div>
+

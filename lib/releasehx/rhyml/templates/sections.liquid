@@ -1,0 +1,47 @@
+{%- if changelog_spot and changelog_spot == 1 %}
+{%-   assign section_type = "changelog" %}
+{%-   case format %}
+{%-     when "asciidoc" %}
+{%-       embed changelog.adoc.liquid %}
+{%-     when "markdown" %}
+{%-       embed changelog.md.liquid %}
+{%-     when "html" %}
+{%-       embed changelog.html.liquid %}
+{%-   endcase %}
+{%- endif %}
+
+{%- if release_notes_spot and release_notes_spot == 1 %}
+{%-   assign section_type = "notes" %}
+{%-   case format %}
+{%-     when "asciidoc" %}
+{%-       embed release-notes.adoc.liquid %}
+{%-     when "markdown" %}
+{%-       embed release-notes.md.liquid %}
+{%-     when "html" %}
+{%-       embed release-notes.html.liquid %}
+{%-   endcase %}
+{%- endif %}
+
+{%- if config.changelog and config.changelog.spot == 2 %}
+{%-   assign section_type = "changelog" %}
+{%-   case format %}
+{%-     when "asciidoc" %}
+{%-       embed changelog.adoc.liquid %}
+{%-     when "markdown" %}
+{%-       embed changelog.md.liquid %}
+{%-     when "html" %}
+{%-       embed changelog.html.liquid %}
+{%-   endcase %}
+{%- endif %}
+
+{%- if release_notes_spot and release_notes_spot == 2 %}
+{%-   assign section_type = "notes" %}
+{%-   case format %}
+{%-     when "asciidoc" %}
+{%-       embed release-notes.adoc.liquid %}
+{%-     when "markdown" %}
+{%-       embed release-notes.md.liquid %}
+{%-     when "html" %}
+{%-       embed release-notes.html.liquid %}
+{%-   endcase %}
+{%- endif %}

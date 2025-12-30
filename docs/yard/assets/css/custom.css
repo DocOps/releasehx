@@ -1,0 +1,443 @@
+/* Dark theme for YARD documentation to match just-the-docs */
+
+/* Base colors matching just-the-docs dark scheme */
+:root {
+  --dark-bg: #1e1e1e;
+  --dark-surface: #2d2d30;
+  --dark-surface-alt: #3e3e42;
+  --dark-border: #464647;
+  --dark-text: #cccccc;
+  --dark-text-muted: #9d9d9d;
+  --dark-accent: #007acc;
+  --dark-accent-hover: #4fc3f7;
+  --dark-success: #89d185;
+  --dark-warning: #e2c08d;
+  --dark-error: #f44747;
+}
+
+/* Main layout */
+body {
+  background-color: var(--dark-bg) !important;
+  color: var(--dark-text) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Header and navigation */
+#header {
+  background-color: var(--dark-surface) !important;
+  border-bottom: 1px solid var(--dark-border) !important;
+  color: var(--dark-text) !important;
+}
+
+#menu {
+  background-color: var(--dark-surface) !important;
+}
+
+#menu a {
+  color: var(--dark-accent) !important;
+  text-decoration: none;
+}
+
+#menu a:hover {
+  color: var(--dark-accent-hover) !important;
+}
+
+#menu .title {
+  color: var(--dark-text) !important;
+}
+
+/* Sidebar navigation */
+#nav, .nav_wrap iframe {
+  background-color: var(--dark-surface-alt) !important;
+}
+
+#toc {
+  background-color: var(--dark-bg) !important; 
+}
+
+/* Search */
+#search input {
+  background-color: var(--dark-surface-alt) !important;
+  border: 1px solid var(--dark-border) !important;
+  color: var(--dark-text) !important;
+}
+
+#search input:focus {
+  border-color: var(--dark-accent) !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+/* Main content area */
+#main {
+  background-color: var(--dark-bg) !important;
+  color: var(--dark-text) !important;
+}
+
+/* Documentation content */
+.docstring, .discussion {
+  color: var(--dark-text) !important;
+}
+
+.docstring h1, .docstring h2, .docstring h3, .docstring h4, .docstring h5, .docstring h6 {
+  color: var(--dark-text) !important;
+  border-bottom: 1px solid var(--dark-border);
+}
+
+/* Code blocks and syntax highlighting */
+.source_code, pre {
+  background-color: var(--dark-surface-alt) !important;
+  border: 1px solid var(--dark-border) !important;
+  color: var(--dark-text) !important;
+}
+
+.highlight {
+  background-color: var(--dark-surface-alt) !important;
+}
+
+/* Ruby syntax highlighting for dark theme */
+.highlight .k { color: #ff79c6; } /* keywords - pink */
+.highlight .s { color: #f1fa8c; } /* strings - yellow */
+.highlight .c { color: #6272a4; } /* comments - purple-gray */
+.highlight .n { color: var(--dark-text); } /* names */
+.highlight .nf { color: #50fa7b; } /* function names - green */
+.highlight .nc { color: #8be9fd; } /* class names - cyan */
+.highlight .o { color: #ff79c6; } /* operators - pink */
+.highlight .p { color: var(--dark-text); } /* punctuation */
+.highlight .m { color: #bd93f9; } /* numbers - purple */
+
+/* Method signatures */
+.signature {
+  background-color: var(--dark-surface) !important;
+  border: 1px solid var(--dark-border) !important;
+  color: var(--dark-text) !important;
+}
+
+.signature .type {
+  color: var(--dark-accent) !important;
+}
+
+/* Tags and labels */
+.tag {
+  background-color: var(--dark-surface-alt) !important;
+  color: var(--dark-text) !important;
+  border: 1px solid var(--dark-border);
+}
+
+.private .tag {
+  background-color: var(--dark-error) !important;
+  color: white !important;
+}
+
+/* Tables */
+table {
+  background-color: var(--dark-surface) !important;
+  border: 1px solid var(--dark-border) !important;
+  color: var(--dark-text) !important;
+}
+
+th {
+  background-color: var(--dark-surface-alt) !important;
+  border-bottom: 2px solid var(--dark-border) !important;
+  color: var(--dark-text) !important;
+}
+
+td {
+  border-bottom: 1px solid var(--dark-border) !important;
+}
+
+/* Links */
+a {
+  color: var(--dark-accent) !important;
+}
+
+a:hover {
+  color: var(--dark-accent-hover) !important;
+}
+
+/* Method list and object summary */
+.method_details_list .method_name,
+.summary .signature {
+  background-color: var(--dark-surface) !important;
+  border: 1px solid var(--dark-border) !important;
+}
+
+.method_details_list .method_name a {
+  color: var(--dark-accent) !important;
+}
+
+/* File info */
+.file_info {
+  background-color: var(--dark-surface-alt) !important;
+  border: 1px solid var(--dark-border) !important;
+  color: var(--dark-text-muted) !important;
+}
+
+/* Scrollbars for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dark-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--dark-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--dark-text-muted);
+}
+
+/* Additional styling improvements */
+
+/* Parameters and return values sections */
+.tags {
+  background-color: var(--dark-surface) !important;
+  border: 1px solid var(--dark-border) !important;
+  padding: 10px !important;
+  margin: 10px 0 !important;
+}
+
+.tag_title {
+  color: var(--dark-text) !important;
+  font-weight: bold !important;
+  margin-bottom: 8px !important;
+}
+
+.param {
+  list-style: none !important;
+  padding-left: 0 !important;
+}
+
+.param li {
+  margin-bottom: 8px !important;
+  padding-left: 20px !important;
+  position: relative;
+}
+
+.param li:before {
+  content: "•";
+  color: var(--dark-accent);
+  position: absolute;
+  left: 0;
+}
+
+.param .name {
+  color: var(--dark-accent) !important;
+  font-weight: bold !important;
+}
+
+.param .type {
+  color: var(--dark-text-muted) !important;
+  font-style: italic !important;
+}
+
+/* Source code line numbers */
+.source_code .lines {
+  background-color: var(--dark-surface-alt) !important;
+  border-right: 1px solid var(--dark-border) !important;
+  color: var(--dark-text-muted) !important;
+  text-align: right !important;
+  padding-right: 8px !important;
+}
+
+.note.private {
+  color: var(--dark-text-muted) !important;
+}
+
+/* Method details sections */
+.method_details {
+  border-bottom: 1px solid var(--dark-border) !important;
+  padding-bottom: 20px !important;
+  margin-bottom: 20px !important;
+}
+
+.method_details h3.signature {
+  background-color: var(--dark-surface) !important;
+  border: 1px solid var(--dark-border) !important;
+  padding: 10px !important;
+  margin: 0 0 10px 0 !important;
+  border-radius: 4px;
+}
+
+/* Navigation breadcrumbs */
+#menu .object_link a {
+  color: var(--dark-accent) !important;
+}
+
+#menu .object_link a:hover {
+  color: var(--dark-accent-hover) !important;
+}
+
+/* Class and module inheritance info */
+.superclass, .included_mods {
+  color: var(--dark-text-muted) !important;
+}
+
+.superclass a, .included_mods a {
+  color: var(--dark-accent) !important;
+}
+
+/* Object summary tables */
+.summary {
+  background-color: var(--dark-surface) !important;
+  border: 1px solid var(--dark-border) !important;
+}
+
+.summary tr:nth-child(even) {
+  background-color: var(--dark-surface-alt) !important;
+}
+
+.summary .signature_types {
+  color: var(--dark-text-muted) !important;
+}
+
+/* Extras and badges */
+.extras {
+  background-color: var(--dark-surface-alt) !important;
+  color: var(--dark-text-muted) !important;
+  padding: 2px 6px !important;
+  border-radius: 3px !important;
+  font-size: 0.8em !important;
+}
+
+/* Namespace list in sidebar */
+.namespace_list {
+  background-color: var(--dark-surface) !important;
+}
+
+.namespace_list li {
+  border-bottom: 1px solid var(--dark-border) !important;
+}
+
+.namespace_list a {
+  color: var(--dark-text) !important;
+  padding: 4px 8px !important;
+  display: block !important;
+}
+
+.namespace_list a:hover {
+  background-color: var(--dark-surface-alt) !important;
+  color: var(--dark-accent) !important;
+}
+
+/* Override any remaining light backgrounds */
+div, span, p, ul, ol, li {
+  background-color: transparent !important;
+}
+
+/* Fix inline code elements with white backgrounds */
+p code, li code, td code, th code, dd code, dt code, h3 code, h2 code {
+  background-color: var(--dark-surface-alt) !important;
+  color: var(--dark-text) !important;
+  padding: 2px 4px !important;
+  border-radius: 3px !important;
+  border: 1px solid var(--dark-border) !important;
+}
+
+pre.code {
+  background-color: black !important;
+}
+
+/* Fix admonition blocks */
+.admonitionblock {
+  background-color: var(--dark-surface) !important;
+  border: 1px solid var(--dark-border) !important;
+  color: var(--dark-text) !important;
+}
+
+.admonitionblock table {
+  background-color: var(--dark-surface) !important;
+  color: var(--dark-text) !important;
+}
+
+.admonitionblock td {
+  background-color: var(--dark-surface) !important;
+  color: var(--dark-text) !important;
+}
+
+.admonitionblock .icon {
+  background-color: var(--dark-surface-alt) !important;
+  color: var(--dark-accent) !important;
+}
+
+/* Fix definition lists */
+dt {
+  background-color: var(--dark-surface) !important;
+  color: var(--dark-text) !important;
+  font-weight: bold !important;
+  padding: 4px 8px !important;
+  border: 1px solid var(--dark-border) !important;
+  border-bottom: none !important;
+}
+
+dd {
+  background-color: var(--dark-bg) !important;
+  color: var(--dark-text) !important;
+  padding: 8px !important;
+  border: 1px solid var(--dark-border) !important;
+  border-top: none !important;
+  margin-bottom: 8px !important;
+}
+
+/* Navigation iframe styling */
+#full_list_header {
+  background-color: var(--dark-surface) !important;
+  color: var(--dark-text) !important;
+  border-bottom: 1px solid var(--dark-border) !important;
+}
+
+#full_list_nav {
+  background-color: var(--dark-surface-alt) !important;
+}
+
+#full_list_nav a {
+  color: var(--dark-accent) !important;
+}
+
+#full_list_nav a:hover {
+  color: var(--dark-accent-hover) !important;
+}
+
+#search {
+  background-color: var(--dark-surface) !important;
+}
+
+#search input {
+  background-color: var(--dark-surface-alt) !important;
+  border: 1px solid var(--dark-border) !important;
+  color: var(--dark-text) !important;
+}
+
+/* Full list items */
+.item {
+  border-bottom: 1px solid var(--dark-border) !important;
+}
+
+.item a {
+  color: var(--dark-text) !important;
+  background-color: transparent !important;
+}
+
+.item a:hover {
+  background-color: var(--dark-surface-alt) !important;
+  color: var(--dark-accent) !important;
+}
+
+.item .object_link {
+  color: var(--dark-accent) !important;
+}
+
+table tr:nth-child(odd), table tr:nth-child(even) {
+  background-color: var(--dark-surface) !important;
+}
+
+/* Make sure iframe content has dark background */
+html, body {
+  background-color: var(--dark-bg) !important;
+  color: var(--dark-text) !important;
+}

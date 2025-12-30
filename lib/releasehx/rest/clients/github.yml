@@ -1,0 +1,46 @@
+# GitHub REST API Client Configuration  
+# For GitHub v3 API - Issues endpoint
+name: github
+desc: |
+  GitHub REST API client for fetching issues and pull requests.
+  Supports GitHub v3 API with token-based authentication.
+  Includes dynamic milestone resolution.
+
+auth:
+  mode: header
+  header: Authorization
+  format: "Bearer {{ env[auth.key_env] | default: env.GITHUB_TOKEN }}"
+
+# GitHub API endpoint template  
+# Variables available: project, version, env (flattened from api config)
+href: "{{ env.GITHUB_API_HOST | default: 'https://api.github.com' }}/repos/{{ project | default: env.GITHUB_REPO }}/issues"
+query_type: key_value
+
+# Dynamic resolution for milestone titles -> numbers
+resolutions:
+  milestone:
+    endpoint: "/repos/{{ project | default: env.GITHUB_REPO }}/milestones"
+    query_param: "milestone"     # which param in main query needs resolution
+    lookup_field: "title"        # field to match against (milestone title)
+    return_field: "number"       # field to use as resolved value
+    match_value: "{{ version }}"  # what to match (template)
+
+# Structured query parameters - much cleaner than query_string!
+# The {{ milestone }} template will be resolved to the milestone number
+query_params:
+  milestone: "{{ milestone }}"    # will be resolved to milestone number
+  state: "closed"
+  sort: "updated" 
+  direction: "desc"
+  per_page: 100
+
+# Pagination settings using GitHub's Link header
+pagination:
+  param: page
+  page_size_param: per_page
+  page_size: 100
+  max_pages: 10
+
+# Response format expectation
+response_format: json
+root_issues_path: "."

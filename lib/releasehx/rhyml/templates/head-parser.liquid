@@ -1,0 +1,34 @@
+{%-  case format %}
+{%-    when "asciidoc" %}
+{%-      assign tplt_extn = "adoc" %}
+{%-      assign header_char = "=" %}
+{%-      assign show_frontmatter = config.modes.asciidoc_frontmatter %}
+{%-      assign format_frontmatter = config.history.asciidoc_frontmatter %}
+{%-    when "markdown" %}
+{%-      assign tplt_extn = "md" %}
+{%-      assign header_char = "#" %}
+{%-      assign show_frontmatter = config.modes.markdown_frontmatter %}
+{%-      assign format_frontmatter = config.history.markdown_frontmatter %}
+{%-    when "html" %}
+{%-      assign tplt_extn = "html" %}
+{%-      assign show_frontmatter = config.modes.html_frontmatter %}
+{%-      assign format_frontmatter = config.history.html_frontmatter %}
+{%-  endcase %}
+{%-  assign header_level = config.history.htag | replace: "h", "" | plus: 0 %}
+{%-  assign dflt_next_header_level = header_level | plus: 1 %}
+{%-  assign history_header = config.history.head %}
+
+{%-  if config.notes %}
+{%-    assign release_notes_spot = config.notes.spot | default: 2 %}
+{%-  endif %}
+{%-  if config.changelog %}
+{%-    assign changelog_spot = config.changelog.spot | default: 2 %}
+{%-  endif %}
+
+{%-  assign group_kinds_list = "tag,type,part" | split: "," %}
+
+{%- if show_frontmatter %}
+{{ format_frontmatter | render: vars -}}
+{%- endif %}
+
+{%- include header.liquid format=format level=header_level text=history_header %}

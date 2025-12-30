@@ -1,0 +1,40 @@
+---
+# DocOps Lab HTML-Proofer Base Configuration
+# This provides sensible defaults for DocOps Lab projects
+check_directory: build/docs/_site
+
+# URL checking options
+check_external_hash: false    # Skip checking external URL fragments (can be slow)
+check_img_http: false         # Allow HTTP images for now
+enforce_https: false          # Don't enforce HTTPS for all links
+
+# URLs to ignore (patterns and strings)
+ignore_urls:
+  - /localhost/              # Skip local development URLs
+  - /127\.0\.0\.1/           # Skip local IPs  
+  - /example\.com/           # Skip example URLs
+  - /foo\.bar/               # Skip placeholder URLs
+  - /fonts.googleapis.com/   # Skip Google Fonts
+  - /fonts.gstatic.com/      # Skip Google Fonts static
+  # GitHub Pages baseurl patterns (validated on live server at localhost:4100)
+  - /^\/docs\//              # Internal links with /docs/ baseurl prefix
+  - /github\.com.*\/blob\//  # GitHub source links (rate limiting)
+  - /medium\.com/            # Medium links (403 errors)
+
+# Files to ignore (patterns)
+ignore_files:
+  - slides/                  # Skip slides directories
+
+# Other options
+# check_favicon: false        # Don't require favicon
+# check_html: true            # Check HTML structure
+# check_opengraph: false      # Skip OpenGraph validation
+# disable_external: false     # Check external links (can be disabled for speed)
+check_favicon: false          # Don't require favicon
+check_html: true              # Check HTML structure
+check_opengraph: false        # Skip OpenGraph validation
+disable_external: false       # Check external links
+check_directory: build/docs/_site
+assume_extension: true
+root_dir: build/docs/_site
+url: "http://localhost:4100/docs/"

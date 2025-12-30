@@ -1,0 +1,45 @@
+# DocOps Lab RuboCop Configuration
+# This file inherits from the base configuration and can be customized for your project
+
+inherit_from: .vendor/docopslab/rubocop.yml
+
+AllCops:
+  SuggestExtensions: false
+  Exclude:
+    - lib/releasehx/generated.rb
+
+# Metrics cops - Disabled for now as the codebase is complex
+# These should be addressed in future refactoring work
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+# RSpec cops - More lenient for integration tests
+RSpec/ExampleLength:
+  Max: 25
+
+RSpec/MultipleExpectations:
+  Max: 5
+
+RSpec/MultipleMemoizedHelpers:
+  Max: 10
+
+RSpec/DescribeClass:
+  Enabled: false
+
+RSpec/SpecFilePathFormat:
+  Enabled: false
+
+RSpec/MessageSpies:
+  Enabled: false
+
+RSpec/MultipleDescribes:
+  Enabled: false

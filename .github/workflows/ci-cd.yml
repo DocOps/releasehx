@@ -1,0 +1,43 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+  release:
+    types: [ published ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        ruby-version: ['3.2', '3.3']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby ${{ matrix.ruby-version }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: false
+
+      - name: Generate prebuild artifacts
+        run: |
+          gem install bundler
+          bundle install
+          bundle exec rake prebuild
+
+      - name: Install dependencies
+        run: |
+          bundle install --jobs 4 --retry 3
+
+      - name: RSpec tests
+        run: bundle exec rake rspec
+
+      - name: CLI sanity checks
+        run: bundle exec rake cli_test
+
+  # gem-build and docker-build jobs disabled for manual release process
+  # These will be re-enabled when standardized release automation is implemented across repos

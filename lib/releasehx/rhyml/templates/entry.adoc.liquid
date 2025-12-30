@@ -1,0 +1,26 @@
+{%- embed metadata-entry.adoc.liquid -%}
+{%- assign frame = content_config.items.frame %}
+{%- assign summ  = change.summ %}
+{%- case frame %}
+{%-   when "unordered" %}
+{%-     assign bullet = "* " %}
+{%-   when "ordered" %}
+{%-     assign bullet = ". " %}
+{%-   else %}
+{%-     assign bullet = "" %}
+{%- endcase %}
+
+{% unless changes_listed contains change.chid -%}
+[[entry-{{ change.chid }}]]
+{%- endunless %}
+{%- if frame == "ordered" %}
+[start={{ item_count }}]
+{%- endif %}
+{{ bullet -}}
+{{ change.summ | trim }} +
+{%- if change_metadata != "" -%}
+{{ change_metadata | trim }}
+{%- endif %}
+{%- if change.note %}
+xref:note-{{ change.chid }}[icon:sticky-note[]NOTE]
+{%- endif %}

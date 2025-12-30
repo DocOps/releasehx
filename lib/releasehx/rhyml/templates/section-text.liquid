@@ -1,0 +1,9 @@
+{%- if content_config.text %}
+
+{%   if format == "asciidoc" and config['$meta']['markup'] == "markdown" %}
+{{ content_config.text | md_to_adoc }}
+{%   else %}
+{{ content_config.text }}
+{%   endif %}
+
+{%- endif %}

@@ -1,0 +1,35 @@
+{%-  assign metadata_kinds = "" | split: "," %}
+{%-  assign group1_kind = group1_kind | default: "" %}
+{%-  assign group2_kind = group2_kind | default: "" %}
+{%-  if group1_kind != "type" and group2_kind != "type" and config.types %}
+{%-    assign metadata_kind = "type" | split: "," %}
+{%-    assign metadata_kinds = metadata_kinds | concat: metadata_kind %}
+{%-  endif %}
+{%-  if group1_kind != "part" and group2_kind != "part" %}
+{%-    assign metadata_kind = "part" | split: "," %}
+{%-    assign metadata_kinds = metadata_kinds | concat: metadata_kind %}
+{%-  endif %}
+{%-  if group1_kind != "tag" and group2_kind != "tag" %}
+{%-    assign metadata_kind = "tag" | split: "," %}
+{%-    assign metadata_kinds = metadata_kinds | concat: metadata_kind %}
+{%-  endif %}
+
+{%- if format == "asciidoc" %}
+{%-   if section_type == "notes" %}
+{%-     embed note.adoc.liquid %}
+{%-   else %}
+{%-     embed entry.adoc.liquid %}
+{%-   endif -%}
+{%- elsif format == "markdown" %}
+{%-   if section_type == "notes" %}
+{%-     embed note.md.liquid %}
+{%-   else %}
+{%-     embed entry.md.liquid %}
+{%-   endif -%}
+{%- elsif format == "html" %}
+{%-   if section_type == "notes" %}
+{%-     embed note.html.liquid %}
+{%-   else %}
+{%-     embed entry.html.liquid %}
+{%-   endif -%}
+{%- endif %}

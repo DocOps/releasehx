@@ -1,0 +1,7 @@
+{%-  assign config = vars.config %}
+{%-  assign changes = vars.changes  -%}
+{%- for change in changes %}
+{%   include rhyml-change.yaml.liquid
+       change=change
+       config=config %}
+{%- endfor %}

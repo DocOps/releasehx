@@ -1,0 +1,14 @@
+{%-  assign config = vars.config %}
+{%-  assign release = vars.release %}
+{%-  assign changes = vars.changes  -%}
+code: "{{ release.code }}"
+date: {{  release.date | date: "%Y-%m-%d" }}
+memo: {%- if release.memo %}|
+  {{ release.memo | indent: 2 }}
+  {%- endif %}
+changes:
+{%- for change in changes %}
+{%   include rhyml-change.yaml.liquid
+       change=change
+       config=config %}
+{%- endfor %}

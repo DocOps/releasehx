@@ -1,0 +1,89 @@
+api:
+  from: jira
+  version: 2
+  label: Jira API v2 - Testing
+  format: json
+  project: RHX
+
+paths:
+  drafts_dir: .warp
+  payloads_dir: .warp
+  templates_dir: _templates
+  mappings_dir: _mappings
+
+conversions:
+  summ: issue_heading
+  note: custom_field
+  note_custom_field: customfield_10039
+  markup: markdown
+  engine: redcarpet
+
+parts:
+  ui:
+    head: User Interface
+    icon: desktop
+    text: UI
+  api:
+    head: API
+    icon: server
+    text: API
+  search:
+    head: Search
+    icon: search
+    text: Search
+
+links:
+  web: https://docopslab.atlassian.net/browse/{{ tick }}
+  git: https://github.com/example/repo/commit/{{ hash }}
+
+modes:
+  asciidoc_frontmatter: true
+  markdown_frontmatter: true
+
+rhyml:
+  pasterize_head: true
+  chid: "{{ release.code | replace: '.', '_' | upcase }}-{{ change.tick }}"
+  empty_notes: skip
+
+history:
+  items:
+    issue_links: true
+    git_links: false
+    metadata_icons: true
+
+changelog:
+  head: What's Changed
+  items:
+    frame: unordered
+    git_links: false
+    metadata_labels: after
+
+notes:
+  spot: 1
+  items:
+    frame: desc-list
+    allow_redundant: true
+
+tags:
+  _include: ['highlighted', 'changelog', 'breaking']
+  _exclude: ['internal']
+
+  highlighted:
+    head: Highlights
+    icon: star
+    text: Featured changes
+
+  breaking:
+    head: Breaking Changes
+    icon: exclamation-triangle
+    text: Breaking changes
+
+  enhancement:
+    head: Enhancements
+    icon: arrow-up
+    text: Improvements
+
+  bug:
+    head: Bug Fixes
+    icon: bug
+    text: Bug fixes

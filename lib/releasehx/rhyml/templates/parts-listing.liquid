@@ -1,0 +1,61 @@
+{%- assign parts_listing = "" %}
+{%- assign parts_count = 0 %}
+{%- for part in change.parts %}
+{%-   assign skip_part = false %}
+{%-   if part == "changelog" or part == "release_note_needed" %}
+{%-     assign skip_part = true %}
+{%-   elsif part == group1_slug or part == group2_slug %}
+{%-     assign skip_part = true %}
+{%-   elsif config.parts[part] == nil %}
+{%-     assign skip_part = true %}
+{%-   endif %}
+{%-   unless skip_part %}
+{%-     assign parts_count = parts_count | plus: 1 %}
+{%-   endunless %}
+{%- endfor %}
+
+{%- if parts_count > 0 %}
+{%-   capture parts_listing -%}
+{%-     if show_labels -%}
+{%-       if format == "asciidoc" -%}
+{%-         if labeling_singularize_labels and parts_count == 1 -%}
+[.meta-label.parts-label]*{{ labeling_part_label }}:*{%- else -%}[.meta-label.parts-label]*{{ labeling_parts_label }}:*{%- endif -%} 
+{%-       elsif format == "markdown" -%}
+{%-         if labeling_singularize_labels and parts_count == 1 -%}
+{{ labeling_part_label }}: {%- else -%}{{ labeling_parts_label }}: {%- endif -%}
+{%-       endif -%}
+{%-     endif -%}
+{%-     assign part_texts = "" | split: "," -%}
+{%-     for part in change.parts -%}
+{%-       assign skip_part = false -%}
+{%-       if part == "changelog" or part == "release_note_needed" -%}
+{%-         assign skip_part = true -%}
+{%-       elsif part == group1_slug or part == group2_slug -%}
+{%-         assign skip_part = true -%}
+{%-       elsif config.parts[part] == nil -%}
+{%-         assign skip_part = true -%}
+{%-       endif -%}
+{%-       unless skip_part -%}
+{%-         capture part_text -%}
+{%-           if config.parts[part].icon and show_icons and show_icons == "before" -%}
+{%-             if format == "asciidoc" -%}icon:{{ config.parts[part].icon }}[] {%- endif -%}
+{%-           endif -%}
+{%-           if format == "asciidoc" -%}
+{{ config.parts[part]['text'] | default: part }}{%- elsif format == "markdown" -%}**{{ config.parts[part]['text'] | default: part }}**{%- endif -%}
+{%-           if config.parts[part].icon and show_icons and show_icons == "after" -%}
+{%-             if format == "asciidoc" -%} icon:{{ config.parts[part].icon }}[]{%- endif -%}
+{%-           endif -%}
+{%-         endcapture -%}
+{%-         assign part_texts = part_texts | push: part_text -%}
+{%-       endunless -%}
+{%-     endfor -%}
+{%-     if part_texts.size > 0 -%}
+{%-       if format == "asciidoc" -%}
+{%-         for part_text in part_texts -%}
+{{ part_text }}{%- unless forloop.last %} {%- endunless -%}
+{%-         endfor -%}
+{%-       elsif format == "markdown" -%}
+{{ part_texts | join: ", " }}{%- endif -%}
+{%-     endif -%}
+{%-   endcapture -%}
+{%- endif -%}

@@ -1,0 +1,17 @@
+{%- assign text = include.text %}
+{%- assign level = include.level %}
+{%- assign format = include.format %}
+{%- if format == "html" %}
+<h{{ level }}>{{ text }}</h{{ level }}>
+{%- else %}
+{%-   if format == "asciidoc" %}
+{%-     assign header_char = "=" %}
+{%-   else %}
+{%-     assign header_char = "#" %}
+{%-   endif %}
+{%-   capture header_chars %}
+{%-     for i in (1..level) %}{{ header_char }}{% endfor %}
+{%-   endcapture %}
+{{ header_chars }} {{ text }}
+
+{%- endif %}

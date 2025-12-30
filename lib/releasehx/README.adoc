@@ -1,0 +1,4 @@
+:page-nav_order: 4
+= ReleaseHx API
+
+include::../../README.adoc[tag=releasehx-api]

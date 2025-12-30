@@ -1,0 +1,11 @@
+{%- assign content_config = config.changelog %}
+{%- assign section_type = "changelog" %}
+{%- embed config-cascade.liquid %}
+{% embed changes-sorter.liquid %}
+{%- assign level = content_config.htag | replace: "h", "" | default: dflt_next_header_level | plus: 0 %}
+{%- include header.liquid format=format level=level text=content_config.head %}
+{%- assign dflt_next_header_level = level | plus: 1 -%}
+{%- assign item_count = 0 %}
+{%- embed section-text.liquid %}
+
+{%- embed groupings.liquid %}

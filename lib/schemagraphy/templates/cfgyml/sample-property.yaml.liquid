@@ -1,0 +1,82 @@
+{%- assign key = include.property[0] %}
+{%- assign val = include.property[1] %}
+{%- assign dflt = val.dflt %}
+{%- assign tier = include.tier | plus: 0 %}
+{%- assign nulled = include.nulled %}
+{%- assign indent = '' %}
+{%- if tier > 1 %}
+{%- for i in (2..tier) %}{% assign indent = indent | append: '  ' %}{% endfor %}
+{%- endif %}
+{%- if nulled %}
+  {%- assign pfx = '# ' %}
+{%- else %}
+  {%- assign pfx = '' %}
+{%- endif %}
+{%- assign cmmt = val.cmmt | default: val.desc | default: '' | strip | split: "
+" | first %}
+{%- if cmmt and cmmt != "" %}
+  {%- assign cmmt = cmmt | demarkupify | truncatewords: 20 | prepend: '# ' %}
+{%- endif %}
+{%- assign dflt_kind = dflt  | sgyml_type | split: ":" | first %}
+{%- assign dflt_class = dflt | sgyml_type | split: ":" | last %}
+{%- assign disp = nil %}
+{%- if dflt contains "
+" or val.type == "Multiline" %}
+  {%- assign disp = "multiline" %}
+{%- elsif val.type == "String" %}
+  {%- if dflt.size > 40 %}
+    {%- assign disp = "multiline" %}
+  {%- elsif dflt contains ":" or dflt contains "{" %}
+    {%- assign disp = "quoted" %}
+  {%- else %}
+    {%- assign disp = "unquoted" %}
+  {% endif %}
+{%- elsif val.templating or val.type == "Template" or val.type == "Liquid" or val.type == "RegExp" %}
+  {%- assign disp = "multiline" %}
+{%- elsif val.type == "Array" or val.type == "ArrayList" or dflt_class == "ArrayList" %}
+  {%- if dflt.size < 4 and (val.type == "ArrayList" or dflt_class == "ArrayList") %}
+    {%- assign disp = "sequence-flow" %}
+  {%- else %}
+    {%- assign disp = "sequence-block" %}
+  {%- endif %}
+{%- elsif val.properties or val.type == "Map" %}
+  {%- assign disp = "mapping-block" %}
+{%- elsif !val.type %}
+  {%- assign disp = "unquoted" %}
+{%- elsif val.type == "String" and dflt == "" %}
+    {%- assign disp = "blank-string" %}
+{%- else %}
+  {%- assign disp = "unquoted" %}
+{%- endif %}
+{%- case disp %}
+{%- when "multiline" %}
+{{ pfx }}{{ indent }}{{ key }}: | {{ cmmt }}
+{%-   assign ml_indent = indent | append: '  ' %}
+{%-   if nulled %}
+{%-     assign dflt_lines = dflt | split: "
+" -%}
+{%-     for line in dflt_lines %}
+{{ ml_indent }}# {{ line }}
+{%-     endfor %}
+{%-   else %}
+{%-     assign ml_indent_size = indent.size | plus: 2 %}
+{{ dflt | indent: ml_indent_size, true }}
+{%-   endif %}
+{%- when "mapping-block" %}
+{{ pfx }}{{ indent }}{{ key }}: {{ cmmt }}
+{%- when "sequence-block" %}
+{{ pfx }}{{ indent }}{{ key }}: {{ cmmt }}
+{%-   for item in dflt %}
+{{ pfx }}{{ indent }}  - {{ item }}
+{%-   endfor %}
+{%- when "sequence-flow" %}
+{{ pfx }}{{ indent }}{{ key }}: [{{ dflt | join: ', ' }}] {{ cmmt }}
+{%- when "blank-string" %}
+{{ pfx }}{{ indent }}{{ key }}: "" {{ cmmt }}
+{%- when "quoted" %}
+{{ pfx }}{{ indent }}{{ key }}: "{{ dflt }}" {{ cmmt }}
+{%- when "unquoted" %}
+{{ pfx }}{{ indent }}{{ key }}: {{ dflt }} {{ cmmt }}
+{%- else %}
+{{ pfx }}{{ indent }}# UNIDENTIFIED
+{%- endcase %}

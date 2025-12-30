@@ -1,0 +1,9 @@
+:page-nav_order: 3
+= Sample Configuration File
+
+This is a "`kitchen sink`" example of the ReleaseHx configuration settings.
+
+[source,yaml]
+----
+include::sample-config.yml[]
+----

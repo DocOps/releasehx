@@ -1,0 +1,37 @@
+:page-layout: default
+:page-permalink: /config-reference/
+:page-nav_order: 2
+:page-title: Configuration Reference
+{%- for property in config_def.properties -%}
+{%-   assign ppty_key1 = property[0] -%}
+{%-   assign ppty_path_t1 = ppty_key1 -%}
+{%-   include cfgyml/config-property.adoc.liquid
+        test_string="test string"
+        property=property
+        tier=1
+        ppty_path=ppty_path_t1 -%}
+
+{%-   assign props_t2 = property[1].properties -%}
+{%-   if props_t2 -%}
+{%-     for propty in props_t2 -%}
+{%-       assign ppty_key2 = propty[0] -%}
+{%-       assign ppty_path_t2 = ppty_path_t1 | append: '__' | append: ppty_key2 -%}
+{%-       include cfgyml/config-property.adoc.liquid
+            property=propty
+            tier=2
+            ppty_path=ppty_path_t2 -%}
+
+{%-       assign props_t3 = propty[1].properties -%}
+{%-       if props_t2 -%}
+{%-         for ppty in props_t3 -%}
+{%-           assign ppty_key3 = ppty[0] -%}
+{%-           assign ppty_path_t3 = ppty_path_t2 | append: '__' | append: ppty_key3 -%}
+{%-           include cfgyml/config-property.adoc.liquid
+                property=ppty
+                tier=3
+                ppty_path=ppty_path_t3 -%}
+{%-         endfor -%}
+{%-       endif -%}
+{%-     endfor -%}
+{%-   endif -%}
+{%- endfor %}

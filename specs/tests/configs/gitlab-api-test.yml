@@ -1,0 +1,89 @@
+api:
+  from: gitlab
+  version: 4
+  label: GitLab Issues API v4 - Testing
+  format: json
+  project: 14069112
+
+paths:
+  drafts_dir: .warp
+  payloads_dir: .warp
+  templates_dir: _templates
+  mappings_dir: _mappings
+
+conversions:
+  summ: issue_heading
+  note: issue_body
+  note_pattern: '/^## Release Note\\s*\\n+(?<note>(.|\\n)+)/mi'
+  markup: markdown
+  engine: redcarpet
+
+parts:
+  asciidoc:
+    head: AsciiDoc Processing
+    icon: file-text
+    text: AsciiDoc
+  css:
+    head: CSS & Styling
+    icon: paint-brush
+    text: Styling
+  performance:
+    head: Performance
+    icon: tachometer
+    text: Performance
+
+links:
+  web: https://gitlab.com/bdom/asciidoc-testing/-/issues/{{ tick }}
+  git: https://gitlab.com/bdom/asciidoc-testing/-/commit/{{ hash }}
+
+modes:
+  asciidoc_frontmatter: true
+  markdown_frontmatter: true
+
+rhyml:
+  pasterize_head: true
+  chid: "{{ release.code | replace: '.', '_' | upcase }}-{{ change.tick }}"
+  empty_notes: skip
+
+history:
+  items:
+    issue_links: true
+    git_links: false
+    metadata_icons: true
+
+changelog:
+  head: What's Changed
+  items:
+    frame: unordered
+    git_links: false
+    metadata_labels: after
+
+notes:
+  spot: 1
+  items:
+    frame: desc-list
+    allow_redundant: true
+
+tags:
+  _include: ['feature', 'enhancement', 'changelog', 'highlight']
+  _exclude: ['internal', 'wontfix']
+
+  feature:
+    head: New Features
+    icon: plus
+    text: New features
+
+  enhancement:
+    head: Enhancements
+    icon: arrow-up
+    text: Improvements
+
+  highlight:
+    head: Highlights
+    icon: star
+    text: Featured changes
+
+  bug:
+    head: Bug Fixes
+    icon: bug
+    text: Bug fixes

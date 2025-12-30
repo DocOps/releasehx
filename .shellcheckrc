@@ -1,0 +1,13 @@
+# ShellCheck configuration for this project
+# Inherits DocOps Lab defaults from base config via sync
+
+# Project-specific rule overrides (uncomment as needed):
+# disable=SC2016  # Expressions don't expand in single quotes
+# disable=SC2155  # Declare and assign separately to avoid masking return values
+
+# Project-specific shell type override if needed:
+# shell=sh
+
+# Additional enables for stricter checking:
+# enable=add-default-case
+# enable=check-extra-masked-returns

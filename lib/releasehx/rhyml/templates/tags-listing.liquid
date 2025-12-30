@@ -1,0 +1,61 @@
+{%- assign tags_listing = "" %}
+{%- assign tags_count = 0 %}
+{%- for tag in change.tags %}
+{%-   assign skip_tag = false %}
+{%-   if tag == "changelog" or tag == "release_note_needed" %}
+{%-     assign skip_tag = true %}
+{%-   elsif tag == group1_slug or tag == group2_slug %}
+{%-     assign skip_tag = true %}
+{%-   elsif config.tags[tag] == nil %}
+{%-     assign skip_tag = true %}
+{%-   endif %}
+{%-   unless skip_tag %}
+{%-     assign tags_count = tags_count | plus: 1 %}
+{%-   endunless %}
+{%- endfor %}
+
+{%- if tags_count > 0 %}
+{%-   capture tags_listing -%}
+{%-     if show_labels -%}
+{%-       if format == "asciidoc" -%}
+{%-         if labeling_singularize_labels and tags_count == 1 -%}
+[.meta-label.tags-label]*{{ labeling_tag_label }}:*{%- else -%}[.meta-label.tags-label]*{{ labeling_tags_label }}:*{%- endif -%} 
+{%-       elsif format == "markdown" -%}
+{%-         if labeling_singularize_labels and tags_count == 1 -%}
+{{ labeling_tag_label }}: {%- else -%}{{ labeling_tags_label }}: {%- endif -%}
+{%-       endif -%}
+{%-     endif -%}
+{%-     assign tag_texts = "" | split: "," -%}
+{%-     for tag in change.tags -%}
+{%-       assign skip_tag = false -%}
+{%-       if tag == "changelog" or tag == "release_note_needed" -%}
+{%-         assign skip_tag = true -%}
+{%-       elsif tag == group1_slug or tag == group2_slug -%}
+{%-         assign skip_tag = true -%}
+{%-       elsif config.tags[tag] == nil -%}
+{%-         assign skip_tag = true -%}
+{%-       endif -%}
+{%-       unless skip_tag -%}
+{%-         capture tag_text -%}
+{%-           if config.tags[tag].icon and show_icons and show_icons == "before" -%}
+{%-             if format == "asciidoc" -%}icon:{{ config.tags[tag].icon }}[] {%- endif -%}
+{%-           endif -%}
+{%-           if format == "asciidoc" -%}
+{{ config.tags[tag]['text'] | default: tag }}{%- elsif format == "markdown" -%}{{ config.tags[tag]['text'] | default: tag }}{%- endif -%}
+{%-           if config.tags[tag].icon and show_icons and show_icons == "after" -%}
+{%-             if format == "asciidoc" -%} icon:{{ config.tags[tag].icon }}[]{%- endif -%}
+{%-           endif -%}
+{%-         endcapture -%}
+{%-         assign tag_texts = tag_texts | push: tag_text -%}
+{%-       endunless -%}
+{%-     endfor -%}
+{%-     if tag_texts.size > 0 -%}
+{%-       if format == "asciidoc" -%}
+{%-         for tag_text in tag_texts -%}
+{{ tag_text }}{%- unless forloop.last %} {%- endunless -%}
+{%-         endfor -%}
+{%-       elsif format == "markdown" -%}
+{{ tag_texts | join: ", " }}{%- endif -%}
+{%-     endif -%}
+{%-   endcapture -%}
+{%- endif -%}

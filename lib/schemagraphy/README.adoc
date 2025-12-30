@@ -1,0 +1,3 @@
+= SchemaGraphy
+
+include::../../README.adoc[tag=schemagraphy,leveloffset=-2]

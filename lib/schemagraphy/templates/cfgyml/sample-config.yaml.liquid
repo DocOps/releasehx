@@ -1,0 +1,46 @@
+# Sample configuration file generated from the configuration definition.
+# All values are upstream (gem) defaults.
+# Properties without defaults are commented out.
+{%- for property_t1 in config_def.properties %}
+{%-   assign key1 = property_t1[0] %}
+{%-   assign val1 = property_t1[1] %}
+{%-   assign dflt1 = val1.dflt %}
+{%-   assign key1_first_char = key1 | slice: 0, 1 %}
+{%-   if key1_first_char == '<' or dflt1 == nil and val1.properties == nil %}
+{%-     assign nulled1 = true %}
+{%-   else %}
+{%-     assign nulled1 = false %}
+{%-   endif %}
+{%-   include cfgyml/sample-property.yaml.liquid property=property_t1 tier=1 nulled=nulled1 %}
+{%-   assign sub_properties_t2 = val1.properties %}
+{%-   if sub_properties_t2 %}
+{%-     for property_t2 in sub_properties_t2 %}
+{%-       assign key2 = property_t2[0] %}
+{%-       assign val2 = property_t2[1] %}
+{%-       assign dflt2 = val2.dflt %}
+{%-       assign key2_first_char = key2 | slice: 0, 1 %}
+{%-       if nulled1 or (key2_first_char == '<' or (dflt2 == nil and val2.properties == nil)) %}
+{%-         assign nulled2 = true %}
+{%-       else %}
+{%-         assign nulled2 = false %}
+{%-       endif %}
+{%-       include cfgyml/sample-property.yaml.liquid property=property_t2 tier=2 nulled=nulled2 %}
+
+{%-       assign sub_properties_t3 = val2.properties %}
+{%-       if sub_properties_t3 %}
+{%-         for property_t3 in sub_properties_t3 %}
+{%-           assign key3 = property_t3[0] %}
+{%-           assign val3 = property_t3[1] %}
+{%-           assign dflt3 = val3.dflt %}
+{%-           assign key3_first_char = key3 | slice: 0, 1 %}
+{%-           if nulled2 or (key3_first_char == '<' or (dflt3 == nil and val3.properties == nil)) %}
+{%-             assign nulled3 = true %}
+{%-           else %}
+{%-             assign nulled3 = false %}
+{%-           endif %}
+{%-           include cfgyml/sample-property.yaml.liquid property=property_t3 tier=3 nulled=nulled3 %}
+{%-         endfor %}
+{%-       endif %}
+{%-     endfor %}
+{%-   endif %}
+{%- endfor %}

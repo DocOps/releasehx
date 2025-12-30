@@ -1,0 +1,13 @@
+# actionlint configuration for this project
+# References DocOps Lab base configuration
+
+# Project-specific ignores (add as needed):
+ignore:
+  # Example: Ignore specific workflow patterns
+  # - 'workflow "deploy.yml"'
+  # - '"ubuntu-20.04" is deprecated'
+  
+# Project-specific overrides:
+shellcheck:
+  enable: true
+  # shell-options: "-e SC2016"  # Add project-specific ShellCheck exclusions

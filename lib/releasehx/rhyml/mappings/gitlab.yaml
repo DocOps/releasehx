@@ -1,0 +1,73 @@
+# GitLab Issues API to RHYML mapping configuration
+# Maps GitLab Issues API response to RHYML Change entries
+
+$config:
+  desc: "GitLab Issues API to RHYML mapping"
+  path_lang: jmespath
+  tplt_lang: liquid
+
+# GitLab Issues API returns an array of issues in "issues" key
+changes_array_path: "issues"
+
+# Map each issue to RHYML Change properties
+tick:
+  path: "iid"
+
+summ:
+  path: "title"
+
+note:
+  path: "description"
+
+# Derive `type` from labels using direct key matching or slug override
+type:
+  path: "labels"
+  ruby: |
+    labels = path.is_a?(Array) ? path : [path]
+    type_defs = config['types'] || {}
+
+    label_to_type = type_defs.each_with_object({}) do |(type_key, type_config), memo|
+      if type_config.is_a?(Hash)
+        slug = type_config['slug']
+        memo[type_key.to_s.downcase] = type_key
+        memo[slug.to_s.downcase] = type_key if slug
+      end
+    end
+
+    found_type = labels.find do |label|
+      label_to_type[label.to_s.downcase]
+    end
+
+    label_to_type[found_type.to_s.downcase] if found_type
+
+# Derive `parts` from labels using direct key matching or slug override
+parts:
+  path: "labels"
+  ruby: |
+    labels = path.is_a?(Array) ? path : [path]
+    parts_defs = config['parts'] || {}
+    label_prefix = parts_defs['label_prefix'] || ''
+
+    label_to_part = parts_defs.each_with_object({}) do |(part_key, part_config), memo|
+      if part_config.is_a?(Hash)
+        slug = part_config['slug']
+        memo[part_key.to_s.downcase] = part_key
+        memo[slug.to_s.downcase] = part_key if slug
+      end
+    end
+
+    found_parts = labels.map do |label|
+      l = label.to_s.downcase
+      if !label_prefix.to_s.empty? && l.start_with?(label_prefix.to_s.downcase)
+        l = l.sub(/^#{Regexp.escape(label_prefix)}/i, '')
+      end
+      label_to_part[l]
+    end
+
+    found_parts.compact.uniq
+
+tags:
+  path: "labels"
+
+lead:
+  path: "assignees[0].username"
