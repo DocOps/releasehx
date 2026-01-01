@@ -15,7 +15,7 @@
 :this_prod_vrsn_major: 0
 :this_prod_vrsn_minor: 1
 :this_prod_vrsn_major-minor: {this_prod_vrsn_major}.{this_prod_vrsn_minor}
-:this_prod_vrsn_patch: 0
+:this_prod_vrsn_patch: 1
 :this_prod_vrsn: {this_prod_vrsn_major-minor}.{this_prod_vrsn_patch}
 :next_prod_vrsn: 0.2.0
 :tagline: Generate formatted release histories from Jira, GitHub, GitLab, YAML, or JSON sources.

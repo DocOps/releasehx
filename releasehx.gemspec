@@ -29,6 +29,7 @@ Gem::Specification.new do |spec|
 
   spec.files = Dir['lib/**/*.rb'] +
                Dir['lib/templates/*'] +
+               Dir['lib/releasehx/rhyml/templates/*'] +
                Dir['bin/*'] +
                Dir['lib/releasehx/mappings/*'] +
                Dir['lib/releasehx/rest/clients/*.yml'] +
