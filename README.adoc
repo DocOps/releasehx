@@ -13,11 +13,11 @@
 :releasehx_demo_repo: {docopslab_git_www}/releasehx-demo
 :this_prod_repo: {releasehx_prod_repo}
 :this_prod_vrsn_major: 0
-:this_prod_vrsn_minor: 1
+:this_prod_vrsn_minor: 2
 :this_prod_vrsn_major-minor: {this_prod_vrsn_major}.{this_prod_vrsn_minor}
-:this_prod_vrsn_patch: 1
+:this_prod_vrsn_patch: 0
 :this_prod_vrsn: {this_prod_vrsn_major-minor}.{this_prod_vrsn_patch}
-:next_prod_vrsn: 0.2.0
+:next_prod_vrsn: 0.3.0
 :tagline: Generate formatted release histories from Jira, GitHub, GitLab, YAML, or JSON sources.
 :description: pass:q[CLI utility and Ruby API for generating structured release notes and changelog documents from various issue-tracking platforms or YAML definitions into plaintext drafts (*AsciiDoc*, *Markdown*, *YAML*) and rich-text output (*HTML* and *PDF*).]
 :gem_config_definition_path: ./specs/data/config-def.yml
