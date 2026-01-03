@@ -265,6 +265,7 @@ It does not provide assistance for command-line actions or other configurations 
 For your LLM client (such as Copilot, Claude Code, Codex, Cursor, etc) to interact with this service, it must be configured using a general MCP syntax.
 This data is usually added to a `mcp.json` file or another object.
 
+// 1. This block is totally fine
 Generic MCP config (global gem install)::
 [source,json]
 ----
@@ -277,12 +278,12 @@ Generic MCP config (global gem install)::
 }
 ----
 
+// 2. This block looks totally fine
 Generic MCP config (Docker)::
 +
---
 Use the Docker image for maximum compatibility across environments.
-This is the **recommended approach** for most users.
-
+This is the *recommended approach* for most users.
++
 [source,json]
 ----
 {
@@ -294,13 +295,11 @@ This is the **recommended approach** for most users.
   }
 }
 ----
---
 
+// 3. The first line on this block is white instead of blue like a DL term designator should be
 VS Code MCP configuration (Docker)::
-+
---
 Create or update `~/.config/Code/User/mcp.json` (Linux/Mac) or `%APPDATA%\Code\User\mcp.json` (Windows).
-
++
 [source,json]
 ----
 {
@@ -312,13 +311,11 @@ Create or update `~/.config/Code/User/mcp.json` (Linux/Mac) or `%APPDATA%\Code\U
   }
 }
 ----
---
 
+// 4.This and all the following blocks are improperly highlighted
 VS Code MCP configuration (global gem install)::
-+
---
 If you have ReleaseHx installed globally (`gem install releasehx`), you can use this simpler configuration:
-
++
 [source,json]
 ----
 {
@@ -329,7 +326,6 @@ If you have ReleaseHx installed globally (`gem install releasehx`), you can use 
   }
 }
 ----
---
 
 Local repo MCP config (Bundler + cwd)::
 [source,json]
@@ -410,9 +406,11 @@ Global gem::
 
 If your MCP server isn't working in VS Code or Copilot:
 
-. **Verify Docker image exists**: Run `docker images | grep releasehx` to confirm the image is available.
+. *Verify Docker image exists.*
+Run `docker images | grep releasehx` to confirm the image is available.
 
-. **Test MCP server manually**: Run the following to verify the server responds:
+. *Test MCP server manually.*
+Run the following to verify the server responds:
 +
 [.prompt]
 ----
@@ -421,11 +419,14 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 +
 You should see a JSON response with `"serverInfo":{"name":"releasehx-mcp"}`
 
-. **Check VS Code MCP config**: Ensure `~/.config/Code/User/mcp.json` exists and uses the correct command format (see examples above).
+. *Check VS Code MCP config.*
+Ensure `~/.config/Code/User/mcp.json` exists and uses the correct command format (see examples above).
 
-. **Restart VS Code**: After changing `mcp.json`, restart VS Code completely for changes to take effect.
+. *Restart VS Code.*
+After changing `mcp.json`, restart VS Code completely for changes to take effect.
 
-. **Check VS Code logs**: Open Output panel (Ctrl+Shift+U) and look for errors related to MCP or the releasehx server.
+*Check VS Code logs.*
+Open Output panel (kbd:[Ctrl+Shift+U]) and look for errors related to MCP or the releasehx server.
 
 [TIP]
 ====
