@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    releasehx (0.1.0)
+    releasehx (0.1.2)
       asciidoctor-pdf (~> 2.3)
       commonmarker (~> 0.23)
       faraday (~> 2.9)

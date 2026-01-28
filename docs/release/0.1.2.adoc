@@ -1,0 +1,89 @@
+:icons: font
+
+:page-title: Release History for 0.1.2
+:page-version: 0.1.2
+:page-date: 2026-01-29
+
+= Release History -- 0.1.2 - 2026-01-29
+
+
+== What's Changed
+
+
+Summary of all changes in this release.
+
+
+=== Added
+
+
+* Established an instance of ReleaseHx for managing the release history of... ReleaseHx
+ +
+xref:note-0_1_2-30[NOTE]
+
+
+=== Fixed
+
+
+* The documented regexp format (/pattern/flags) is unsupported
+ +
+xref:note-0_1_2-32[NOTE]
+
+
+* Config property mismatch: code reads `note_source` but docs specify `note`
+ +
+xref:note-0_1_2-28[NOTE]
+
+
+* Formatting errors in AsciiDoc templates
+ +
+xref:note-0_1_2-36[NOTE]
+
+
+== Release Notes
+
+
+Detailed descriptions of notable changes.
+
+
+=== Added
+
+[.release-note]
+--
+The ReleaseHx website now hosts a rich-text roster of change reports built with ReleaseHx itself at https://releasehx.docopslab.org/docs/releases/.
+The output is configured in `.config/releasehx.yml`, and the process is documented in `README.adoc`.
+
+--
+
+
+=== Fixed
+
+[.release-note]
+--
+Regular expressions in YAML files such as the releasehx application config now support being written as fully qualified strings with the pattern fenced in `/` markers.
+Use `/pattern/flags` formats such as the following and expect proper parsing.
+
+[,yaml]
+----
+  note_pattern: /^((#+ Draft Release Note.*?)\n+(?<note>(.|)+)/gmi
+----
+
+--
+
+
+[.release-note]
+--
+Added support for a proper configuration property for release-note extraction, bringing the product into line with the documented config.
+The effective property was never documented, so it has been removed, but no deprecation was deemed necessary.
+Backward compatibility has been sacrificed in this rare case, since the functionality was obscured.
+
+--
+
+
+[.release-note]
+--
+AsciiDoc templates have been cleaned up and streamlined significantly, mostly by removing the clumsy metadata that was hard to style in rich-text output.
+We will improve on these templates later and welcome contributions cleaning them up.
+
+--
+
+

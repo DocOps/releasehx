@@ -54,3 +54,77 @@ h5 {
     color: #6367A9;
   }
 }
+
+/* Release notes styling */
+.release-note {
+  margin-bottom: 1.5em;
+  padding: 1em 1.25em;
+  border-left: 3px solid #7253ed;
+  background-color: rgba(114, 83, 237, 0.04);
+  border-radius: 0 4px 4px 0;
+}
+
+.release-note .paragraph:last-child p {
+  margin-bottom: 0;
+}
+
+.release-note .listingblock {
+  margin-bottom: 0.5em;
+}
+
+/* Component/part labels styled as badges */
+.rhx-component {
+  display: inline-block;
+  padding: 0.1em 0.4em;
+  margin: 0 0.2em;
+  font-size: 0.85em;
+  font-weight: 500;
+  border-radius: 3px;
+  background-color: rgba(100, 100, 255, 0.15);
+  border: 1px solid rgba(100, 100, 255, 0.3);
+}
+
+/* Type labels styled as badges */
+.rhx-type {
+  display: inline-block;
+  padding: 0.1em 0.5em;
+  margin: 0 0.3em;
+  font-size: 0.85em;
+  font-weight: 600;
+  border-radius: 3px;
+}
+
+.rhx-type-bug {
+  background-color: rgba(255, 100, 100, 0.15);
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  color: #ff6b6b;
+}
+
+.rhx-type-feature {
+  background-color: rgba(100, 200, 100, 0.15);
+  border: 1px solid rgba(100, 200, 100, 0.4);
+  color: #69db7c;
+}
+
+.rhx-type-improvement {
+  background-color: rgba(100, 180, 255, 0.15);
+  border: 1px solid rgba(100, 180, 255, 0.4);
+  color: #74c0fc;
+}
+
+.rhx-type-documentation {
+  background-color: rgba(200, 150, 255, 0.15);
+  border: 1px solid rgba(200, 150, 255, 0.4);
+  color: #da77f2;
+}
+
+.rhx-type-deprecation {
+  background-color: rgba(255, 200, 100, 0.15);
+  border: 1px solid rgba(255, 200, 100, 0.4);
+  color: #ffc078;
+}
+
+/* Icon spacing in metadata */
+.meta-icon {
+  margin-right: 0.2em;
+}

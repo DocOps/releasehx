@@ -1,0 +1,53 @@
+code: "0.1.2"
+date: 2026-01-29
+memo:
+changes:
+
+  - chid: 0_1_2-30
+    tick: 30
+    type: feature
+    part: docs
+    summ: |
+      Established an instance of ReleaseHx for managing the release history of... ReleaseHx
+    note: |
+      The ReleaseHx website now hosts a rich-text roster of change reports built with ReleaseHx itself at https://releasehx.docopslab.org/docs/releases/. The output is configured in `.config/releasehx.yml`, and the process is documented in `README.adoc`.
+    tags:
+      - documentation
+
+  - chid: 0_1_2-32
+    tick: 32
+    type: bug
+    parts:
+      - configuration
+      - schemagraphy
+    summ: |
+      The documented regexp format (/pattern/flags) is unsupported
+    note: |
+      Regular expressions in YAML files such as the releasehx application config now support being written as fully qualified strings with the pattern fenced in `/` markers. Use `/pattern/flags` formats such as the following and expect proper parsing.
+      
+      ```yaml
+        note_pattern: /^((#+ Draft  Release Note.*?)\n+(?<note>(.|)+)/gmi
+      ```
+
+  - chid: 0_1_2-28
+    tick: 28
+    type: bug
+    parts:
+      - configuration
+      - rhyml
+    summ: |
+      Config property mismatch: code reads `note_source` but docs specify `note`
+    note: |
+      Added support for a proper configuration property for release-note extraction, bringing the product into line with the documented config.
+      The effective property was never documented, so it has been removed, but no deprecation was deemed necessary.
+      Backward compatibility has been sacrificed in this rare case, since the functionality was obscured.
+    lead: briandominick
+
+  - chid: 0_1_2-36
+    tick: 36
+    type: bug
+    part: templates
+    summ: |
+      Formatting errors in AsciiDoc templates
+    note: |
+      AsciiDoc templates have been cleaned up and streamlined significantly, mostly by removing the clumsy metadata that was hard to style in rich-text output. We will improve on these templates later and welcome contributions cleaning them up.
