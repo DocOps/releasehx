@@ -35,8 +35,28 @@ module SchemaGraphy
       # Remove surrounding quotes that might come from YAML parsing
       clean_input = input_str.gsub(/^["']|["']$/, '')
 
+      # Manual parsing for /pattern/flags format (common in YAML configs)
+      if clean_input =~ %r{^/(.+)/([a-z]*)$}
+        pattern_str = Regexp.last_match(1)
+        flags_str = Regexp.last_match(2)
+        options = flags_to_options(flags_str)
+
+        begin
+          regexp_obj = Regexp.new(pattern_str, options)
+
+          return {
+            pattern: pattern_str,
+            flags: flags_str,
+            regexp: regexp_obj,
+            options: options
+          }
+        rescue RegexpError => e
+          raise RegexpError, "Invalid regex pattern '#{input}': #{e.message}"
+        end
+      end
+
       # Heuristic to detect if it's a Regexp literal
-      is_literal = (clean_input.start_with?('/') && clean_input.rindex('/').positive?) || clean_input.start_with?('%r{')
+      is_literal = clean_input.start_with?('%r{')
 
       if is_literal
         # Try to parse as regex literal using to_regexp
