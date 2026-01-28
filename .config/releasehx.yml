@@ -17,10 +17,9 @@ paths:
 conversions:
   summ: issue_heading
   note: issue_body
-  note_pattern: '/^(((#|=)+ (Draft )?Release Note.*?)|(<!-- (draft )?release note -->))\n+(?<note>(.|
-)+)/gmi'
-  markup: asciidoc
-  engine: asciidoctor
+  note_pattern: |
+    /^(((#|=)+ (Draft )?Release Note.*?)|(<!-- (draft )?release note -->))\n+(?<note>(.|)+)/gmi
+  markup: markdown
 
 rhyml:
   pasterize_summ: true
@@ -54,10 +53,14 @@ parts:
     text: RHYML
     head: RHYML
     icon: file-code-o
-  sgyml:
+  schemagraphy:
     text: SchemaGraphy
     head: SchemaGraphy
     icon: sitemap
+  configuration:
+    text: configuration
+    head: Configuration
+    icon: cogs
 
 types:
   label_prefix: "type:"
@@ -93,8 +96,9 @@ types:
     icon: exclamation-circle
 
 tags:
-  _include: ['highlight', 'changelog', 'breaking', 'deprecation', 'experimental']
-  _exclude: ['internal', 'wontfix', 'duplicate', 'invalid']
+  # Include all tags by default for 0.1.2 (no filtering)
+  # _include: ['highlight', 'changelog', 'breaking', 'deprecation', 'experimental']
+  # _exclude: ['internal', 'wontfix', 'duplicate', 'invalid']
   
   highlight:
     head: Highlights
@@ -115,6 +119,12 @@ tags:
     head: Experimental Features
     icon: flask
     text: Experimental features
+
+  # Pass-through tags for labels not explicitly configured
+  documentation:
+    slug: documentation
+  changelog:
+    slug: changelog
 
 links:
   web: https://github.com/DocOps/releasehx/issues/{{ tick }}
@@ -137,7 +147,7 @@ changelog:
   head: What's Changed
   text: Summary of all changes in this release.
   htag: h2
-  spot: 2
+  spot: 1
   sort:
     - breaking:grouping1
     - type:grouping1
@@ -157,14 +167,11 @@ notes:
   head: Release Notes
   text: Detailed descriptions of notable changes.
   htag: h2
-  spot: 1
+  spot: 2
   sort:
-    - highlight:grouping1
-    - breaking:grouping1
-    - deprecation:grouping1
-    - part:grouping1
+    - type:grouping1
   items:
-    frame: unordered
+    frame: table-cols-1
     allow_redundant: true
     show_issue_links: true
     metadata_labels: before

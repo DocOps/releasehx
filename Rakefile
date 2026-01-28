@@ -36,6 +36,7 @@ task :prebuild do
   require_relative 'lib/releasehx/mcp'
   ReleaseHx::MCP::AssetPackager.new.package!
   Sourcerer.generate_manpage('docs/manpage.adoc', 'build/docs/releasehx.1')
+  generate_release_index
 end
 
 desc 'Build and tag multi-arch Docker image for releasehx'
@@ -192,6 +193,104 @@ task :serve do
   puts "Serving docs at http://localhost:#{port}"
 end
 
+# ReleaseHx self-dogfooding tasks
+namespace :rhx do
+  # Shared configuration for all rhx tasks
+  def self.rhx_config
+    require_relative 'lib/releasehx'
+    
+    config_path = '.config/releasehx.yml'
+    unless File.exist?(config_path)
+      warn "ERROR: Config file not found: #{config_path}"
+      exit 1
+    end
+    
+    config = YAML.safe_load_file(config_path, aliases: true)
+    [config_path, config]
+  end
+
+  def self.get_version(args)
+    args[:version] || extract_version
+  end
+
+  desc 'Draft a YAML release-history document for the current version'
+  task :draft, [:version] do |_t, args|
+    config_path, _config = rhx_config
+    version = get_version(args)
+    
+    puts "Fetching issues for version #{version} from GitHub..."
+    
+    # Use ReleaseHx CLI via system call
+    cmd = "bundle exec bin/rhx #{version} --config #{config_path} --fetch --yaml"
+    puts "Running: #{cmd}"
+    success = system(cmd)
+    
+    exit 1 unless success
+    
+    puts "✓ Successfully fetched and generated draft for version #{version}"
+  end
+
+  desc 'Append new issues to existing release draft'
+  task :append, [:version] do |_t, args|
+    config_path, _config = rhx_config
+    version = get_version(args)
+    
+    puts "Appending new issues for version #{version}..."
+    
+    # Use ReleaseHx CLI with --append flag
+    cmd = "bundle exec bin/rhx #{version} --config #{config_path} --fetch --append"
+    puts "Running: #{cmd}"
+    success = system(cmd)
+    
+    exit 1 unless success
+    
+    puts "✓ Successfully appended new issues to version #{version} draft"
+  end
+
+  desc 'Publish release notes as AsciiDoc'
+  task :adoc, [:version] do |_t, args|
+    config_path, config = rhx_config
+    version = get_version(args)
+    
+    # Infer draft path from config or use default
+    drafts_dir = config.dig('paths', 'drafts_dir') || 'docs/release/drafts'
+    yaml_file = File.join(drafts_dir, "#{version}.yml")
+    
+    unless File.exist?(yaml_file)
+      warn "ERROR: Draft not found: #{yaml_file}"
+      warn "Run 'rake rhx:draft[#{version}]' first to create the draft."
+      exit 1
+    end
+    
+    puts "Publishing release notes for version #{version}..."
+    
+    # Generate AsciiDoc output
+    output_file = "docs/release/#{version}.adoc"
+    cmd = "bundle exec bin/rhx #{yaml_file} --config #{config_path} --adoc #{output_file}"
+    puts "Running: #{cmd}"
+    success = system(cmd)
+    
+    exit 1 unless success
+    
+    puts "✓ Successfully published release notes to #{output_file}"
+  end
+
+  desc 'Complete workflow: draft, then publish as AsciiDoc'
+  task :generate, [:version] do |_t, args|
+    version = get_version(args)
+    
+    puts "=== Generating complete release documentation for #{version} ==="
+    
+    # Run draft task
+    Rake::Task['rhx:draft'].invoke(version)
+    
+    # Run adoc task
+    Rake::Task['rhx:adoc'].invoke(version)
+    
+    puts "\n✓ Complete! Release documentation generated for version #{version}"
+  end
+end
+
 def extract_version
   attrs = readme_attrs
   return attrs['this_prod_vrsn'].strip if attrs['this_prod_vrsn']
@@ -211,4 +310,63 @@ def ensure_buildx_builder
   puts "Creating buildx builder '#{BUILDER_NAME}'..."
   sh "docker buildx create --name #{BUILDER_NAME} --driver docker-container --use"
   sh "docker buildx inspect --builder #{BUILDER_NAME} --bootstrap"
+end
+
+def generate_release_index
+  require 'fileutils'
+  require 'yaml'
+  
+  release_dir = 'docs/release'
+  output_file = 'build/docs/_release_index.adoc'
+  
+  # Ensure output directory exists
+  FileUtils.mkdir_p(File.dirname(output_file))
+  
+  # Find all release AsciiDoc files (not drafts, not test files)
+  release_files = Dir.glob("#{release_dir}/*.adoc")
+                     .reject { |f| f.include?('-test') || f.include?('draft') }
+                     .sort
+                     .reverse
+  
+  return if release_files.empty?
+  
+  # Build the index content
+  content = []
+  content << "== Available Releases"
+  content << ""
+  content << "Each release includes detailed notes about new features, improvements, bug fixes, and breaking changes."
+  content << ""
+  
+  # List releases
+  release_files.each do |file|
+    version = File.basename(file, '.adoc')
+    # Try to extract date from the file
+    date = extract_release_date(file) || 'TBD'
+    content << "* link:../release/#{version}.html[#{version}] - #{date}"
+  end
+  
+  content << ""
+  content << "== Latest Release"
+  content << ""
+  
+  # Include the latest release content
+  if release_files.any?
+    latest_file = release_files.first
+    latest_version = File.basename(latest_file, '.adoc')
+    content << "include::release/#{latest_version}.adoc[leveloffset=+1]"
+  end
+  
+  # Write the file
+  File.write(output_file, content.join("\n"))
+  puts "✓ Generated release index: #{output_file}"
+end
+
+def extract_release_date(file)
+  # Read first 20 lines looking for :page-date: attribute
+  File.foreach(file).first(20).each do |line|
+    if line =~ /:page-date:\s+(.+)$/
+      return $1.strip
+    end
+  end
+  nil
 end

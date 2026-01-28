@@ -5,15 +5,27 @@ baseurl: /
 plugins:
   - jekyll-asciidoc
 
+collections:
+  releases:
+    output: true
+    permalink: /releases/:name/
+
 defaults:
   - scope:
       path: "api"
     values:
       render_with_liquid: false
+  - scope:
+      path: ""
+      type: "releases"
+    values:
+      layout: default
+      nav_exclude: true
 
 include:
   - index.adoc
   - config-reference.adoc
+  - releases.adoc
 
 exclude:
   - manpage.adoc

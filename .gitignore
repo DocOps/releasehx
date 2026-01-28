@@ -80,3 +80,7 @@ repomix-output.xml
 # Local development directories
 dev/
 releasehx-demo/
+
+# Release history working directories
+docs/release/drafts/
+docs/release/payloads/
