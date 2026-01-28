@@ -7,7 +7,7 @@ RSpec.describe ReleaseHx::RHYML::Adapter do
   let(:config) do
     {
       'conversions' => {
-        'note_source' => 'issue_body',
+        'note' => 'issue_body',
         'note_pattern' => '/## Release Notes?\n(?m:(?<note>.*?))(?=\n##|\z)/',
         'head_source' => 'release_note_heading',
         'head_pattern' => '/^## (?<head>.*?)$/m'

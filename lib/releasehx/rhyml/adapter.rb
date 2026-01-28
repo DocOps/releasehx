@@ -349,7 +349,7 @@ module ReleaseHx
         note_pattern = sources['note_pattern'] || templates['note_pattern']
         head_pattern = sources['head_pattern'] || templates['head_pattern']
         head_source = sources['head_source']
-        note_source = sources['note_source']
+        note_source = sources['note']
 
         extract_note!(data, note_source, note_pattern)
         extract_head!(data, head_source, head_pattern)
@@ -406,10 +406,10 @@ module ReleaseHx
         end
 
         # STEP 2: Apply regex pattern extraction if configured
-        return unless note_source =~ /issue_body/i && original_content.is_a?(String) && note_pattern.is_a?(String)
+        return unless note_source == 'issue_body' && original_content.is_a?(String) && note_pattern
 
         ReleaseHx.logger.debug "Extracting note using pattern: #{note_pattern}"
-        ReleaseHx.logger.debug "Original content: #{original_content}"
+        ReleaseHx.logger.debug "Original content: #{original_content[0..100]}..."
 
         begin
           # Apply sensible default flag 'm' (multiline/dotall in Ruby) when no flags provided
@@ -421,11 +421,18 @@ module ReleaseHx
             pattern_info,
             'note')
 
-          # Only update if we got a match
-          data['note'] = extracted_note.strip if extracted_note
+          if extracted_note
+            # Pattern matched - use extracted content
+            data['note'] = extracted_note.strip
+            ReleaseHx.logger.debug "Extracted note (#{extracted_note.length} chars)"
+          else
+            # Pattern didn't match - clear the note so empty_notes policy applies
+            ReleaseHx.logger.warn "Note pattern did not match for issue #{data['tick']} - no Release Note section found"
+            data['note'] = nil
+          end
         rescue RegexpError => e
           ReleaseHx.logger.warn "Invalid note_pattern '#{note_pattern}': #{e.message}"
-          data['note'] = original_content # Restore original on error
+          data['note'] = nil # Clear note on pattern error
         end
       end
 

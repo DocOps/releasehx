@@ -1,0 +1,175 @@
+# ReleaseHx configuration for DocOps/releasehx repository
+# Self-dogfooding configuration to manage ReleaseHx's own release history
+
+origin:
+  source: github
+  project: DocOps/releasehx
+  version: 3
+  label: GitHub Issues API v3
+  format: json
+
+paths:
+  drafts_dir: docs/release/drafts
+  payloads_dir: docs/release/payloads
+  templates_dir: docs/release/templates
+  mappings_dir: docs/release/mappings
+
+conversions:
+  summ: issue_heading
+  note: issue_body
+  note_pattern: '/^(((#|=)+ (Draft )?Release Note.*?)|(<!-- (draft )?release note -->))\n+(?<note>(.|
+)+)/gmi'
+  markup: asciidoc
+  engine: asciidoctor
+
+rhyml:
+  pasterize_summ: true
+  pasterize_head: true
+  chid: "{{ release.code | replace: '.', '_' | upcase }}-{{ change.tick }}"
+  empty_notes: skip
+
+parts:
+  label_prefix: "component:"
+  cli:
+    text: CLI
+    head: CLI
+    icon: terminal
+  api:
+    text: API
+    head: API
+    icon: code
+  docs:
+    text: documentation
+    head: Documentation
+    icon: book
+  mcp:
+    text: MCP Server
+    head: MCP Server
+    icon: plug
+  templates:
+    text: templates
+    head: Templates
+    icon: file-text-o
+  rhyml:
+    text: RHYML
+    head: RHYML
+    icon: file-code-o
+  sgyml:
+    text: SchemaGraphy
+    head: SchemaGraphy
+    icon: sitemap
+
+types:
+  label_prefix: "type:"
+  feature:
+    slug: feature
+    text: new feature
+    head: Added
+    icon: plus-square-o
+  bug:
+    slug: bug
+    text: bug fix
+    head: Fixed
+    icon: bug
+  improvement:
+    slug: improvement
+    text: improvement
+    head: Improved
+    icon: wrench
+  documentation:
+    slug: documentation
+    text: documentation
+    head: Documentation
+    icon: book
+  removal:
+    slug: removal
+    text: removal
+    head: Removed
+    icon: exclamation-triangle
+  deprecation:
+    slug: deprecation
+    text: deprecation
+    head: Deprecated
+    icon: exclamation-circle
+
+tags:
+  _include: ['highlight', 'changelog', 'breaking', 'deprecation', 'experimental']
+  _exclude: ['internal', 'wontfix', 'duplicate', 'invalid']
+  
+  highlight:
+    head: Highlights
+    icon: star
+    text: Featured changes
+  
+  breaking:
+    head: Breaking Changes
+    icon: exclamation-triangle
+    text: Breaking changes
+  
+  deprecation:
+    head: Deprecations
+    icon: clock-o
+    text: Deprecated features
+  
+  experimental:
+    head: Experimental Features
+    icon: flask
+    text: Experimental features
+
+links:
+  web: https://github.com/DocOps/releasehx/issues/{{ tick }}
+  git: https://github.com/DocOps/releasehx/commit/{{ hash }}
+  usr: https://github.com/{{ vars.lead }}
+
+modes:
+  asciidoc_frontmatter: true
+  markdown_frontmatter: false
+  remove_excess_lines: 2
+
+history:
+  items:
+    issue_links: true
+    git_links: false
+    metadata_icons: true
+
+# Changelog section configuration
+changelog:
+  head: What's Changed
+  text: Summary of all changes in this release.
+  htag: h2
+  spot: 2
+  sort:
+    - breaking:grouping1
+    - type:grouping1
+  items:
+    frame: unordered
+    allow_redundant: false
+    show_issue_links: true
+    metadata_labels: before
+    metadata_icons: before
+    show_parts_label: true
+    show_tags_label: false
+    show_type_label: false
+    show_lead_label: false
+
+# Release notes section configuration
+notes:
+  head: Release Notes
+  text: Detailed descriptions of notable changes.
+  htag: h2
+  spot: 1
+  sort:
+    - highlight:grouping1
+    - breaking:grouping1
+    - deprecation:grouping1
+    - part:grouping1
+  items:
+    frame: unordered
+    allow_redundant: true
+    show_issue_links: true
+    metadata_labels: before
+    metadata_icons: before
+    show_parts_label: true
+    show_tags_label: true
+    show_type_label: true
+    show_lead_label: true
