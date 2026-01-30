@@ -165,6 +165,7 @@ properties:
           Must be `issue_body`, `custom_field`, or `commit_message`.
 
           Defaults to `issue_body` for GitHub and GitLab, but to `custom_field` for Jira.
+        dflt: issue_body
       note_custom_field:
         type: String
         desc: |
@@ -182,7 +183,8 @@ properties:
           Uses Capture group `note` in the Regular Expression to establish the entire note content.
 
           See the `conversions.head_pattern` property for details on extracting a heading (`head` in RHYML) from the `note` content.
-        dflt: '/^((#|=)+ (Draft )?Release Note.*)|(<!-- (draft )?release note -->)\n(?<note>\w(.|\n)+)/gmi'
+        dflt: '/^(((#|=)+ (Draft )?Release Note.*?)|(<!-- (draft )?release note -->))\n+(?<note>(.|
+)+)/gmi'
       head_pattern:
         type: RegExp
         desc: |
@@ -1162,7 +1164,7 @@ properties:
               The label to use for the _singular_ part/component affected by the change, when only one part is permitted.
 
               This value will apply either when <<conf_ppty_rhyml_max_parts>> is set to `1` or when the change has only one part _and_ <<conf_ppty_history_labeling_singularize_labels>> is `true`.
-            dflt: Part
+            dflt: Component
           parts_icon:
             type: String
             desc: |

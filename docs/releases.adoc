@@ -1,0 +1,28 @@
+---
+layout: default
+title: Releases
+nav_order: 90
+permalink: /docs/releases/
+---
+= Release History
+:page-layout: default
+:page-title: Releases
+:page-nav_order: 90
+:page-permalink: /docs/releases/
+
+Complete release history for ReleaseHx, generated using ReleaseHx itself.
+
+ifdef::env-site[]
+// Generated during prebuild - includes release index and content
+include::_release_index.adoc[]
+endif::[]
+
+ifndef::env-site[]
+== Development Mode
+
+Release history is generated during the prebuild process. Run `bundle exec rake prebuild` to generate the full release index.
+endif::[]
+
+---
+
+For more information about ReleaseHx, see the link:/docs/[main documentation].

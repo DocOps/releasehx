@@ -1,5 +1,6 @@
 :page-layout: default
-:page-permalink: /docs
+:page-permalink: /docs/
+:page-title: ReleaseHx Docs
 :page-nav_order: 1
 [[releasehx]]
 = ReleaseHx
@@ -15,7 +16,7 @@
 :this_prod_vrsn_major: 0
 :this_prod_vrsn_minor: 1
 :this_prod_vrsn_major-minor: {this_prod_vrsn_major}.{this_prod_vrsn_minor}
-:this_prod_vrsn_patch: 1
+:this_prod_vrsn_patch: 2
 :this_prod_vrsn: {this_prod_vrsn_major-minor}.{this_prod_vrsn_patch}
 :next_prod_vrsn: 0.2.0
 :tagline: Generate formatted release histories from Jira, GitHub, GitLab, YAML, or JSON sources.
@@ -2475,6 +2476,7 @@ Use `PORT=NNNN` environment argument to specify a different port.
 [.prompt]
  PORT=4000 bundle exec rake serve
 
+[[docopslab-devtool]]
 ==== DocOps Lab Devtool (`docopslab-dev`)
 
 Special dev Rake tasks and libraries are available via the `docopslab-dev` gem.

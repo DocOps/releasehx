@@ -17,6 +17,7 @@ end
 group :documentation do
   gem 'jekyll'
   gem 'jekyll-asciidoc'
+  gem 'jekyll-redirect-from'
   gem 'just-the-docs'
   gem 'yard'
 end

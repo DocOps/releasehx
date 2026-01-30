@@ -4,12 +4,24 @@ baseurl: /
 
 plugins:
   - jekyll-asciidoc
+  - jekyll-redirect-from
+
+collections:
+  releases:
+    output: true
+    permalink: /docs/releases/:name/
 
 defaults:
   - scope:
-      path: "api"
+      path: "docs/api"
     values:
       render_with_liquid: false
+  - scope:
+      path: ""
+      type: "releases"
+    values:
+      layout: default
+      nav_exclude: true
 
 include:
   - index.adoc
@@ -17,6 +29,10 @@ include:
 
 exclude:
   - manpage.adoc
+  - jekyll/
+  - payloads/
+  - release/
+  - yard/
 
 # Enable Rouge for syntax highlighting in AsciiDoc blocks
 asciidoctor:

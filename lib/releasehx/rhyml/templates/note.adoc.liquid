@@ -3,50 +3,12 @@
 {%- else %}
 {%-   assign change_note = change.note | default: "NO RELEASE NOTE PROVIDED" | trim %}
 {%- endif %}
-{%- include metadata-note.adoc.liquid %}
 
 {%- unless changes_listed contains change.chid %}
 [[note-{{ change.chid }}]]
 {%- endunless %}
 [.release-note]
-{%- if config.notes.items.frame == "table-cols-1" %}
-|===
-a| {{ change_metadata }} +
-{%- if change.head %}
-*{{ change.head }}* +
-{%- endif %}
+--
 {{ change_note }}
-|===
-{%- elsif config.notes.items.frame == "table-cols-2" %}
-[cols="5,2"]
-|===
-{%- if change.head %}
-2+a| *{{ change.head }}*
-{%- endif %}
-a| {{ change_note }}
-a| {{ change_metadata }}
-|===
-{%- elsif config.notes.items.frame == "desc-list" %}
-{{ change.head }}::
-{{ change_note }} +
-{{ change_metadata }}
-{%- elsif config.notes.items.frame == "admonition" %}
-{%-   if change.type == "removal" or change.type == "deprecation" or change.type == "breaking" %}
-{%-     assign admonition_type = "WARNING" %}
-{%-   elsif change.type == "security" %}
-{%-     assign admonition_type = "IMPORTANT" %}
-{%-   elsif change.type == "experimental" %}
-{%-     assign admonition_type = "TIP" %}
-{%-   else %}
-{%-     assign admonition_type = "NOTE" %}
-{%-   endif %}
-[{{ admonition_type }}]
-{%- if change.head %}
-.{{ change.head }}
-{%- endif %}
-====
-{{ change_note }} +
-{{ change_metadata }}
-====
-{%- endif %}
+--
 
