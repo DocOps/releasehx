@@ -688,23 +688,32 @@ module ReleaseHx
     end
 
     def create_rhyml_from_source source_path, version
-      # Determine source type from configuration, not just file extension
-      configured_source_type = @settings.dig('origin', 'source') || 'json'
-
-      # Handle different source types based on configuration
-      case configured_source_type
-      when 'rhyml'
+      # First check if source_path is actually a file (overrides config)
+      if version_or_file(source_path) == :file && File.exist?(source_path)
         # Load RHYML data directly from YAML file
+        ReleaseHx.logger.debug "Loading RHYML from file: #{source_path}" if options[:verbose]
         rhyml_data = SchemaGraphy::Loader.load_yaml_with_tags(source_path)
         release_data = rhyml_data['releases'] ? rhyml_data['releases'].first : rhyml_data
 
         # Convert hash keys to keyword arguments for Release constructor
-        ReleaseHx::RHYML::Release.new(
+        return ReleaseHx::RHYML::Release.new(
           code: release_data['code'] || version,
           date: release_data['date'],
           hash: release_data['hash'],
           memo: release_data['memo'],
           changes: release_data['changes'] || [])
+      end
+
+      # Determine source type from configuration
+      configured_source_type = @settings.dig('origin', 'source') || 'json'
+
+      # Handle different source types based on configuration
+      case configured_source_type
+      when 'rhyml'
+        # Config says rhyml but source_path is not a file - error
+        raise Thor::Error,
+              "ERROR: origin.source is 'rhyml' but no YAML file provided. " \
+              'Specify a YAML file path as the first argument.'
       when 'json'
         # For json type, only use local files (never API calls)
         if options[:api_data]
