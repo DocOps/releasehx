@@ -2,9 +2,9 @@
 
 :page-title: Release History for 0.1.2
 :page-version: 0.1.2
-:page-date: 2026-01-29
+:page-date: 2026-01-30
 
-= Release History -- 0.1.2 - 2026-01-29
+= Release History -- 0.1.2 - 2026-01-30
 
 
 == What's Changed
@@ -16,7 +16,7 @@ Summary of all changes in this release.
 === Added
 
 
-* Established an instance of ReleaseHx for managing the release history of... ReleaseHx
+* Establish an instance of ReleaseHx for managing the release history of... ReleaseHx (dog fooding!)
  +
 xref:note-0_1_2-30[NOTE]
 
@@ -24,7 +24,12 @@ xref:note-0_1_2-30[NOTE]
 === Fixed
 
 
-* The documented regexp format (/pattern/flags) is unsupported
+* Formatting errors in AsciiDoc templates
+ +
+xref:note-0_1_2-36[NOTE]
+
+
+* Documented  regexp format (/pattern/flags) unsupported
  +
 xref:note-0_1_2-32[NOTE]
 
@@ -34,9 +39,15 @@ xref:note-0_1_2-32[NOTE]
 xref:note-0_1_2-28[NOTE]
 
 
-* Formatting errors in AsciiDoc templates
+* Erroneous fetch attempted even when file path is provided as first argument
+
+
+=== Improved
+
+
+* Move all docs under /docs URL path
  +
-xref:note-0_1_2-36[NOTE]
+xref:note-0_1_2-27[NOTE]
 
 
 == Release Notes
@@ -56,6 +67,14 @@ The output is configured in `.config/releasehx.yml`, and the process is document
 
 
 === Fixed
+
+[.release-note]
+--
+AsciiDoc templates have been cleaned up and streamlined significantly, mostly by removing the clumsy metadata that was hard to style in rich-text output.
+We will improve on these templates later and welcome contributions cleaning them up.
+
+--
+
 
 [.release-note]
 --
@@ -79,10 +98,11 @@ Backward compatibility has been sacrificed in this rare case, since the function
 --
 
 
+=== Improved
+
 [.release-note]
 --
-AsciiDoc templates have been cleaned up and streamlined significantly, mostly by removing the clumsy metadata that was hard to style in rich-text output.
-We will improve on these templates later and welcome contributions cleaning them up.
+Fixed and redirected all documentation URLs and new releases URL to be relative to https://releasehx.docopslab.org/docs/.
 
 --
 
