@@ -89,9 +89,7 @@ RSpec.describe 'ReleaseHx Build Integration' do
         expect(stdout).to match(/prebuild artifacts missing/i)
       ensure
         # Restore generated.rb if we backed it up
-        if generated_backup
-          FileUtils.mv('lib/releasehx/generated.rb.bak', 'lib/releasehx/generated.rb')
-        end
+        FileUtils.mv('lib/releasehx/generated.rb.bak', 'lib/releasehx/generated.rb') if generated_backup
       end
     end
   end

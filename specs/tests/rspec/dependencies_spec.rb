@@ -65,8 +65,9 @@ RSpec.describe 'ReleaseHx Dependencies' do
       temp_config.close
 
       begin
-        result = system("bundle exec bin/releasehx 1.0.0 --config #{temp_config.path} " \
-                        "--api-data #{temp_json} --md #{temp_output}/output.md --force")
+        result = system(
+          "bundle exec bin/releasehx 1.0.0 --config #{temp_config.path} " \
+          "--api-data #{temp_json} --md #{temp_output}/output.md --force")
         expect(result).to be(true), 'Template processing failed with sample data'
 
         # Should have generated some output files

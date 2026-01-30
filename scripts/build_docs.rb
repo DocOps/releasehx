@@ -48,7 +48,7 @@ module DocOpsLab
       return unless File.exist?(config_ref_path)
 
       content = File.read(config_ref_path)
-      
+
       # Add front matter if not already present
       return if content.start_with?(':page-layout:')
 
@@ -118,13 +118,13 @@ module DocOpsLab
         # but index.html is generated from README. Rename them appropriately.
         yard_index = File.join(output_dir, '_index.html')
         readme_index = File.join(output_dir, 'index.html')
-        
-        if File.exist?(yard_index)
-          # Rename README-based index to readme.html
-          File.rename(readme_index, File.join(output_dir, 'readme.html')) if File.exist?(readme_index)
-          # Rename _index.html to index.html (this is the real API overview)
-          File.rename(yard_index, readme_index)
-        end
+
+        next unless File.exist?(yard_index)
+
+        # Rename README-based index to readme.html
+        File.rename(readme_index, File.join(output_dir, 'readme.html')) if File.exist?(readme_index)
+        # Rename _index.html to index.html (this is the real API overview)
+        File.rename(yard_index, readme_index)
       end
     end
 
