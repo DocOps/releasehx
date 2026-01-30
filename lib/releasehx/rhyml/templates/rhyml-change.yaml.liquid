@@ -20,7 +20,8 @@
     {%-  if change.hash %}
     hash: {{ change.hash }}
     {%- endif %}
-    summ: {{ change.summ }}
+    summ: |
+      {{ change.summ }}
     {%- if change.head %}
     head: {{ change.head }}
     {%- endif %}

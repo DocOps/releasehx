@@ -50,7 +50,9 @@ RSpec.describe ReleaseHx::RHYML::Adapter do
     end
 
     it 'extracts head from note content' do
-      data['note'] = "## Important Change\nThis is the content"
+      # Note content must match the note_pattern first (contains "## Release Notes")
+      # Then head_pattern extracts the heading from the extracted content
+      data['note'] = "## Release Notes\n## Important Change\nThis is the content\n## Another Section"
       processed = adapter.send(:postprocess, data.dup)
       expect(processed['head']).to eq('Important Change')
       expect(processed['note']).to eq('This is the content')

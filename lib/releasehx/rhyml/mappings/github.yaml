@@ -25,7 +25,9 @@ note:
 
 # Extract type from the native GitHub Issues type field (modern approach)
 type:
-  path: "issue_type.name"
+  path: "type.name"
+  ruby: |
+    path&.downcase
 
 # Derive `parts` from labels using direct key matching or slug override
 parts:
