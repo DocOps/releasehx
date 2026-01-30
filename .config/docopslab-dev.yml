@@ -47,6 +47,10 @@ tools:
     paths:
       skip:
         - build/*
+        - specs/*
+        - "**/config-reference.adoc"
+        - docs/releases.adoc
+        - docs/release/*
 
   - tool: htmlproofer
     enabled: true  # Disabled by default, enable per project

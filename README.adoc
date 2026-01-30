@@ -2704,6 +2704,7 @@ Use `PORT=NNNN` environment argument to specify a different port.
 [.prompt]
  PORT=4000 bundle exec rake serve
 
+[[docopslab-devtool]]
 ==== DocOps Lab Devtool (`docopslab-dev`)
 
 Special dev Rake tasks and libraries are available via the `docopslab-dev` gem.
