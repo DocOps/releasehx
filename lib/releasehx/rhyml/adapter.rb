@@ -432,7 +432,7 @@ module ReleaseHx
           end
         rescue RegexpError => e
           ReleaseHx.logger.warn "Invalid note_pattern '#{note_pattern}': #{e.message}"
-          data['note'] = nil # Clear note on pattern error
+          # Preserve original content on pattern error - don't lose data due to bad config
         end
       end
 

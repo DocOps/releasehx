@@ -1164,7 +1164,7 @@ properties:
               The label to use for the _singular_ part/component affected by the change, when only one part is permitted.
 
               This value will apply either when <<conf_ppty_rhyml_max_parts>> is set to `1` or when the change has only one part _and_ <<conf_ppty_history_labeling_singularize_labels>> is `true`.
-            dflt: Part
+            dflt: Component
           parts_icon:
             type: String
             desc: |
