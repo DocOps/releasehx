@@ -1,4 +1,6 @@
 :page-nav_order: 3
+:page-permalink: /docs/sample-config/
+:page-redirect_from: /sample-config.html
 = Sample Configuration File
 
 This is a "`kitchen sink`" example of the ReleaseHx configuration settings.

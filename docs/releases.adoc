@@ -2,13 +2,13 @@
 layout: default
 title: Releases
 nav_order: 90
-permalink: /releases/
+permalink: /docs/releases/
 ---
 = Release History
 :page-layout: default
 :page-title: Releases
 :page-nav_order: 90
-:page-permalink: /releases/
+:page-permalink: /docs/releases/
 
 Complete release history for ReleaseHx, generated using ReleaseHx itself.
 
@@ -25,4 +25,4 @@ endif::[]
 
 ---
 
-For more information about ReleaseHx, see the link:/[main documentation].
+For more information about ReleaseHx, see the link:/docs/[main documentation].
