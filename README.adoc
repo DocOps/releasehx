@@ -1,5 +1,6 @@
 :page-layout: default
-:page-permalink: /docs
+:page-permalink: /docs/
+:page-title: ReleaseHx Docs
 :page-nav_order: 1
 [[releasehx]]
 = ReleaseHx

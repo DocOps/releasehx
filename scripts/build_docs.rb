@@ -32,12 +32,35 @@ module DocOpsLab
       FileUtils.cp 'README.adoc', 'build/docs/index.adoc'
       FileUtils.cp_r 'docs/.', 'build/docs/'
 
+      # Add front matter to config-reference.adoc
+      add_config_reference_front_matter
+
       # Update version in Jekyll config
       config_path = 'build/docs/_config.yml'
       raise "Jekyll config not found at #{config_path}" unless File.exist?(config_path)
 
       config_content = File.read(config_path)
       File.write(config_path, config_content)
+    end
+
+    def self.add_config_reference_front_matter
+      config_ref_path = 'build/docs/config-reference.adoc'
+      return unless File.exist?(config_ref_path)
+
+      content = File.read(config_ref_path)
+      
+      # Add front matter if not already present
+      return if content.start_with?(':page-layout:')
+
+      front_matter = <<~FRONT_MATTER
+        :page-layout: default
+        :page-permalink: /docs/config-reference/
+        :page-nav_order: 2
+        :page-redirect_from: ["/config-reference"]
+        :page-title: Configuration Reference
+      FRONT_MATTER
+
+      File.write(config_ref_path, front_matter + content)
     end
 
     def self.generate_module_docs version
@@ -65,7 +88,7 @@ module DocOpsLab
         temp_readme_path = "build/docs/#{mod[:name].downcase}_readme.html"
         File.write(temp_readme_path, processed_readme_html)
 
-        output_dir = "build/docs/api/#{mod[:name].downcase}"
+        output_dir = "build/docs/docs/api/#{mod[:name].downcase}"
         FileUtils.mkdir_p output_dir
         file_list = mod[:files].join(' ')
 
@@ -89,6 +112,18 @@ module DocOpsLab
 
         Dir.glob("#{output_dir}/**/*.html").each do |html_file|
           add_custom_css_to_html(html_file, output_dir)
+        end
+
+        # Fix YARD index file naming: _index.html is the real API index,
+        # but index.html is generated from README. Rename them appropriately.
+        yard_index = File.join(output_dir, '_index.html')
+        readme_index = File.join(output_dir, 'index.html')
+        
+        if File.exist?(yard_index)
+          # Rename README-based index to readme.html
+          File.rename(readme_index, File.join(output_dir, 'readme.html')) if File.exist?(readme_index)
+          # Rename _index.html to index.html (this is the real API overview)
+          File.rename(yard_index, readme_index)
         end
       end
     end
@@ -169,7 +204,7 @@ module DocOpsLab
       end
 
       # Add front matter to YARD API documentation files
-      api_files = Dir.glob('build/docs/api/**/*.html')
+      api_files = Dir.glob('build/docs/docs/api/**/*.html')
       return if api_files.empty?
 
       api_files.each do |file|
