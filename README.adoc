@@ -282,7 +282,7 @@ Generic MCP config (Docker)::
 +
 --
 Use the Docker image for maximum compatibility across environments.
-This is the **recommended approach** for most users.
+This is the *recommended approach* for most users.
 
 [source,json]
 ----
@@ -295,6 +295,7 @@ This is the **recommended approach** for most users.
   }
 }
 ----
+
 --
 
 VS Code MCP configuration (Docker)::
@@ -313,6 +314,7 @@ Create or update `~/.config/Code/User/mcp.json` (Linux/Mac) or `%APPDATA%\Code\U
   }
 }
 ----
+
 --
 
 VS Code MCP configuration (global gem install)::
@@ -330,6 +332,7 @@ If you have ReleaseHx installed globally (`gem install releasehx`), you can use 
   }
 }
 ----
+
 --
 
 Local repo MCP config (Bundler + cwd)::
