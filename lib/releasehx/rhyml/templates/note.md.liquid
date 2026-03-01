@@ -1,37 +1,55 @@
+<!-- .release-note -->
 {% if config.conversions.markup == "markdown" -%}
 {% assign change_note = change.note | default: "NO RELEASE NOTE PROVIDED" | trim -%}
 {% else -%}
 {% assign change_note = change.note | default: "NO RELEASE NOTE PROVIDED" | adoc_to_md | trim -%}
 {% endif -%}
+{%- comment -%} Remove "## Release Note" heading if it appears in the note content {%- endcomment -%}
+{%- assign change_note = change_note | replace: "## Release Note", "" | trim -%}
 {% embed metadata-note.md.liquid -%}
 
 <a id="note-{{ change.chid }}"></a>
+
 {%- if config.notes.items.frame == "table" %}
+
 | Change | Details |
 |--------|---------|
 | {{ change_metadata }} | {% if change.head %}**{{ change.head }}**<br>{% endif %}{{ change_note }} |
+{%- elsif config.notes.items.frame == "table-cols-1" %}
+
+| Note |
+|------|
+| {{ change_metadata }}<br>{% if change.head %}**{{ change.head }}**<br>{% endif %}{{ change_note }} |
+{%- elsif config.notes.items.frame == "table-cols-2" %}
+
+| Note | Metadata |
+|------|----------|
+| {% if change.head %}**{{ change.head }}**<br>{% endif %}{{ change_note }} | {{ change_metadata }} |
 {%- elsif config.notes.items.frame == "desc-list" %}
+{% if change.head -%}
 **{{ change.head }}**  
+{% endif -%}
 {{ change_note }}  
-*{{ change_metadata }}*
+{{ change_metadata }}
 {% elsif config.notes.items.frame == "admonition" %}
 {% if change.type == "removal" or change.type == "deprecation" or change.type == "breaking" %}
-{% assign admonition_type = "Warning" %}
+{% assign admonition_type = "⚠️ Warning" %}
 {% elsif change.type == "security" %}
-{% assign admonition_type = "Important" %}
+{% assign admonition_type = "🔒 Security" %}
 {% elsif change.type == "experimental" %}
-{% assign admonition_type = "Tip" %}
+{% assign admonition_type = "💡 Tip" %}
 {% else %}
-{% assign admonition_type = "Note" %}
+{% assign admonition_type = "📝 Note" %}
 {% endif %}
 
-> **{{ admonition_type }}**: {% if change.head %}**{{ change.head }}** - {% endif %}{{ change_note }}  
+> **{{ admonition_type }}**: {% if change.head %}**{{ change.head }}** — {% endif %}{{ change_note }}  
 > {{ change_metadata }}
 {% else -%}
 {% if change.head -%}
 ### {{ change.head }}
 {% endif -%}
 {{ change_note }}
-{{- change_metadata }}
+
+{{ change_metadata }}
 {% endif %}
 

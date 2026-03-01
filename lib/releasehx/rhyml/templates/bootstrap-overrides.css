@@ -1,0 +1,15 @@
+/* Bootstrap Overrides for ReleaseHx */
+/* Users can override this file by placing bootstrap-overrides.css in their _templates directory */
+
+/* Dark Mode Fixes */
+@media (prefers-color-scheme: dark) {
+  /* Fix .bg-light in card headers - use semantic card background instead */
+  .card-header.bg-light {
+    background-color: var(--bs-card-cap-bg) !important;
+    border-bottom: var(--bs-card-border-width) solid var(--bs-card-border-color);
+  }
+}
+
+.container-lg {
+  max-width: 900px;
+}

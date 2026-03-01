@@ -19,8 +19,10 @@ module Sourcerer
       Monkeypatches.patch_jekyll
       # Ensure Sourcerer filters are registered
       ::Liquid::Template.register_filter(::Sourcerer::Jekyll::Liquid::Filters)
+      # Ensure Jekyll filters are registered
+      ::Liquid::Template.register_filter(::Jekyll::Filters)
       # Ensure jekyll-asciidoc filters are registered
-      # ::Liquid::Template.register_filter(Jekyll::AsciiDoc::Filters)
+      ::Liquid::Template.register_filter(::Jekyll::AsciiDoc::Filters)
     end
   end
 end

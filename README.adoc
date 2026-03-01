@@ -10,6 +10,7 @@
 :docopslab_git_www: https://github.com/DocOps
 :this_prod_slug: releasehx
 :releasehx_prod_repo: {docopslab_git_www}/{this_prod_slug}
+:releasehx_prod_repo_files_path: {releasehx_prod_repo}/blob/main
 :releasehx_demo_repo: {docopslab_git_www}/releasehx-demo
 :this_prod_repo: {releasehx_prod_repo}
 :this_prod_vrsn_major: 0
@@ -1141,6 +1142,196 @@ Templates replace their namesakes built into the ReleaseHx application or API.
 By default, ReleaseHx expects templates to be formatted in link:https://shopify.github.io[Liquid], but it uses the Jekyll-enhanced Liquid 4.
 See <<templating>> for details.
 
+[[styling-customization]]
+==== HTML Styling and CSS Integration
+
+ReleaseHx provides multiple approaches for customizing the appearance of HTML output through the `history.styling` configuration section.
+
+===== Styling Modes
+
+The `history.styling.mode` property controls how CSS is applied to HTML output:
+
+`framework` (default)::
+Uses only the configured CSS framework (Bootstrap, etc.) via CDN links.
+No additional custom CSS is included.
+Best for standard, professional appearance with minimal configuration.
+
+`embedded`::
+Includes comprehensive CSS directly in the HTML `<style>` block.
+Generates standalone HTML files that display correctly without external dependencies.
+Automatically includes framework CSS plus custom theming.
+Best for distribution and email-friendly HTML.
+
+`external`::
+References an external stylesheet via `<link>` tag.
+Requires `history.styling.css_url` to specify the stylesheet location.
+Framework CSS is disabled when using external stylesheets.
+Best for custom branding and when CSS needs to be shared across multiple pages.
+
+`minimal`::
+Provides basic semantic styling with minimal inline CSS.
+No framework dependencies or complex styling.
+Best for simple, lightweight output or when CSS will be applied by a static site generator.
+
+===== Theme Variants
+
+When using `embedded` or `framework` modes, the `history.styling.theme` property controls spacing and typography:
+
+`default`::
+Balanced spacing and typography for general use.
+
+`compact`::
+Reduced spacing and condensed layout for information-dense displays.
+Ideal for internal documentation or when screen space is limited.
+
+`detailed`::
+Expanded spacing and enhanced typography for presentation contexts.
+Includes larger headings and more prominent metadata display.
+
+===== Configuration Examples
+
+.Framework Mode with Default Theme
+[source,yaml]
+----
+history:
+  html_framework: bootstrap5
+  styling:
+    mode: framework
+    theme: default
+----
+
+.Embedded CSS with Compact Theme
+[source,yaml]
+----
+history:
+  html_framework: bootstrap5
+  styling:
+    mode: embedded
+    theme: compact
+    embed_css: true
+----
+
+.External Stylesheet
+[source,yaml]
+----
+history:
+  styling:
+    mode: external
+    css_url: "assets/custom-releasehx.css"
+----
+
+.Minimal Styling
+[source,yaml]
+----
+history:
+  styling:
+    mode: minimal
+----
+
+===== Custom CSS Development
+
+When using `external` mode, create a CSS file that targets ReleaseHx's semantic HTML structure:
+
+.Key CSS Classes and Elements
+[source,css]
+----
+/* Main containers */
+.release-history { /* Overall wrapper */ }
+.release-section { /* Individual release container */ }
+
+/* Content sections */
+.changelog-section { /* Changelog entries container */ }
+.notes-section { /* Release notes container */ }
+
+/* Individual items */
+.release-note { /* Individual release note */ }
+.change-entry { /* Individual changelog entry */ }
+
+/* Components */
+.card-header, .card-body, .card-footer { /* Note structure */ }
+.change-metadata { /* Metadata display container */ }
+.badge { /* Type/status badges */ }
+----
+
+For a complete example, see the `releasehx-custom.css` file in the https://github.com/DocOps/releasehx-demo[releasehx-demo repository].
+
+===== CSS Variables for Easy Customization
+
+ReleaseHx's embedded CSS uses CSS custom properties for easy theming:
+
+[source,css]
+----
+:root {
+  --release-spacing: 3rem;    /* Space between releases */
+  --section-spacing: 2.5rem;  /* Space between sections */
+  --item-spacing: 1rem;       /* Space between items */
+  --primary-color: #0d6efd;   /* Brand primary color */
+  --success-color: #198754;   /* Success/changelog color */
+  --info-color: #0dcaf0;      /* Info/notes color */
+}
+----
+
+Override these variables in your external CSS to customize the appearance without rewriting the entire stylesheet.
+
+===== Dark Theme Support
+
+ReleaseHx's embedded CSS includes comprehensive dark theme support that automatically adapts to user preferences:
+
+Automatic detection::
+When using `framework: bootstrap5` mode, ReleaseHx includes a detection script that automatically applies dark theme based on system preferences.
+The script listens for system theme changes and updates the display in real-time.
+
+CSS custom properties::
+Dark theme colors are defined using CSS custom properties within a `@media (prefers-color-scheme: dark)` query.
+All color values automatically invert for dark mode while maintaining proper contrast ratios.
+
+Manual override::
+Users can manually toggle dark mode using the `.dark-theme` class on the `<html>` element.
+This overrides system preferences for explicit theme control.
+
+.Dark Theme Configuration Example
+[source,yaml]
+----
+history:
+  html_framework: bootstrap5
+  styling:
+    mode: embedded
+    theme: default
+----
+
+When rendered, the HTML will include:
+
+* Bootstrap 5 with `data-bs-theme` attribute management
+* CSS custom properties for both light and dark color schemes
+* JavaScript to detect and respond to system preference changes
+* Manual theme toggle capability (if you add UI controls)
+
+.Dark Theme CSS Variables
+[source,css]
+----
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1a1a1a;
+    --text-color: #e0e0e0;
+    --border-color: #444;
+    --card-bg: #2d2d2d;
+    --note-bg: #252525;
+    /* Additional dark theme variables */
+  }
+}
+----
+
+For examples of dark theme in action, see the demo configurations in the {releasehx_demo_repo}[releasehx-demo repository], particularly `github-dark-mode.yml` and `github-bootstrap-dark.yml`.
+
+===== HTML Wrapper Control
+
+To enable HTML wrapper with CSS, use either:
+
+* Configuration: `modes.html_wrap: true`
+* CLI flag: `--wrap`
+
+The wrapper includes proper HTML document structure, meta tags, and CSS framework loading.
+
 [[sourcing-strategy]]
 === Sourcing Strategy
 
@@ -1582,7 +1773,7 @@ Writes to `<output_path>/<file_template>` or `<PATH>`.
 *--wrap, --no-wrap*::
 {cli_option_message_wrap}.
 When enriching to HTML, _include_ (`--wrap`) or _exclude_ (`--no-wrap`) the `<head>` and `<body>` tags and their content.
-For use when the opposite value is set in the config file ([.ppty]*<<conf_ppty_modes_wrapped>>*).
+For use when the opposite value is set in the config file ([.ppty]*<<conf_ppty_modes_html_wrap>>*).
 
 *--quiet*::
 {cli_option_message_quiet}.
@@ -1852,9 +2043,9 @@ Most configuration of output (for drafting or enriching), is handled in the main
 
 For reference, the official mapping configs for the three supported REST APIs are at: 
 
-* link:{this_prod_repo}/blob/lib/releasehx/rest/mappings/jira.yaml[jira.yaml]
-* link:{this_prod_repo}/blob/lib/releasehx/rest/mappings/github.yaml[github.yaml]
-* link:{this_prod_repo}/blob/lib/releasehx/rest/mappings/gitlab.yaml[gitlab.yaml]
+* link:{this_prod_repo_files_path}/lib/releasehx/rest/mappings/jira.yaml[jira.yaml]
+* link:{this_prod_repo_files_path}/lib/releasehx/rest/mappings/github.yaml[github.yaml]
+* link:{this_prod_repo_files_path}/lib/releasehx/rest/mappings/gitlab.yaml[gitlab.yaml]
 
 To override any of these or to add your own, place a file at `.releasehx/rest/mappings/<hostslug>.yml`.
 
@@ -2061,7 +2252,30 @@ The various sample configurations found in the link:{releasehx_demo_repo}/blob/m
 
 A complete link:{default-config_www}[sample config] displays default values and commented descriptions of all available properties.
 
-[[liquid-extensions]]
+[[template-support]]
+==== Template and Theme Support Policy
+
+The RHYML templates in link:{releasehx_prod_repo_files_path}/lib/releasehx/rhyml/templates/[`lib/releasehx/rhyml/templates/`] are the default templates used for drafting and enriching content.
+
+Templates filenames formatted like `*.{html,yaml,md,adoc}.liquid` all contain expressive markup intended for output.
+We will call these files, such as `changelog.adoc.liquid` and `changelog.html.liquid` _expressive templates_.
+
+All files that are just `<string>.liquid`, such as `changes-sorter.liquid` and `parts-listing.liquid` merely generate data objects and produce express no output to the rendered output.
+We'll call these _parsing templates_.
+
+During pre-1.0 releases, changes made to _parsing templates_ will maintain backward compatability.
+Deprecations will be announced as early as possible, but we will not change the output of these files except by addition or in the case of a bug, in which case we will change the output to match the documented/expected processing.
+
+When it comes to _expressive templates_, DocOps Lab intends to make incremental improvements and fine tuning.
+
+You will always be able to use the templates from a prior version by dropping them into your local custom-templates directory (`_templates/`) by default, but set using {ppty_conf_paths_templates_dir}.
+
+_After the 1.0 release_, all templates will be kept backward compatible between major releases; so no breaking changes until 2.0, 3.0, etc.
+
+[NOTE]
+This is true of the RHYML domain-specific language, as well.
+We may modify it during pre-1.0 development, but it will be kept backward compatible thereafter.
+
 [[custom-liquid-tags]]
 ==== Custom Liquid Tags
 
@@ -2160,6 +2374,19 @@ inspect_yaml::
 Returns a YAML representation of the input for debugging purposes.
 example:::
 `{{ changes | inspect_yaml }}`
+
+==== Jekyll/AsciiDoc Liquid Filters
+
+ReleaseHx supports all link:https://jekyllrb.com/docs/liquid/filters/[filters provided by Jekyll 4.4].
+
+It also includes all filters provided by the jekyll-asciidoc plugin.
+
+asciidocify::
+Uses Asciidoctor API to convert a string of AsciiDoc content to HTML.
+
+tocify_asciidoc::
+Generates a table of contents in HTML from the parsed AsciiDoc document of the current page.
+For use outside the context of a full AsciiDoc document, such as in a sidebar or drop-down ToC.
 
 
 [[troubleshooting]]

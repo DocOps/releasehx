@@ -2,55 +2,84 @@
 {%- assign show_icons = note_metadata_icons %}
 {%- assign metadata_kinds = 'type,part' | split: ',' %}
 {%- assign format = "asciidoc" %}
+{%- assign metadata_items = "" | split: "," %}
 {%- embed tags-listing.liquid %}
 {%- embed parts-listing.liquid %}
-{%- capture change_metadata %}
+
+{%- comment %}Build inline metadata array for compact formatting{%- endcomment %}
+
+{%- comment %}Add parts/components{%- endcomment %}
 {%-   if parts_listing != "" and note_show_parts_label %}
-{{-     parts_listing | trim }}
+{%-     assign metadata_items = metadata_items | push: parts_listing %}
 {%-   elsif change.parts and change.parts.size > 0 and note_show_parts_label == false %}
 {%-     for part in change.parts %}
 {%-       unless part == "changelog" or part == "release_note_needed" %}
-{{ config.parts[part]['text'] | default: part }}
+{%-         assign part_text = config.parts[part]['text'] | default: part %}
+{%-         assign part_badge = "[.badge.part-badge.part-" | append: part | append: "]#" | append: part_text | append: "#" %}
+{%-         assign metadata_items = metadata_items | push: part_badge %}
 {%-       endunless %}
 {%-     endfor %}
 {%-   endif %}
+
+{%- comment %}Add type{%- endcomment %}
 {%-   if change.type %}
 {%-     assign type_config = config.types[change.type] %}
-{%-     if note_show_type_label %}
-[.meta-label.type-label]*{{ labeling_type_label }}:*
-{%-     endif %}
-{%-     if type_config.icon and show_icons and show_icons == "before" %}
-icon:{{ type_config.icon | default: 'tag' }}[role=meta-icon]
-{%-     endif %}
-{{ type_config.text | default: change.type }}
-{%-     if type_config.icon and show_icons and show_icons == "after" %}
-icon:{{ type_config.icon | default: 'tag' }}[role=meta-icon]
-{%-     endif %}
+{%-     capture type_item %}
+{%-       if note_show_type_label %}[.meta-label.type-label]*{{ labeling_type_label }}:* {% endif -%}
+{%-       if type_config.icon and show_icons and show_icons == "before" %}icon:{{ type_config.icon | default: 'tag' }}[role=meta-icon,role=type-icon] {% endif -%}
+[.badge.type-badge.type-{{ change.type }}]#{{ type_config.text | default: change.type }}#
+{%-       if type_config.icon and show_icons and show_icons == "after" %} icon:{{ type_config.icon | default: 'tag' }}[role=meta-icon,role=type-icon]{% endif -%}
+{%-     endcapture %}
+{%-     assign metadata_items = metadata_items | push: type_item %}
 {%-   endif %}
+
+{%- comment %}Add tags{%- endcomment %}
 {%-   if tags_listing != "" and note_show_tags_label %}
-{{- tags_listing | trim }}
+{%-     assign metadata_items = metadata_items | push: tags_listing %}
 {%-   elsif change.tags and change.tags.size > 0 and note_show_tags_label == false %}
 {%-     for tag in change.tags %}
 {%-       unless tag == "changelog" or tag == "release_note_needed" %}
-{{ config.tags[tag]['text'] | default: tag }}
+{%-         assign tag_text = config.tags[tag]['text'] | default: tag %}
+{%-         assign tag_badge = "[.badge.tag-badge.tag-" | append: tag | append: "]#" | append: tag_text | append: "#" %}
+{%-         assign metadata_items = metadata_items | push: tag_badge %}
 {%-       endunless %}
 {%-     endfor %}
 {%-   endif %}
+
+{%- comment %}Add lead/assignee{%- endcomment %}
 {%-   if note_show_lead and change.lead %}
-{%-     if note_show_lead_label %}
-[.meta-label.lead-label]*{{ labeling_lead_label }}:*
-{%-     endif %}
-{%-     if note_user_link_template %}
-link:{{ note_user_link_template | render: change }}[icon:user[]{{ change.lead }}]
-{%-     else %}
-icon:user[]{{ change.lead }}
-{%-     endif %}
+{%-     capture lead_item %}
+{%-       if note_show_lead_label %}[.meta-label.lead-label]*{{ labeling_lead_label }}:* {% endif -%}
+{%-       if note_user_link_template -%}
+link:{{ note_user_link_template | render: change }}[icon:user[role=user-icon]{{ change.lead }},role=user-link]
+{%-       else -%}
+icon:user[role=user-icon]{{ change.lead }}
+{%-       endif -%}
+{%-     endcapture %}
+{%-     assign metadata_items = metadata_items | push: lead_item %}
 {%-   endif %}
+
+{%- comment %}Add ticket/issue link{%- endcomment %}
 {%-   if config.links.web.href and config.links.web.href != "" %}
-link:{{ config.links.web.href | render: change }}[icon:{{ config.links.web.icon }}[]{{ config.links.web.text | render: change }}]
-{%-   endif -%}
-{%-   if note_show_git_links and config.links.git.href and config.links.git.href != "" %}
-link:{{ config.links.git.href | render: change }}[icon:{{ config.links.git.icon | default: 'code-fork' }}[]{{ change.hash | slice: 0, 7 }}]
+{%-     capture ticket_link %}link:{{ config.links.web.href | render: change }}[icon:{{ config.links.web.icon }}[role=ticket-icon]{{ config.links.web.text | render: change }},role=ticket-link]{% endcapture %}
+{%-     assign metadata_items = metadata_items | push: ticket_link %}
 {%-   endif %}
-{%- endcapture %}
+
+{%- comment %}Add git commit link{%- endcomment %}
+{%-   if note_show_git_links and config.links.git.href and config.links.git.href != "" %}
+{%-     capture git_link %}link:{{ config.links.git.href | render: change }}[icon:{{ config.links.git.icon | default: 'code-fork' }}[role=git-icon]{{ change.hash | slice: 0, 7 }},role=git-link]{% endcapture %}
+{%-     assign metadata_items = metadata_items | push: git_link %}
+{%-   endif %}
+
+{%- comment %}Add docs link{%- endcomment %}
+{%-   if config.links.docs and config.links.docs.href and config.links.docs.href != "" %}
+{%-     capture docs_link %}link:{{ config.links.docs.href | render: change }}[icon:{{ config.links.docs.icon | default: 'book' }}[role=docs-icon]{{ config.links.docs.text | render: change | default: 'Docs' }},role=docs-link]{% endcapture %}
+{%-     assign metadata_items = metadata_items | push: docs_link %}
+{%-   endif %}
+
+{%- comment %}Output as inline metadata with semantic classes{%- endcomment %}
+{%- assign change_metadata = metadata_items | join: " " | strip %}
+{%- if change_metadata != "" %}
+{%-   assign change_metadata = "[.note-metadata]" | append: newline | append: change_metadata %}
+{%- endif %}
 {%- assign catch_metadata_error = change_metadata %}

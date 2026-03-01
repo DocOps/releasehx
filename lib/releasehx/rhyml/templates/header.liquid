@@ -2,7 +2,18 @@
 {%- assign level = include.level %}
 {%- assign format = include.format %}
 {%- if format == "html" %}
-<h{{ level }}>{{ text }}</h{{ level }}>
+{%- case level %}
+{%- when 1 %}
+<h{{ level }} class="display-5 fw-bold mb-4">{{ text }}</h{{ level }}>
+{%- when 2 %}
+<h{{ level }} class="h2 fw-bold border-bottom pb-3 mb-3">{{ text }}</h{{ level }}>
+{%- when 3 %}
+<h{{ level }} class="h3 fw-bold text-primary mt-4 mb-2">{{ text }}</h{{ level }}>
+{%- when 4 %}
+<h{{ level }} class="h4 fw-semibold mt-3 mb-2">{{ text }}</h{{ level }}>
+{%- else %}
+<h{{ level }} class="fw-semibold mt-2 mb-2">{{ text }}</h{{ level }}>
+{%- endcase %}
 {%- else %}
 {%-   if format == "asciidoc" %}
 {%-     assign header_char = "=" %}
@@ -12,6 +23,4 @@
 {%-   capture header_chars %}
 {%-     for i in (1..level) %}{{ header_char }}{% endfor %}
 {%-   endcapture %}
-{{ header_chars }} {{ text }}
-
-{%- endif %}
+{{ header_chars }} {{ text }}{%- endif %}

@@ -55,6 +55,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'tilt', '~> 2.3'
   spec.add_dependency 'yaml', '~> 0.4'
 
+  spec.add_dependency 'asciidoctor-html5s', '~> 0.5'
   spec.add_dependency 'asciidoctor-pdf', '~> 2.3'
   spec.add_dependency 'commonmarker', '~> 0.23'
   spec.add_dependency 'jekyll', '~> 4.4'

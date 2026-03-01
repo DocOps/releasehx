@@ -744,12 +744,14 @@ module ReleaseHx
       @settings['modes'] ||= {}
 
       unless options[:wrap].nil?
-        @settings['modes']['wrapped'] = options[:wrap]
+        @settings['modes']['html_wrap'] = options[:wrap]
         ReleaseHx.logger.info "✓ Changed HTML wrapping to: #{options[:wrap]}" if options[:verbose]
       end
 
       return if options[:frontmatter].nil?
 
+      @settings['modes']['markdown_frontmatter'] = options[:frontmatter]
+      @settings['modes']['asciidoc_frontmatter'] = options[:frontmatter]
       @settings['modes']['html_frontmatter'] = options[:frontmatter]
       ReleaseHx.logger.info "✓ Changed frontmatter inclusion to: #{options[:frontmatter]}" if options[:verbose]
     end

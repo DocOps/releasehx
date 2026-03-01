@@ -1,36 +1,73 @@
 {%- assign show_labels = content_config.items.metadata_labels %}
 {%- assign show_icons = content_config.items.metadata_icons %}
+{%- assign metadata_kinds = 'type,part' | split: ',' %}
 {%- embed tags-listing.liquid %}
 
 {%- capture change_metadata %}
-{%-   for kind in metadata_kinds %}
-{%-     assign change_meta_kind = change[kind] %}
-{%-     assign kind_plural = kind | append: "s" %}
-{%-     if kind == "tag" %}
-{%-       continue %}
-{%-     endif %}
-{%-     if config[kind_plural][change_meta_kind].icon and show_icons and show_icons == "before" %}
-<i class="fa fa-{{ config[kind_plural][change_meta_kind].icon | default: 'tag' }} meta-icon"></i>
+{%- if change.type %}
+{%-   assign type_config = config.types[change.type] %}
+{%-   if type_config.icon and show_icons and show_icons == "before" %}
+<i class="fa fa-{{ type_config.icon | default: 'tag' }} meta-icon"></i>
+{%-   endif %}
+{%-   if show_labels %}
+{%-     assign type_text = type_config.text | default: change.type %}
+<span class="badge bg-danger meta-label type-label">{{ type_text }}</span>
+{%-   endif %}
+{%-   if type_config.icon and show_icons and show_icons == "after" %}
+<i class="fa fa-{{ type_config.icon | default: 'tag' }} meta-icon"></i>
+{%-   endif %}
+{%- endif %}
+
+{%- if change.part and change.part != "changelog" and change.part != "release_note_needed" %}
+{%-   assign part_config = config.parts[change.part] %}
+{%-   if part_config %}
+{%-     if part_config.icon and show_icons and show_icons == "before" %}
+<i class="fa fa-{{ part_config.icon | default: 'cube' }} meta-icon"></i>
 {%-     endif %}
 {%-     if show_labels %}
-<span class="badge bg-secondary meta-label {{ kind }}-label">{{ config[kind_plural][change_meta_kind]['text'] | default: change_meta_kind }}</span>
+{%-       assign part_text = part_config.text | default: change.part %}
+<span class="badge bg-secondary meta-label part-label">{{ part_text }}</span>
 {%-     endif %}
-{%-     if config[kind_plural][change_meta_kind].icon and show_icons and show_icons == "after" %}
-<i class="fa fa-{{ config[kind_plural][change_meta_kind].icon | default: 'tag' }} meta-icon"></i>
+{%-     if part_config.icon and show_icons and show_icons == "after" %}
+<i class="fa fa-{{ part_config.icon | default: 'cube' }} meta-icon"></i>
 {%-     endif %}
-{%-   endfor %}
-{%-   if tags_listing != "" %}
+{%-   endif %}
+{%- endif %}
+
+{%- if tags_listing != "" %}
 {{ tags_listing | trim }}
-{%-   endif %}
-{%-   if config.links.web and config.links.web.href %}
-<a href="{{ config.links.web.href | render: change }}" class="issue-link text-decoration-none">
-    <i class="fa fa-{{ config.links.web.icon | default: 'ticket' }}"></i>{{ config.links.web.text | render: change | default: change.tick }}
+{%- endif %}
+
+{%- if change.lead and config.links.user and config.links.user.href %}
+{%-   assign user_link = config.links.user.href | render: change %}
+<a href="{{ user_link }}" class="badge bg-light meta-link user-link text-decoration-none text-dark">
+  <i class="fa fa-{{ config.links.user.icon | default: 'user' }}"></i>{{ change.lead }}
 </a>
-{%-   endif -%}
-{%-   if config.links.git and config.links.git.href %}
-<a href="{{ config.links.git.href | render: change }}" class="git-link text-decoration-none">
-    <i class="fa fa-{{ config.links.git.icon | default: 'code-fork' }}"></i>{% assign git_text = config.links.git.text | render: change | default: change.hash %}{{ git_text | slice: 0, 7 }}
+{%- elsif change.lead %}
+<span class="badge bg-light meta-label user-label text-dark">
+  <i class="fa fa-{{ config.links.user.icon | default: 'user' }}"></i>{{ change.lead }}
+</span>
+{%- endif %}
+
+{%- if config.links.web and config.links.web.href %}
+<a href="{{ config.links.web.href | render: change }}" class="badge badge-pill bg-info meta-link issue-link text-decoration-none">
+  <i class="fa fa-{{ config.links.web.icon | default: 'ticket' }}"></i>{{ config.links.web.text | render: change | default: change.tick }}
 </a>
-{%-   endif %}
+{%- endif %}
+
+{%- if config.links.git and config.links.git.href %}
+{%-   assign git_text = config.links.git.text | render: change | default: change.hash %}
+<a href="{{ config.links.git.href | render: change }}" class="badge badge-pill bg-dark meta-link git-link text-decoration-none">
+  <i class="fa fa-{{ config.links.git.icon | default: 'code-fork' }}"></i>{{ git_text | slice: 0, 7 }}
+</a>
+{%- endif %}
+
+{%- if config.links.docs and config.links.docs.href %}
+<a href="{{ config.links.docs.href | render: change }}" class="badge badge-pill bg-success meta-link docs-link text-decoration-none">
+  <i class="fa fa-{{ config.links.docs.icon | default: 'book' }}"></i>{{ config.links.docs.text | render: change | default: 'Docs' }}
+</a>
+{%- endif %}
 {%- endcapture %}
 {%- assign catch_metadata_error = change_metadata %}
+
+

@@ -137,7 +137,7 @@ Use `releasehx://config/schema` when:
 ## Potentially unintuitive principles
 
 - **“Frontmatter” is controlled in two places (toggle vs template).**  
-  If you’re trying to *turn frontmatter on/off*, look under `modes.*_frontmatter`. If you’re trying to *change what frontmatter contains*, look under `templates.*_frontmatter` (Markdown/AsciiDoc/HTML each have their own). Also note `modes.wrapped` affects HTML wrapping, which can look like a frontmatter problem when it’s really wrapping/boilerplate.
+  If you're trying to *turn frontmatter on/off*, look under `modes.*_frontmatter`. If you're trying to *change what frontmatter contains*, look under `templates.*_frontmatter` (Markdown/AsciiDoc/HTML each have their own). Also note `modes.html_wrap` affects HTML wrapping, which can look like a frontmatter problem when it's really wrapping/boilerplate.
 
 - **Links require both a template and an enable switch.**  
   Defining URL templates under `links.web.href` / `links.git.href` does nothing by itself. You must also enable display under `history.items.show_issue_links` / `history.items.show_git_links` (or the per-section overrides under changelog/notes items, if present). If a user says “I set the link template but no links appear,” check the `history.*items*` flags.

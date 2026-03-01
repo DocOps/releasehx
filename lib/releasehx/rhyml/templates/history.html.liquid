@@ -1,51 +1,170 @@
 {%  raw %}
-{%- if config.modes.wrapped != false -%}
+{%- if config.modes.html_wrap != false -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ config.history.head | default: "Release History" }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <style>
-        .release-section { margin-bottom: 3rem; }
-        .changelog-section, .notes-section { margin-bottom: 2.5rem; }
-        .release-note { margin-bottom: 1.5rem; }
-        .meta-icon { margin-right: 0.25rem; }
-        .meta-label { margin-right: 0.5rem; }
-        .change-entry { margin-bottom: 1rem; }
-        .change-metadata { font-size: 0.9rem; color: #6c757d; }
-        .note-link { margin-left: 0.5rem; }
-        .git-link, .issue-link { margin-left: 0.25rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Release history and changelog">
+  <title>{{ config.history.head | default: "Release History" }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    :root {
+      --release-spacing: 3rem;
+      --section-spacing: 2.5rem;
+      --item-spacing: 1rem;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f8f9fa;
+    }
+    
+    .release-history {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .release-section {
+      margin-bottom: var(--release-spacing);
+      padding: 2rem;
+      background-color: white;
+      border-radius: 0.375rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .changelog-section, .notes-section {
+      margin-bottom: var(--section-spacing);
+    }
+    
+    .changelog-section {
+      border-left: 4px solid #198754;
+    }
+    
+    .notes-section {
+      border-left: 4px solid #0dcaf0;
+    }
+    
+    .release-note {
+      margin-bottom: var(--item-spacing);
+      transition: box-shadow 0.2s ease;
+    }
+    
+    .release-note:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .change-entry {
+      margin-bottom: var(--item-spacing);
+      padding: 0.75rem 0;
+      transition: background-color 0.15s ease;
+    }
+    
+    .change-entry:hover {
+      background-color: #f8f9fa;
+      border-radius: 0.25rem;
+      padding: 0.75rem 0.5rem;
+    }
+    
+    .change-summary {
+      color: #212529;
+      line-height: 1.5;
+    }
+    
+    .change-metadata {
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .meta-icon {
+      margin-right: 0.25rem;
+      opacity: 0.7;
+    }
+    
+    .meta-label, .meta-link {
+      margin-right: 0.25rem;
+      display: inline-block;
+    }
+    
+    .note-link {
+      margin-left: 0.5rem;
+      flex-shrink: 0;
+    }
+    
+    .issue-link, .git-link, .docs-link, .user-link {
+      font-size: 0.8rem;
+      text-decoration: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      white-space: nowrap;
+    }
+    
+    /* Print styles */
+    @media print {
+      body {
+        background-color: white;
+      }
+      
+      .release-section {
+        page-break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+      }
+      
+      .release-note {
+        page-break-inside: avoid;
+      }
+      
+      .change-entry:hover {
+        background-color: white;
+      }
+      
+      a[href]:after {
+        content: " (" attr(href) ")";
+        font-size: 0.75rem;
+        color: #6c757d;
+      }
+    }
+  </style>
 </head>
-<body class="container py-4">
+<body>
+  <div class="container-lg py-5">
 {%- endif -%}
 
 {%- if config.modes.html_frontmatter -%}
 {%-   assign frontmatter = config.history.html_frontmatter | render: vars -%}
 {%-   if frontmatter and frontmatter != "" -%}
-<!-- {{ frontmatter }} -->
+    <!-- {{ frontmatter }} -->
 {%-   endif -%}
 {%- endif -%}
 
-<div class="release-history">
-    <h1 class="mb-4">{{ config.history.head | render: vars | default: "Release History" }}</h1>
+    <article class="release-history">
+      <header class="mb-5">
+        <h1 class="display-4 fw-bold mb-2">{{ config.history.head | render: vars | default: "Release History" }}</h1>
+        <p class="lead text-muted">Complete history of releases, changes, and improvements</p>
+      </header>
 
-    {%- for release in var.releases %}
-    {%-   assign config  = var.config %}
-    {%-   assign release = var.release %}
-    {%-   assign changes = var.changes %}
-    {%-   assign sorted  = var.sorted -%}
-    {%-   include release.html.liquid
-           release=release
-           config=config
-           level=2 %}
-    {%- endfor %}
-</div>
+      <main>
+{%- for release in var.releases %}
+{%-   assign config  = var.config %}
+{%-   assign release = var.release %}
+{%-   assign changes = var.changes %}
+{%-   assign sorted  = var.sorted -%}
+{%-   include release.html.liquid
+         release=release
+         config=config
+         level=2 %}
+{%- endfor %}
+      </main>
+    </article>
 
-{%- if config.modes.wrapped != false -%}
+  </div>
+
+{%- if config.modes.html_wrap != false -%}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

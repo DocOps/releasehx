@@ -16,6 +16,7 @@
 {%- if frame == "ordered" %}
 [start={{ item_count }}]
 {%- endif %}
+[.change-entry]
 {{ bullet -}}
 {{ change.summ | trim }} +
 {%- if change_metadata != "" -%}

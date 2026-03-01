@@ -349,7 +349,7 @@ module ReleaseHx
         note_pattern = sources['note_pattern'] || templates['note_pattern']
         head_pattern = sources['head_pattern'] || templates['head_pattern']
         head_source = sources['head_source']
-        note_source = sources['note_source']
+        note_source = sources['note']
 
         extract_note!(data, note_source, note_pattern)
         extract_head!(data, head_source, head_pattern)

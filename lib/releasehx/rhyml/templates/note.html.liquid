@@ -1,25 +1,31 @@
+{%- assign raw_note = change.note | default: "NO RELEASE NOTE PROVIDED" %}
+{%- assign change_note = raw_note | replace: "## Release Note", "" | trim %}
 {%- if config.conversions.markup == "markdown" %}
-{%-   assign change_note = change.note | default: "NO RELEASE NOTE PROVIDED" | md_to_html | trim  %}
-{%- else %}
-{%-   assign change_note = change.note | default: "NO RELEASE NOTE PROVIDED" | trim %}
+{%-   assign change_note = change_note | markdownify | trim  %}
+{%- elsif config.conversions.markup == "asciidoc" %}
+{%-   assign change_note = change_note | asciidocify | trim  %}
 {%- endif %}
 {%- include metadata-note.html.liquid %}
 
-<div class="release-note card mb-3" id="note-{{ change.chid }}">
-    <div class="card-body">
-        {%- if change.head %}
-        <h5 class="card-title">{{ change.head }}</h5>
-        {%- endif %}
-
-        <div class="card-text">
-            {{ change_note }}
-        </div>
-
-        {%- if change_metadata != "" %}
-        <div class="change-metadata mt-3 pt-2 border-top">
-            {{ change_metadata | trim }}
-        </div>
-        {%- endif %}
+<article class="release-note card mb-3" id="note-{{ change.chid }}">
+  <div class="card-header bg-light border-bottom">
+    {%- if change.head %}
+    <h5 class="card-title mb-0">{{ change.head }}</h5>
+    {%- else %}
+    <h5 class="card-title mb-0 text-muted">Release Note</h5>
+    {%- endif %}
+  </div>
+  <div class="card-body">
+    <div class="card-text prose mb-3">
+      {{ change_note }}
     </div>
-</div>
+    {%- if change_metadata != "" %}
+    <div class="card-footer border-top pt-2">
+      <div class="change-metadata">
+        {{ change_metadata | trim }}
+      </div>
+    </div>
+    {%- endif %}
+  </div>
+</article>
 

@@ -13,6 +13,10 @@
 {%-      assign tplt_extn = "html" %}
 {%-      assign show_frontmatter = config.modes.html_frontmatter %}
 {%-      assign format_frontmatter = config.history.html_frontmatter %}
+{%-      comment %} Force frontmatter off when HTML is wrapped (full HTML structure) {%- endcomment %}
+{%-      if config.modes.html_wrap == true %}
+{%-        assign show_frontmatter = false %}
+{%-      endif %}
 {%-  endcase %}
 {%-  assign header_level = config.history.htag | replace: "h", "" | plus: 0 %}
 {%-  assign dflt_next_header_level = header_level | plus: 1 %}
@@ -27,8 +31,8 @@
 
 {%-  assign group_kinds_list = "tag,type,part" | split: "," %}
 
-{%- if show_frontmatter %}
+{%- if show_frontmatter -%}
 {{ format_frontmatter | render: vars -}}
-{%- endif %}
+{%- endif -%}
 
 {%- include header.liquid format=format level=header_level text=history_header %}

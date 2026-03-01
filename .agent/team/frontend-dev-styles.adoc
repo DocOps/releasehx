@@ -1,0 +1,408 @@
+= ReleaseHx Frontend Development Styles & Conventions
+:toc: macro
+:toclevels: 2
+
+Project-specific guidance for frontend work on ReleaseHx 0.2.0 template overhaul (Issue #38).
+
+toc::[]
+
+== Context & Starting Point
+
+See `.agent/team/template-overhaul-plan.adoc` for full implementation strategy and phased approach.
+
+All work is tracked in `.agent/team/template-overhaul-plan.imyml.yml` with specific task details.
+
+== Quick Start for Frontend Developers
+
+**For Phase 1 (HTML Templates):**
+
+. Read `.agent/team/template-overhaul-plan.adoc` sections on "Tier 1: Semantic HTML Foundation" and "Phase 1: HTML Templates Core"
+. Review current templates in `lib/releasehx/rhyml/templates/` to understand patterns
+. Check `artifacts/` in releasehx-demo repo to see current output
+. Look at specific task in IMYML file for detailed requirements
+. Review "HTML Component Patterns" section below for ReleaseHx conventions
+. Start implementing with Bootstrap 5 and semantic HTML
+
+## Technologies & Frameworks
+
+=== Templating
+
+* **Liquid**: Jekyll variant with custom filters
+* Available filters in ReleaseHx: `md_to_asciidoc`, `render`, `indent`, `pasterize`, `demarkupify`, `inspect_yaml`
+* Template location: `lib/releasehx/rhyml/templates/`
+
+=== CSS Framework
+
+* **Bootstrap 5**: Loaded via CDN in current templates
+* Bootstrap CDN: `https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css`
+* Font Awesome 4.7: `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css`
+* No JavaScript required (pure HTML/CSS solution)
+
+=== Output Targets
+
+* **HTML**: Standalone (with embedded CSS), SSG partial (with external CSS), or minimal
+* **AsciiDoc**: Using role attributes `[.classname]` for styling hooks
+* **Markdown**: Graceful text-based fallback with HTML class syntax where supported
+* **PDF**: Generated from HTML via Asciidoctor or other converters
+
+== HTML Component Patterns
+
+=== Release History Structure
+
+[source,html]
+----
+<div class="release-history">
+  <h1>Release History</h1>
+  <!-- Multiple release sections follow -->
+</div>
+----
+
+=== Release Section
+
+[source,html]
+----
+<div class="release-section" id="release-1-0-0">
+  <h2>Version 1.0.0</h2>
+  <!-- Changelog and release notes sections -->
+</div>
+----
+
+=== Changelog Section
+
+[source,html]
+----
+<div class="changelog-section">
+  <h3>Changelog</h3>
+  <div class="list-group">
+    <!-- Changelog entries -->
+  </div>
+</div>
+----
+
+=== Changelog Entry
+
+[source,html]
+----
+<div class="change-entry list-group-item" id="entry-PROJ-123">
+  <div class="d-flex align-items-start">
+    <div class="flex-grow-1">
+      <span class="change-summary">Change summary text</span>
+      <div class="change-metadata mt-1">
+        <!-- Metadata badges and links -->
+      </div>
+    </div>
+    <div class="note-link">
+      <!-- Optional note link -->
+    </div>
+  </div>
+</div>
+----
+
+=== Release Notes Section
+
+[source,html]
+----
+<div class="notes-section">
+  <h3>Release Notes</h3>
+  <!-- Release note cards -->
+</div>
+----
+
+=== Release Note Card
+
+[source,html]
+----
+<div class="release-note card mb-3" id="note-PROJ-456">
+  <div class="card-body">
+    <h5 class="card-title">Note title</h5>
+    <div class="card-text">
+      <!-- Note content (may include Markdown converted to HTML) -->
+    </div>
+    <div class="change-metadata mt-3 pt-2 border-top">
+      <!-- Metadata -->
+    </div>
+  </div>
+</div>
+----
+
+=== Metadata Display
+
+[source,html]
+----
+<div class="change-metadata">
+  <i class="fa fa-bug meta-icon"></i>
+  <span class="badge bg-danger meta-label type-label">Bug Fix</span>
+  
+  <span class="badge bg-warning meta-label tag-breaking">breaking</span>
+  
+  <a href="#issue-link" class="issue-link text-decoration-none">
+    <i class="fa fa-ticket"></i>PROJ-123
+  </a>
+  
+  <a href="#commit-link" class="git-link text-decoration-none">
+    <i class="fa fa-code-fork"></i>a1b2c3d
+  </a>
+</div>
+----
+
+== CSS Styling Conventions
+
+=== Class Naming
+
+Use semantic, BEM-inspired naming:
+
+[source,css]
+----
+.release-history { }           /* Main component */
+.release-section { }           /* Block element */
+.release-section__header { }   /* Child element */
+
+.release-note { }              /* Component */
+.release-note--breaking { }    /* Modifier variant */
+
+.is-active { }                 /* State class */
+.has-note { }                  /* State class */
+----
+
+=== Styling Modes
+
+**Minimal** (default, backwards compatible):
+* Emit semantic classes only
+* Minimal inline styles
+* Rely on Bootstrap utilities
+* External CSS for any custom styling
+
+**Embedded** (optional):
+* Include `<style>` block in wrapped mode
+* Self-contained HTML output
+* Full styling baked in
+
+**External** (demo showcase):
+* Use external CSS file
+* Link to custom stylesheet
+* Demonstrated in releasehx-demo
+
+=== Color Conventions
+
+Bootstrap 5 semantic colors:
+
+* `bg-success` (green): Features, improvements
+* `bg-danger` (red): Bug fixes, breaking changes
+* `bg-info` (cyan): Information, experimental
+* `bg-warning` (orange): Deprecations
+* `bg-secondary` (gray): Neutral, default
+
+Use semantic class names:
+
+[source,html]
+----
+<span class="badge bg-success">Feature</span>
+<span class="badge bg-danger">Bug Fix</span>
+<span class="badge bg-warning">Deprecation</span>
+----
+
+=== Responsive Breakpoints
+
+Bootstrap 5 standard breakpoints:
+
+* `<576px` (xs): Mobile phone
+* `≥576px` (sm): Large phone/small tablet
+* `≥768px` (md): Tablet
+* `≥992px` (lg): Desktop
+* `≥1200px` (xl): Large desktop
+* `≥1400px` (xxl): Extra large
+
+Use Bootstrap utilities: `d-none d-md-block`, `col-12 col-md-6`, etc.
+
+=== Print Styles
+
+Include print-optimized CSS when embedded:
+
+[source,css]
+----
+@media print {
+  .release-section { page-break-before: avoid; }
+  .release-note { page-break-inside: avoid; }
+  .note-link { display: none; }
+  a[href]:after { content: " (" attr(href) ")"; }
+  body { font-size: 11pt; line-height: 1.4; }
+}
+----
+
+== Configuration Integration
+
+=== Metadata Display Config
+
+[source,yaml]
+----
+changelog:
+  items:
+    metadata_labels: true      # Show type/component badges
+    metadata_icons: before     # Icon position: before|after|false
+    metadata_links: true       # Show ticket/git links
+
+notes:
+  items:
+    metadata_labels: true
+    metadata_icons: after
+    metadata_links: true
+----
+
+=== Styling Mode Config (Phase 2)
+
+[source,yaml]
+----
+styling:
+  mode: minimal               # minimal|embedded|external
+  theme: default             # default|compact|detailed
+  embed_css: false           # Include <style> block
+  css_url: null              # External stylesheet URL
+----
+
+== AsciiDoc Output Conventions
+
+Use role attributes for styling hooks:
+
+[source,asciidoc]
+----
+[.release-section]
+== Release 1.0.0
+
+[.changelog-section]
+=== Changelog
+
+[.change-entry]
+* Summary text
++
+[.change-metadata]
+icon:bug[] Bug Fix
+
+[.release-note]
+==== Detailed Note
+
+Content here...
+----
+
+== Markdown Output Conventions
+
+Graceful degradation with text-only fallback:
+
+[source,markdown]
+----
+# Release History
+
+## Release 1.0.0
+
+### Changelog
+
+* **Bug Fix** | Summary text
+
+### Release Notes
+
+#### Detailed Note
+
+Content here...
+----
+
+Use HTML when Markdown supports it:
+
+[source,markdown]
+----
+<div class="release-note">
+  <strong>Feature</strong>
+  
+  Detailed content...
+</div>
+----
+
+== Testing & Validation
+
+=== HTML Validation
+
+* Use W3C HTML validator: https://validator.w3.org/
+* Ensure semantic markup is correct
+* Check for valid nesting
+
+=== Accessibility
+
+* Test with axe, WAVE, Lighthouse
+* Keyboard-only navigation
+* Screen reader testing (NVDA, VoiceOver)
+* Color contrast validation
+* Target: WCAG 2.1 Level AA
+
+=== Responsive Testing
+
+* Test at all Bootstrap breakpoints
+* Mobile, tablet, desktop layouts
+* Print/PDF rendering
+* Test with demo data: `artifacts/` in releasehx-demo
+
+=== Browser Compatibility
+
+* Chrome/Edge (latest)
+* Firefox (latest)
+* Safari (latest)
+* Mobile browsers (iOS Safari, Chrome Mobile)
+* Graceful degradation for older browsers
+
+== Key Files & Locations
+
+Template files::
+`lib/releasehx/rhyml/templates/*.liquid`
+
+Configuration::
+`specs/data/config-def.yml`
+
+Demo artifacts::
+`releasehx-demo/artifacts/` (output examples)
+
+Demo configs::
+`releasehx-demo/configs/*.yml`
+
+Demo CSS (Phase 2)::
+`releasehx-demo/assets/releasehx-custom.css`
+
+== Implementation Checklist
+
+For each template task:
+
+* [ ] Read existing template and understand current patterns
+* [ ] Review demo output (before state)
+* [ ] Implement changes with semantic HTML
+* [ ] Add Bootstrap classes and components
+* [ ] Test with multiple demo configs
+* [ ] Validate HTML output
+* [ ] Check responsive rendering
+* [ ] Verify accessibility
+* [ ] Generate test artifacts
+* [ ] Update task status in IMYML file
+* [ ] Commit and document changes
+
+== Common Gotchas
+
+**Liquid vs. Markdown in templates:**
+* Use `{{ variable }}` for Liquid substitution
+* Use `{%- if condition -%}` for logic (watch whitespace)
+* Use `| filter` for Liquid filters
+
+**Bootstrap class conflicts:**
+* Bootstrap's `.d-flex` may conflict with existing layouts
+* Always test full output, not just component in isolation
+* Check for responsive utility clashing
+
+**Metadata display:**
+* Only show metadata if configured (`metadata_labels: true`, etc.)
+* Respect icon position settings (`before|after|false`)
+* Handle missing data gracefully (no broken links)
+
+**Multi-format output:**
+* HTML component may work perfectly but break in AsciiDoc
+* Test changes in all three output formats
+* Markdown needs graceful text-only fallback
+
+== Questions or Blockers
+
+Document any issues in `.agent/team/` directory for operator review.
+
+Update task status in IMYML file with notes if blocked.

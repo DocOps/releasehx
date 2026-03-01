@@ -125,6 +125,28 @@ module Sourcerer
           input.class.name
         end
 
+        # Returns a string with the first letter of each word capitalized
+        # @param input [String] The string to capitalize.
+        # @param hyphen [Boolean] Whether to also capitalize after hyphens
+        # @return [String] The capitalized string.
+        # @note Does not force lowercase letters in any word
+        # Example:
+        #   {{ "hello world-example" | title_caps: true }}
+        #   => "Hello World-Example"
+        #   {{ "hello world-example" | title_caps }}
+        #   => "Hello World-example"
+        #   {{ "API documentation" | title_caps }}
+        #   => "API Documentation"
+        def title_caps input, hyphen=false
+          return input unless input.is_a? String
+
+          if hyphen
+            input.gsub(/(^|[\s-])([[:alpha:]])/) { "#{::Regexp.last_match(1)}#{::Regexp.last_match(2).upcase}" }
+          else
+            input.gsub(/(^|\s)([[:alpha:]])/) { "#{::Regexp.last_match(1)}#{::Regexp.last_match(2).upcase}" }
+          end
+        end
+
         # Removes markup from a string.
         # @param input [String] The string to demarkupify.
         # @return [String] The demarkupified string.

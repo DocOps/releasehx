@@ -201,12 +201,59 @@ properties:
           The origin markup format for notes.
           May be `markdown` or `asciidoc`.
         dflt: markdown
-      engine:
-        type: String
+      engines:
         desc: |
-          The markup converter to use for the issues.
-          Defaults to `asciidoctor` for AsciiDoc and `redcarpet` for Markdown.
-          Options include `asciidoctor`, `redcarpet`, `commonmarker`, `kramdown`, or `pandoc`.
+          Specifies the conversion engines to use when enriching to various output formats.
+          
+          These settings determine which tool processes the conversion from draft formats to rich output.
+          Intelligent defaults are applied based on source format when engines are not explicitly configured.
+        properties:
+          html:
+            type: String
+            desc: |
+              Engine for converting to HTML format.
+              
+              Valid engines:
+              
+              [horizontal]
+              `asciidoctor-html5`:: Standard Asciidoctor HTML5 backend (nested div structure)
+              `asciidoctor-html5s`:: Semantic HTML5 backend (cleaner section-based markup)
+              `kramdown`:: Kramdown Markdown converter (for Markdown sources)
+              `pandoc`:: Universal document converter (if available)
+              
+              When not specified, intelligent defaults apply:
+              
+              - AsciiDoc → HTML: `asciidoctor-html5s` (semantic HTML5)
+              - Markdown → HTML: `kramdown`
+              - RHYML → HTML: Liquid templates (no engine needed)
+            docs: |
+              The html5s backend produces cleaner, more semantic HTML with `<section>` elements
+              instead of nested `<div class="sect1"><div class="sectionbody">` structures.
+              
+              This is particularly useful when you want to apply custom CSS or when generating
+              HTML that will be further processed or embedded in other systems.
+              
+              For backwards compatibility or when you need the traditional Asciidoctor structure,
+              use `asciidoctor-html5`.
+          pdf:
+            type: String
+            desc: |
+              Engine for converting to PDF format.
+              
+              Valid engines:
+              
+              [horizontal]
+              `asciidoctor-pdf`:: Asciidoctor PDF converter (default for AsciiDoc)
+              `asciidoctor-web-pdf`:: Web-based PDF converter using headless Chrome
+              `pandoc`:: Universal document converter (if available)
+              
+              When not specified, intelligent defaults apply:
+              
+              - AsciiDoc → PDF: `asciidoctor-pdf`
+              - Markdown → PDF: `pandoc` (if available)
+            docs: |
+              The default `asciidoctor-pdf` engine provides excellent typography and layout
+              for technical documentation with support for themes, fonts, and advanced formatting.
 
   extensions:
     desc: Default file extensions.
@@ -835,7 +882,7 @@ properties:
     desc: |
       Default settings for `rhx` command executions.
     properties:
-      wrapped:
+      html_wrap:
         type: Boolean
         desc: |
           Include (or exclude) head, header, and footer elements when enriching to HTML.
@@ -860,6 +907,7 @@ properties:
           Include frontmatter in AsciiDoc drafts.
 
           Uses the `templates.asciidoc_frontmatter` template.
+        dflt: false
       fetch:
         type: String
         desc: |
@@ -1041,6 +1089,74 @@ properties:
 
           It may include `{{ title }}`, `{{ version }}`, `{{ date }}`, as well as any `vars`-scoped variables as you pass in.
         dflt: *markdown_frontmatter_tplt
+      html_framework:
+        type: String
+        desc: |
+          The HTML framework to use when enriching to HTML.
+
+          Valid entries:
+          
+          [horizontal]
+          `bare`:: minimal HTML structure
+          `bootstrap4`:: Bootstrap 4 framework
+          `bootstrap5`:: Bootstrap 5 framework
+        dflt: bare
+      styling:
+        desc: |
+          Configuration options for HTML styling and CSS framework integration.
+        properties:
+          mode:
+            type: String
+            desc: |
+              The HTML styling approach to use when generating wrapped HTML output.
+
+              Valid options:
+
+              * `minimal` -- Basic semantic HTML with minimal inline styles
+              * `embedded` -- Include comprehensive CSS in `<style>` block 
+              * `external` -- Reference external stylesheet via `<link>` tag
+              * `framework` -- Use configured CSS framework only (Bootstrap, etc.)
+
+              When `mode: framework`, styling relies entirely on the configured CSS framework.
+              When `mode: embedded`, CSS is included inline for standalone HTML files.
+              When `mode: external`, a custom CSS file must be provided via `css_url`.
+            dflt: framework
+          theme:
+            type: String
+            desc: |
+              The visual theme variant to apply to HTML output.
+
+              Built-in themes:
+
+              * `default` -- Standard professional appearance
+              * `compact` -- Reduced spacing and condensed layout
+              * `detailed` -- Enhanced metadata display with expanded information
+
+              Theme selection affects spacing, typography, and metadata prominence.
+            dflt: default
+          embed_css:
+            type: Boolean
+            desc: |
+              Include comprehensive CSS directly in the HTML `<style>` block.
+
+              When enabled, generates standalone HTML files that display correctly
+              without external dependencies. CSS includes framework customizations,
+              responsive design rules, and print optimizations.
+
+              Automatically enabled when `mode: embedded`.
+            dflt: false
+          css_url:
+            type: String
+            desc: |
+              URL or path to external CSS stylesheet for custom styling.
+
+              When `mode: external`, this stylesheet is linked via `<link rel="stylesheet">`.
+              Can be a relative path, absolute URL, or CDN link.
+
+              Example: `assets/custom-releasehx.css` or `https://example.com/styles.css`
+
+              When provided, framework CSS and embedded CSS are disabled.
+            dflt: null
       items:
         desc: |
           Settings pertaining to displayed items across Changelog and Release Notes sections.
