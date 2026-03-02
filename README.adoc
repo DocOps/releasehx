@@ -7,23 +7,52 @@
 // tag::ai-prompt[]
 // Collects AsciiDoc content for presenting to a generative AI prompt
 // Other AI-only prompt matter could go here
-// tag::globals[]
-:docopslab_git_www: https://github.com/DocOps
-:this_prod_slug: releasehx
-:releasehx_prod_repo: {docopslab_git_www}/{this_prod_slug}
-:releasehx_prod_repo_files_path: {releasehx_prod_repo}/blob/main
-:releasehx_demo_repo: {docopslab_git_www}/releasehx-demo
-:this_prod_repo: {releasehx_prod_repo}
+// tag::global-settings[]
+:this_proj_slug: releasehx
+:this_proj_name: ReleaseHx
+// tag::universal-settings[]
+:docopslab_src_www_url: https://github.com/DocOps
+:docopslab_domain: docopslab.org
+:docopslab_www_url: https://{docopslab_domain}
+:docopslab_io_www_url: https://docopslab.github.io
+:docopslab_ruby_version: 3.2.7
+:docopslab_src_www_url: https://raw.githubusercontent.com/DocOps
+:docopslab_git_src_uri: git@github.com:DocOps
+:this_proj_src_www_url: {docopslab_src_www_url}/{this_proj_slug}
+:this_proj_src_raw_url: https://raw.githubusercontent.com/DocOps/{this_proj_slug}/main
+:this_proj_src_main_files_url: {this_proj_src_www_url}/blob/main
+:this_proj_src_git_uri: {docopslab_git_src_uri}/{this_proj_slug}.git
+:this_proj_ruby_version: {docopslab_ruby_version}
+// tag::env-settings[]
+:extn:
+ifdef::env-github[]
+:extn: .adoc
+:icons: font
+:caution-caption: :fire:
+:important-caption: :exclamation:
+:note-caption: :paperclip:
+:tip-caption: :bulb:
+:warning-caption: :warning:
+endif::[]
+// end::env-settings[]
+// end::universal-settings[]
+:releasehx_demo_repo: {docopslab_src_www_url}/releasehx-demo
+// tag::product-settings[]
+:this_prod_slug: {this_proj_slug}
+// tag::version-settings[]
 :this_prod_vrsn_major: 0
 :this_prod_vrsn_minor: 2
-:this_prod_vrsn_major-minor: {this_prod_vrsn_major}.{this_prod_vrsn_minor}
+:this_prod_vrsn_majmin: {this_prod_vrsn_major}.{this_prod_vrsn_minor}
 :this_prod_vrsn_patch: 0
-:this_prod_vrsn: {this_prod_vrsn_major-minor}.{this_prod_vrsn_patch}
+:this_prod_vrsn: {this_prod_vrsn_majmin}.{this_prod_vrsn_patch}
 :next_prod_vrsn: 0.3.0
+:next_prod_vrsn_majmin: 0.3
+// end::version-settings[]
 :tagline: Generate formatted release histories from Jira, GitHub, GitLab, YAML, or JSON sources.
 :description: pass:q[CLI utility and Ruby API for generating structured release notes and changelog documents from various issue-tracking platforms or YAML definitions into plaintext drafts (*AsciiDoc*, *Markdown*, *YAML*) and rich-text output (*HTML* and *PDF*).]
 :gem_config_definition_path: ./specs/data/config-def.yml
 :app_default_config_path: ./.releasehx.yml
+:docker_base_command: docker run -it --rm --user $(id -u):$(id -g) -v $(pwd):/workdir docopslab/{this_prod_slug} rhx
 // Default configuration values - single source of truth for config-def.yml
 :default_markup: markdown
 :default_slug_type: kebab
@@ -47,19 +76,8 @@
 :draft_source_extensions: {markdown_extensions}, {asciidoc_extensions}, {yaml_extensions}
 :enrich_file_types: HTML, PDF
 :enrich_extensions: .html, .pdf
-:docker_base_command: docker run -it --rm --user $(id -u):$(id -g) -v $(pwd):/workdir docopslab/releasehx rhx
-:this_prod_repo_branch: {this_prod_repo}/tree/release/{this_prod_vrsn_major-minor}
-ifdef::env-github[]
-:docs_extn: .adoc
-:releasehx_www: https://releasehx.docopslab.org
-:releasehx_docs_www: {releasehx_www}/docs
-:default-config_www: {releasehx_docs_www}/sample-config.html
-:this_prod_docs_www: {releasehx_docs_www}
-endif::[]
-ifndef::env-github[]
-:docs_extn: 
-endif::[]
-// end::globals[]
+// end::product-settings[]
+// end::global-settings[]
 :toc: macro
 :toclevels: 3
 
@@ -1916,7 +1934,7 @@ Each item must have a `user` property that matches a username in the Issues syst
 These pertain the to the main configuration file, which is defined specifically for your _application_ of ReleaseHx.
 By default, the application config is found at `{app_default_config_path}.`
 
-The full configuration reference is published at link:{releasehx_docs_www}/config-reference{docs_extn}[].
+The full configuration reference is published at link:{releasehx_docs_www}/config-reference{extn}[].
 
 [[sample-config]]
 === Sample Application Configurations
@@ -2256,7 +2274,7 @@ A complete link:{default-config_www}[sample config] displays default values and 
 [[template-support]]
 ==== Template and Theme Support Policy
 
-The RHYML templates in link:{releasehx_prod_repo_files_path}/lib/releasehx/rhyml/templates/[`lib/releasehx/rhyml/templates/`] are the default templates used for drafting and enriching content.
+The RHYML templates in link:{this_proj_src_www_url_files_path}/lib/releasehx/rhyml/templates/[`lib/releasehx/rhyml/templates/`] are the default templates used for drafting and enriching content.
 
 Templates filenames formatted like `*.{html,yaml,md,adoc}.liquid` all contain expressive markup intended for output.
 We will call these files, such as `changelog.adoc.liquid` and `changelog.html.liquid` _expressive templates_.
@@ -2533,7 +2551,7 @@ To work with ReleaseHx source, clone both repositories side by side for the most
 . Clone both repositories.
 +
 [.prompt]
- git clone {releasehx_prod_repo}
+ git clone {this_proj_src_www_url}
  git clone {releasehx_demo_repo}
 +
 This will give you `<source_dir>/releasehx` and `<source_dir>/releasehx-demo`, side by side.
@@ -2713,7 +2731,7 @@ Special dev Rake tasks and libraries are available via the `docopslab-dev` gem.
 [.prompt]
  bundle exec rake --tasks | grep labdev:
 
-The link:{docopslab_git_www}/lab/tree/main/gems/docopslab-dev/README.adoc[DocOps Lab Devtool] or see `.agent/docs/topics/docpslab-devtool`.
+The link:{docopslab_src_www_url}/lab/tree/main/gems/docopslab-dev/README.adoc[DocOps Lab Devtool] or see `.agent/docs/topics/docpslab-devtool`.
 
 // tag::releasehx-api[]
 [[issue-data-mapping]]
