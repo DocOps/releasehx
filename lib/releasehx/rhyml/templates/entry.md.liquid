@@ -1,16 +1,18 @@
 <!-- .change-entry -->
 {%- embed metadata-entry.md.liquid -%}
-{%- assign frame = content_config.items.frame | default: "unordered" %}
+{%- assign frame = content_config.items.frame | default: 'unordered' %}
 {%- case frame %}
-{%-   when "unordered" %}
-{%-     assign bullet = "- " %}
-{%-   when "ordered" %}
-{%-     assign bullet = "1. " %}
-{%-   when "basic" %}
-{%-     assign bullet = "- " %}
-{%-   else %}
-{%-     assign bullet = "" %}
+  {%- when 'unordered' %}
+    {%- assign bullet = '- ' %}
+  {%- when 'ordered' %}
+    {%- assign bullet = '1. ' %}
+  {%- when 'basic' %}
+    {%- assign bullet = '- ' %}
+  {%- else %}
+    {%- assign bullet = '' %}
 {%- endcase %}
 
-{{ bullet }}{{ change.summ | trim }}{%- if change_metadata != "" %} {{ change_metadata | trim }}{%- endif -%}{%- if change.note and change.note != "" %} [📝](#note-{{ change.chid }}){%- endif -%}
-
+{{ bullet -}}
+{{- change.summ | trim }}
+{%- if change_metadata != '' %} {{ change_metadata | trim }}{%- endif -%}
+{%- if change.note and change.note != '' %} [📝](#note-{{ change.chid }}){%- endif -%}
