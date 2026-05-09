@@ -29,9 +29,7 @@ tmp/
 *.bak
 *~
 .warp/
-.agent/*
-!.agent/team/
-.agents/
+.agent/
 
 # Logs
 *.log

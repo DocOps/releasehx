@@ -21,6 +21,7 @@
 :this_proj_src_www_url: {docopslab_src_www_url}/{this_proj_slug}
 :this_proj_src_raw_url: https://raw.githubusercontent.com/DocOps/{this_proj_slug}/main
 :this_proj_src_main_files_url: {this_proj_src_www_url}/blob/main
+:this_proj_src_main_edit_url: {this_proj_src_www_url}/edit/main
 :this_proj_src_git_uri: {docopslab_git_src_uri}/{this_proj_slug}.git
 :this_proj_ruby_version: {docopslab_ruby_version}
 // tag::env-settings[]
@@ -52,7 +53,7 @@ endif::[]
 :description: pass:q[CLI utility and Ruby API for generating structured release notes and changelog documents from various issue-tracking platforms or YAML definitions into plaintext drafts (*AsciiDoc*, *Markdown*, *YAML*) and rich-text output (*HTML* and *PDF*).]
 :gem_config_definition_path: ./specs/data/config-def.yml
 :app_default_config_path: ./.releasehx.yml
-:docker_base_command: docker run -it --rm --user $(id -u):$(id -g) -v $(pwd):/workdir docopslab/{this_prod_slug} rhx
+:docker_run_command: docker run -it --rm --user $(id -u):$(id -g) -v $(pwd):/workdir docopslab/{this_prod_slug} rhx
 // Default configuration values - single source of truth for config-def.yml
 :default_markup: markdown
 :default_slug_type: kebab
@@ -229,7 +230,7 @@ With Docker installed and running...
 . Run the `rhx` command.
 +
 [.prompt,subs=+attributes]
- {docker_base_command}
+ {docker_run_command}
 +
 This mounts your local directory to be writeable by the Docker container.
 Everything after `rhx` accepts the standard <<rhx,arguments and options>> of the ReleaseHx utility.
@@ -239,7 +240,7 @@ Everything after `rhx` accepts the standard <<rhx,arguments and options>> of the
 Optionally alias the base Docker command.
 
 [.prompt,subs=+attributes]
- alias rhx='{docker_base_command}'
+ alias rhx='{docker_run_command}'
 ====
 
 Try the <<demo-setup,demo configs and data>> to get a feel for how ReleaseHx works.
@@ -1973,7 +1974,7 @@ If you add a non-standard API, please consider <<contributing,contributing it>> 
 
 ReleaseHx connects to all upstream REST APIs via YAML-based client configurations.
 
-For reference, the official configs for the three supported REST APIs are at link:{this_prod_repo}/blob/lib/releasehx/rest/clients/jira.yml[jira.yml], link:{this_prod_repo}/blob/lib/releasehx/rest/clients/github.yml[github.yml], and link:{this_prod_repo}/blob/lib/releasehx/rest/clients/gitlab.yml[gitlab.yml].
+For reference, the official configs for the three supported REST APIs are at link:{this_proj_src_www_url}/blob/lib/releasehx/rest/clients/jira.yml[jira.yml], link:{this_proj_src_www_url}/blob/lib/releasehx/rest/clients/github.yml[github.yml], and link:{this_proj_src_www_url}/blob/lib/releasehx/rest/clients/gitlab.yml[gitlab.yml].
 
 To override any of these or to add your own, place a file at `.releasehx/rest/clients/<hostslug>.yml`.
 Make sure it conforms to the schema defined in `specs/data/api-client-schema.yaml`.
@@ -2062,9 +2063,9 @@ Most configuration of output (for drafting or enriching), is handled in the main
 
 For reference, the official mapping configs for the three supported REST APIs are at: 
 
-* link:{this_prod_repo_files_path}/lib/releasehx/rest/mappings/jira.yaml[jira.yaml]
-* link:{this_prod_repo_files_path}/lib/releasehx/rest/mappings/github.yaml[github.yaml]
-* link:{this_prod_repo_files_path}/lib/releasehx/rest/mappings/gitlab.yaml[gitlab.yaml]
+* link:{this_proj_src_www_url_files_path}/lib/releasehx/rest/mappings/jira.yaml[jira.yaml]
+* link:{this_proj_src_www_url_files_path}/lib/releasehx/rest/mappings/github.yaml[github.yaml]
+* link:{this_proj_src_www_url_files_path}/lib/releasehx/rest/mappings/gitlab.yaml[gitlab.yaml]
 
 To override any of these or to add your own, place a file at `.releasehx/rest/mappings/<hostslug>.yml`.
 
