@@ -6,9 +6,6 @@ require 'liquid'
 require 'erb'
 require 'yaml'
 require 'json'
-require_relative '../../schemagraphy'
-require_relative '../../schemagraphy/safe_expression'
-require_relative '../../sourcerer/jekyll'
 
 module ReleaseHx
   module RHYML

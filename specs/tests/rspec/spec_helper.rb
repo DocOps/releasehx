@@ -6,7 +6,6 @@ require 'yaml'
 require 'json'
 require 'tempfile'
 require 'tmpdir'
-require_relative '../../../lib/schemagraphy/safe_expression'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

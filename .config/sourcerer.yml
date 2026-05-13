@@ -14,13 +14,13 @@ regions:
     tag: ai-prompt
     out: releasehx-ai-prompt.adoc
 render:
-  - template: lib/schemagraphy/templates/cfgyml/config-reference.adoc.liquid
+  - template: ../schemagraphy/lib/schemagraphy/templates/cfgyml/config-reference.adoc.liquid
     data: specs/data/config-def.yml
     key: config_def
     attrs: README.adoc
     out: build/docs/config-reference.adoc
     name: config-reference
-  - template: lib/schemagraphy/templates/cfgyml/sample-config.yaml.liquid
+  - template: ../schemagraphy/lib/schemagraphy/templates/cfgyml/sample-config.yaml.liquid
     data: specs/data/config-def.yml
     key: config_def
     attrs: README.adoc

@@ -14,7 +14,7 @@ require_relative 'sourcerer/builder'
 require_relative 'sourcerer/plaintext_converter'
 require_relative 'sourcerer/templating'
 require_relative 'sourcerer/jekyll'
-require_relative 'schemagraphy'
+require 'schemagraphy'
 
 # A tool for single-sourcing documentation and data from AsciiDoc and YAML files.
 # It provides methods for extracting data, rendering templates, and generating various outputs.

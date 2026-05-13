@@ -5,7 +5,7 @@ require 'logger'
 require 'liquid'
 require 'yaml'
 require_relative 'sourcerer'
-require_relative 'schemagraphy'
+require 'schemagraphy'
 begin
   require_relative 'releasehx/generated'
 rescue LoadError
