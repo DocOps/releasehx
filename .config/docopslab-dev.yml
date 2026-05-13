@@ -50,12 +50,14 @@ tools:
         target: .config/vale.local.ini
         synced: false
     paths:
+      lint: ['.']
       skip:
         - build/*
         - specs/*
         - "**/config-reference.adoc"
         - docs/releases.adoc
         - docs/release/*
+      exts: ['adoc']
 
   - tool: htmlproofer
     enabled: true  # Disabled by default, enable per project
