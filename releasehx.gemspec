@@ -67,5 +67,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'prism', '~> 1.5'
   spec.add_dependency 'to_regexp', '= 0.2.1'
   spec.add_dependency 'schemagraphy', '~> 0.1'
-  spec.add_dependency 'asciisourcerer'
+  spec.add_dependency 'asciisourcerer', '~> 0.4'
 end

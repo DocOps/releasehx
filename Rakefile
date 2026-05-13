@@ -27,7 +27,8 @@ rescue LoadError
 end
 
 task :prebuild do
-  require_relative 'lib/sourcerer'
+  require 'asciisourcerer'
+  require 'schemagraphy'
   srcrr_config = YAML.safe_load_file('.config/sourcerer.yml', symbolize_names: true, aliases: true)
 
   Sourcerer::Builder.generate_prebuild(**srcrr_config)

@@ -4,8 +4,8 @@ require 'thor'
 require 'logger'
 require 'liquid'
 require 'yaml'
-require_relative 'sourcerer'
 require 'schemagraphy'
+require 'asciisourcerer'
 begin
   require_relative 'releasehx/generated'
 rescue LoadError
