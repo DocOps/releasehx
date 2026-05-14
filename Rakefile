@@ -26,18 +26,40 @@ rescue LoadError
   # RSpec not available - skip test tasks
 end
 
+def resolve_gem_uri path
+  return path unless path.is_a?(String) && path.start_with?('gem://')
+
+  match = path.match(%r{\Agem://([^/]+)/(.+)\z})
+  raise ArgumentError, "Invalid gem:// URI: #{path}" unless match
+
+  spec = Gem.loaded_specs[match[1]]
+  raise LoadError, "Gem '#{match[1]}' not loaded (referenced in gem:// path: #{path})" unless spec
+
+  File.join(spec.gem_dir, match[2])
+end
+
 task :prebuild do
   require 'asciisourcerer'
   require 'schemagraphy'
   srcrr_config = YAML.safe_load_file('.config/sourcerer.yml', symbolize_names: true, aliases: true)
 
   Sourcerer::Builder.generate_prebuild(**srcrr_config)
-  render_config = srcrr_config[:render] || srcrr_config[:templates] || []
-  Sourcerer.render_outputs(render_config)
+  puts '✓ Generated prebuild artifacts (attributes, snippets, regions)'
+  render_config = (srcrr_config[:render] || srcrr_config[:templates] || []).map do |entry|
+    entry = entry.dup
+    entry[:template] = resolve_gem_uri(entry[:template]) if entry[:template]
+    entry[:data]     = resolve_gem_uri(entry[:data])     if entry[:data]
+    entry
+  end
+  Sourcerer::Rendering.render_outputs(render_config)
+  puts "✓ Rendered #{render_config.size} output(s): #{render_config.map { |e| e[:out] }.join(', ')}"
   require_relative 'lib/releasehx/mcp'
   ReleaseHx::MCP::AssetPackager.new.package!
-  Sourcerer.generate_manpage('docs/manpage.adoc', 'build/docs/releasehx.1')
+  puts '✓ Packaged MCP assets'
+  Sourcerer::AsciiDoc.generate_manpage('docs/manpage.adoc', 'build/docs/releasehx.1')
+  puts '✓ Generated manpage: build/docs/releasehx.1'
   generate_release_index
+  puts '✓ Generated release index: build/docs/_release_index.adoc'
 end
 
 desc 'Build and tag multi-arch Docker image for releasehx'
@@ -341,7 +363,6 @@ def generate_release_index
 
   # Write the file
   File.write(output_file, content.join("\n"))
-  puts "✓ Generated release index: #{output_file}"
 end
 
 def extract_release_date file

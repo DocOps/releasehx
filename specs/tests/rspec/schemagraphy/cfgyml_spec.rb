@@ -48,7 +48,7 @@ RSpec.describe SchemaGraphy::CFGYML::Definition do
   describe '#template_paths' do
     it 'includes default CFGYML template path' do
       cfgyml = described_class.new temp_schema_file, test_attrs
-      expect(cfgyml.template_paths.first).to include('templates/cfgyml')
+      expect(cfgyml.template_paths.first).to include('cfgyml/templates')
     end
   end
 
