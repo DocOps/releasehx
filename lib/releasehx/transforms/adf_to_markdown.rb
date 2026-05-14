@@ -135,7 +135,7 @@ module ReleaseHx
       end
 
       # Converts a list (bullet or ordered)
-      def self.convert_list node, excluded, depth, unordered: true
+      def self.convert_list node, excluded, depth, _unordered: true
         content = node['content'] || []
         items = content.map { |item| convert_node(item, excluded, depth + 1) }
         "#{items.join}\n"

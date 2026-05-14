@@ -2,7 +2,7 @@ PATH
   remote: ../schemagraphy
   specs:
     schemagraphy (0.1.0)
-      asciisourcerer
+      asciisourcerer (~> 0.4)
       prism (>= 0.20)
       psych (>= 3.3.0)
       tilt (~> 2.3)
@@ -15,7 +15,7 @@ PATH
     releasehx (0.2.0)
       asciidoctor-html5s (~> 0.5)
       asciidoctor-pdf (~> 2.3)
-      asciisourcerer
+      asciisourcerer (~> 0.4)
       commonmarker (~> 0.23)
       faraday (~> 2.9)
       faraday-follow_redirects (~> 0.3.0)
@@ -56,7 +56,7 @@ GEM
       prawn-templates (~> 0.1.0)
       treetop (~> 1.6.0)
       ttfunk (~> 1.7.0)
-    asciisourcerer (0.3.1)
+    asciisourcerer (0.4.0)
       asciidoctor (~> 2.0)
       asciidoctor-html5s (~> 0.5)
       jekyll (~> 4.4)
