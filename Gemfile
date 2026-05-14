@@ -4,9 +4,6 @@ source 'https://rubygems.org'
 
 gemspec
 
-# Path dependencies
-gem 'schemagraphy', path: '../schemagraphy'
-
 # Development dependencies
 # Note: rake, rubocop, and rubocop-rspec are provided by docopslab-dev
 group :development, :test do

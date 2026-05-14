@@ -1,15 +1,4 @@
 PATH
-  remote: ../schemagraphy
-  specs:
-    schemagraphy (0.1.0)
-      asciisourcerer (~> 0.4)
-      prism (>= 0.20)
-      psych (>= 3.3.0)
-      tilt (~> 2.3)
-      to_regexp (~> 0.2)
-      yaml (~> 0.4)
-
-PATH
   remote: .
   specs:
     releasehx (0.2.0)
@@ -369,6 +358,13 @@ GEM
     safe_yaml (1.0.5)
     sass-embedded (1.99.0-x86_64-linux-gnu)
       google-protobuf (~> 4.31)
+    schemagraphy (0.1.0)
+      asciisourcerer (~> 0.4)
+      prism (>= 0.20)
+      psych (>= 3.3.0)
+      tilt (~> 2.3)
+      to_regexp (~> 0.2)
+      yaml (~> 0.4)
     sexp_processor (4.17.5)
     simplecov (0.22.0)
       docile (~> 1.1)
@@ -418,7 +414,6 @@ DEPENDENCIES
   just-the-docs
   releasehx!
   rspec (~> 3.0)
-  schemagraphy!
   yard
 
 BUNDLED WITH
