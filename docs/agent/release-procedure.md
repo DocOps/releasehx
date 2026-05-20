@@ -37,6 +37,60 @@ bundle exec rake rspec
 # All tests must pass
 ```
 
+**Confirm demo builds in releasehx-demo repo**
+```bash
+# Navigate to demo repo and ensure latest build
+cd ../releasehx-demo
+./dev-install.sh
+
+# Verify version alignment
+RHXDEMO_VERSION=$(grep ":releasehx_vrsn:" README.adoc | awk '{print $NF}')
+RHXDEMO_CLI_VERSION=$(bundle exec rhx --version)
+echo "Demo repo expects version: $RHXDEMO_VERSION"
+echo "CLI version installed: $RHXDEMO_CLI_VERSION"
+# Should match, or be able to update demo repo README if needed
+
+# Clean previous test output
+bundle exec rake clean
+
+# Validate YAML configurations
+bundle exec rake yaml_test
+# All config and mapping files must be valid
+
+# Run CLI workflow tests
+bundle exec rake cli_test
+# Tests basic Jira, GitHub, and auto-discovery workflows
+
+# Run README testable commands
+bundle exec rake readme_test
+# Executes all [.testable] commands from README.adoc
+# Output generated in __output/drafts/ and __output/publish/
+
+# Run dynamic test matrix
+bundle exec rake dynamic_test
+# Tests combinations defined in specs/files-matrix.yml
+# Output in __tests/dynamic/
+
+# Run content quality validation
+bundle exec rake validate_content
+# Validates generated files for quality standards
+
+# View test results
+ls -lh __tests/
+# Should see: cli/, dynamic/, readme/, validation/
+```
+
+**Demo Repo Release Readiness Checklist**
+```
+- [ ] All YAML files valid (yaml_test passes)
+- [ ] CLI workflows execute without errors (cli_test passes)
+- [ ] README testable commands complete successfully (readme_test passes)
+- [ ] Dynamic test matrix completes (dynamic_test passes)
+- [ ] Content validation passes (validate_content passes)
+- [ ] No errors in __tests/ output directories
+- [ ] Generated files look correct in __output/ directories
+```
+
 **Test Docker Build**
 ```bash
 bundle exec rake buildx
@@ -64,6 +118,7 @@ grep -E "path:|git:" Gemfile
 # Verify release notes file exists
 ls -lh docs/release/0.x.y.adoc
 ```
+
 
 ### Stage 2: Build Artifacts
 

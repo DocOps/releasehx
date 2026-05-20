@@ -842,8 +842,9 @@ module ReleaseHx
 
       # Extract issues array if client config specifies root_issues_path: "issues"
       # This matches what the API client does when fetching live data
+      # BUT: Skip extraction if a custom mapping is provided, as it handles extraction itself
       origin_source = @settings.dig('origin', 'source')
-      if origin_source && payload.is_a?(Hash) && payload.key?('issues')
+      if origin_source && payload.is_a?(Hash) && payload.key?('issues') && !options[:mapping]
         client_path = find_api_client_config(origin_source)
         if client_path
           client_def = SchemaGraphy::Loader.load_yaml_with_tags(client_path)

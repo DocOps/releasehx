@@ -1169,6 +1169,7 @@ See <<templating>> for details.
 
 ReleaseHx provides multiple approaches for customizing the appearance of HTML output through the `history.styling` configuration section.
 
+[[styling-modes]]
 ===== Styling Modes
 
 The `history.styling.mode` property controls how CSS is applied to HTML output:
@@ -1195,6 +1196,7 @@ Provides basic semantic styling with minimal inline CSS.
 No framework dependencies or complex styling.
 Best for simple, lightweight output or when CSS will be applied by a static site generator.
 
+[[theme-variants]]
 ===== Theme Variants
 
 When using `embedded` or `framework` modes, the `history.styling.theme` property controls spacing and typography:
@@ -1210,6 +1212,7 @@ Ideal for internal documentation or when screen space is limited.
 Expanded spacing and enhanced typography for presentation contexts.
 Includes larger headings and more prominent metadata display.
 
+[[configuration-examples]]
 ===== Configuration Examples
 
 .Framework Mode with Default Theme
@@ -1250,6 +1253,7 @@ history:
     mode: minimal
 ----
 
+[[custom-css-development]]
 ===== Custom CSS Development
 
 When using `external` mode, create a CSS file that targets ReleaseHx's semantic HTML structure:
@@ -1277,6 +1281,7 @@ When using `external` mode, create a CSS file that targets ReleaseHx's semantic 
 
 For a complete example, see the `releasehx-custom.css` file in the https://github.com/DocOps/releasehx-demo[releasehx-demo repository].
 
+[[css-variables]]
 ===== CSS Variables for Easy Customization
 
 ReleaseHx's embedded CSS uses CSS custom properties for easy theming:
@@ -1295,6 +1300,7 @@ ReleaseHx's embedded CSS uses CSS custom properties for easy theming:
 
 Override these variables in your external CSS to customize the appearance without rewriting the entire stylesheet.
 
+[[dark-theme]]
 ===== Dark Theme Support
 
 ReleaseHx's embedded CSS includes comprehensive dark theme support that automatically adapts to user preferences:
@@ -1345,6 +1351,7 @@ When rendered, the HTML will include:
 
 For examples of dark theme in action, see the demo configurations in the {releasehx_demo_repo}[releasehx-demo repository], particularly `github-dark-mode.yml` and `github-bootstrap-dark.yml`.
 
+[[html-wrapper-control]]
 ===== HTML Wrapper Control
 
 To enable HTML wrapper with CSS, use either:
@@ -2180,8 +2187,7 @@ For example, if your GitHub issues use labels like:
 Your ReleaseHx application will need an alternate mapping because the default GitHub mapping expects native `issue_type.name` fields.
 
 An example alternate mapping for label-based GitHub type extraction can be found at:
-
-`link:{releasehx_demo_repo}/blob/main/_mappings_/legacy-labels/github.yaml[releasehx-demo/_mappings_/legacy-labels/github.yaml]`
+link:{releasehx_demo_repo}/blob/main/_mappings_/legacy-labels/github.yaml[`releasehx-demo/_mappings_/legacy-labels/github.yaml`]
 
 This mapping includes Ruby logic to:
 
@@ -2285,7 +2291,7 @@ We will call these files, such as `changelog.adoc.liquid` and `changelog.html.li
 All files that are just `<string>.liquid`, such as `changes-sorter.liquid` and `parts-listing.liquid` merely generate data objects and produce express no output to the rendered output.
 We'll call these _parsing templates_.
 
-During pre-1.0 releases, changes made to _parsing templates_ will maintain backward compatability.
+During pre-1.0 releases, changes made to _parsing templates_ will maintain backward compatibility.
 Deprecations will be announced as early as possible, but we will not change the output of these files except by addition or in the case of a bug, in which case we will change the output to match the documented/expected processing.
 
 When it comes to _expressive templates_, DocOps Lab intends to make incremental improvements and fine tuning.
@@ -2397,6 +2403,7 @@ Returns a YAML representation of the input for debugging purposes.
 example:::
 `{{ changes | inspect_yaml }}`
 
+[[jekyll-asciidoc-liquid-filters]]
 ==== Jekyll/AsciiDoc Liquid Filters
 
 ReleaseHx supports all link:https://jekyllrb.com/docs/liquid/filters/[filters provided by Jekyll 4.4].

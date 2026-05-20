@@ -57,6 +57,9 @@ tools:
         - "**/config-reference.adoc"
         - docs/releases.adoc
         - docs/release/*
+        - .bundle/*
+        - .agent/*
+        - docs/manpage.adoc
       exts: ['adoc']
 
   - tool: htmlproofer

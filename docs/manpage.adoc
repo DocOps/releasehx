@@ -12,7 +12,7 @@ include::../README.adoc[tags="global-settings,helpscreen_attrs"]
 
 releasehx - {tagline}
 
-*Tip:* Type `q` to exit this page.
+TIP: Type `q` to exit this page.
 
 
 [[aliases]]
