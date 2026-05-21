@@ -39,8 +39,7 @@ def resolve_gem_uri path
 end
 
 task :prebuild do
-  require 'asciisourcerer'
-  require 'schemagraphy'
+  require 'schemagraphy' # includes sourcerer
   srcrr_config = YAML.safe_load_file('.config/sourcerer.yml', symbolize_names: true, aliases: true)
 
   Sourcerer::Builder.generate_prebuild(**srcrr_config)
@@ -58,6 +57,8 @@ task :prebuild do
   puts '✓ Packaged MCP assets'
   Sourcerer::AsciiDoc.generate_manpage('docs/manpage.adoc', 'build/docs/releasehx.1')
   puts '✓ Generated manpage: build/docs/releasehx.1'
+  mark_down_grade_docs
+  puts '✓ Converted release-procedure.adoc to markdown'
   generate_release_index
   puts '✓ Generated release index: build/docs/_release_index.adoc'
 end
@@ -184,7 +185,7 @@ task build: :prebundle
 
 desc 'Test commands in README.adoc'
 task :readme_test do
-  require_relative 'lib/sourcerer'
+  require 'asciisourcerer'
   puts 'Executing testable commands from README.adoc'
   command_groups = Sourcerer.extract_commands('README.adoc', role: 'testable')
   demo_dir = '../releasehx-demo'
@@ -207,7 +208,7 @@ task docs: :prebuild do
 end
 
 desc 'Spins up a local HTTP server to serve the docs'
-# takes argument --port=N to specify port (default 8000)
+# takes env argument PORT=N to specify port (default 8000)
 task :serve do
   port = ENV['PORT'] ? ENV['PORT'].to_i : 8000
   Dir.chdir('build/docs') do
@@ -304,7 +305,7 @@ def extract_version
 end
 
 def readme_attrs
-  require_relative 'lib/sourcerer'
+  require 'asciisourcerer'
   Sourcerer.load_attributes('README.adoc')
 end
 
@@ -315,6 +316,32 @@ def ensure_buildx_builder
   puts "Creating buildx builder '#{BUILDER_NAME}'..."
   sh "docker buildx create --name #{BUILDER_NAME} --driver docker-container --use"
   sh "docker buildx inspect --builder #{BUILDER_NAME} --bootstrap"
+end
+
+def mark_down_grade_docs
+  require 'asciisourcerer'
+
+  input_file = 'docs/release-procedure.adoc'
+  output_file = 'docs/agent/release-procedure.md'
+  html_output = 'build/docs/release-procedure.html'
+
+  return unless File.exist?(input_file)
+
+  FileUtils.mkdir_p(File.dirname(output_file))
+
+  result = Sourcerer::AsciiDoc.mark_down_grade(
+    input_file,
+    output_file,
+    html_output_path: html_output,
+    backend: 'asciidoctor-html5s',
+    markdown_converter: Sourcerer::MarkDownGrade.method(:convert_html),
+    include_frontmatter: true,
+    markdown_options: { github_flavored: true }
+  )
+
+  unless result && result[:markdown]
+    warn "Failed to convert #{input_file} to markdown"
+  end
 end
 
 def generate_release_index

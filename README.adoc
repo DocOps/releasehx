@@ -2578,7 +2578,7 @@ From the `releasehx` repository:
  bundle install
  bundle exec rake build
 +
-This creates the gem file in the `pkg/` directory.
+This operation generates untracked dependencies during a _pre-build_ stage and compiles the gem file in the `pkg/` directory.
 
 . Install the locally built gem for testing.
 +

@@ -64,68 +64,66 @@ module DocOpsLab
     end
 
     def self.generate_module_docs version
-      puts 'Generating modular API docs with YARD...'
+      puts 'Generating API docs with YARD...'
 
-      modules = discover_modules
+      mod = build_releasehx_module
 
-      modules.each do |mod|
-        puts "--> Generating docs for #{mod[:name]}..."
+      puts "--> Generating docs for #{mod[:name]}..."
 
-        unless File.exist?(mod[:readme])
-          puts "    Warning: README not found at #{mod[:readme]}, skipping module"
-          next
-        end
-
-        if mod[:files].empty?
-          puts "    Warning: No Ruby files found for #{mod[:name]}, skipping module"
-          next
-        end
-
-        readme_dir = File.dirname(mod[:readme])
-        readme_content = File.read(mod[:readme])
-        processed_readme_html = Asciidoctor.convert(
-          readme_content, safe: :unsafe, base_dir: readme_dir, header_footer: false)
-        temp_readme_path = "build/docs/#{mod[:name].downcase}_readme.html"
-        File.write(temp_readme_path, processed_readme_html)
-
-        output_dir = "build/docs/docs/api/#{mod[:name].downcase}"
-        FileUtils.mkdir_p output_dir
-        file_list = mod[:files].join(' ')
-
-        # Use custom YARD templates from docs/yard/templates
-        template_dir = 'docs/yard/templates'
-        custom_css = 'docs/yard/assets/css/custom.css'
-
-        yard_cmd = "yard doc --output-dir #{output_dir} --readme #{temp_readme_path} " \
-                   "--title \"#{mod[:name]} API (v#{version})\" --markup html " \
-                   "--template-path #{template_dir}"
-
-        # Add custom CSS if it exists
-        yard_cmd += " --asset #{custom_css}:css/" if File.exist?(custom_css)
-
-        yard_cmd += " #{file_list}"
-
-        puts "    Warning: YARD generation failed for #{mod[:name]}" unless system(yard_cmd)
-
-        # Post-process HTML files to add custom CSS with correct relative paths
-        next unless File.exist?(custom_css)
-
-        Dir.glob("#{output_dir}/**/*.html").each do |html_file|
-          add_custom_css_to_html(html_file, output_dir)
-        end
-
-        # Fix YARD index file naming: _index.html is the real API index,
-        # but index.html is generated from README. Rename them appropriately.
-        yard_index = File.join(output_dir, '_index.html')
-        readme_index = File.join(output_dir, 'index.html')
-
-        next unless File.exist?(yard_index)
-
-        # Rename README-based index to readme.html
-        File.rename(readme_index, File.join(output_dir, 'readme.html')) if File.exist?(readme_index)
-        # Rename _index.html to index.html (this is the real API overview)
-        File.rename(yard_index, readme_index)
+      unless File.exist?(mod[:readme])
+        puts "    Warning: README not found at #{mod[:readme]}, skipping"
+        return
       end
+
+      if mod[:files].empty?
+        puts "    Warning: No Ruby files found for #{mod[:name]}, skipping"
+        return
+      end
+
+      readme_dir = File.dirname(mod[:readme])
+      readme_content = File.read(mod[:readme])
+      processed_readme_html = Asciidoctor.convert(
+        readme_content, safe: :unsafe, base_dir: readme_dir, header_footer: false)
+      temp_readme_path = "build/docs/#{mod[:name].downcase}_readme.html"
+      File.write(temp_readme_path, processed_readme_html)
+
+      output_dir = "build/docs/docs/api/#{mod[:name].downcase}"
+      FileUtils.mkdir_p output_dir
+      file_list = mod[:files].join(' ')
+
+      # Use custom YARD templates from docs/yard/templates
+      template_dir = 'docs/yard/templates'
+      custom_css = 'docs/yard/assets/css/custom.css'
+
+      yard_cmd = "yard doc --output-dir #{output_dir} --readme #{temp_readme_path} " \
+                 "--title \"#{mod[:name]} API (v#{version})\" --markup html " \
+                 "--template-path #{template_dir}"
+
+      # Add custom CSS if it exists
+      yard_cmd += " --asset #{custom_css}:css/" if File.exist?(custom_css)
+
+      yard_cmd += " #{file_list}"
+
+      puts "    Warning: YARD generation failed for #{mod[:name]}" unless system(yard_cmd)
+
+      # Post-process HTML files to add custom CSS with correct relative paths
+      return unless File.exist?(custom_css)
+
+      Dir.glob("#{output_dir}/**/*.html").each do |html_file|
+        add_custom_css_to_html(html_file, output_dir)
+      end
+
+      # Fix YARD index file naming: _index.html is the real API index,
+      # but index.html is generated from README. Rename them appropriately.
+      yard_index = File.join(output_dir, '_index.html')
+      readme_index = File.join(output_dir, 'index.html')
+
+      return unless File.exist?(yard_index)
+
+      # Rename README-based index to readme.html
+      File.rename(readme_index, File.join(output_dir, 'readme.html')) if File.exist?(readme_index)
+      # Rename _index.html to index.html (this is the real API overview)
+      File.rename(yard_index, readme_index)
     end
 
     def self.add_custom_css_to_html html_file, base_output_dir
@@ -146,62 +144,21 @@ module DocOpsLab
       File.write(html_file, updated_content)
     end
 
-    def self.discover_modules
-      # Find the main gem name from gemspec
-      # NOTE: We will probably do away with this once
-      #  SchemaGraphy and Sourcerer are spun off
-      gemspec_file = Dir.glob('*.gemspec').first
-      gemspec_file ? File.basename(gemspec_file, '.gemspec') : nil
+    def self.build_releasehx_module
+      # Build ReleaseHx module (schemagraphy and sourcerer are now externalized)
+      files = Dir.glob(['lib/releasehx.rb', 'lib/releasehx/**/*.rb'])
+      readme_path = 'lib/releasehx/README.adoc'
 
-      # Discover all lib subdirectories that contain Ruby files
-      lib_dirs = Dir.glob('lib/*/').map { |dir| File.basename(dir) }
-
-      modules = []
-      base_nav_order = 2
-
-      lib_dirs.each_with_index do |dir_name, index|
-        files = Dir.glob(["lib/#{dir_name}.rb", "lib/#{dir_name}/**/*.rb"])
-        next if files.empty?
-
-        readme_path = "lib/#{dir_name}/README.adoc"
-        next unless File.exist?(readme_path)
-
-        # Convert directory name to proper module name (e.g., 'releasehx' -> 'ReleaseHx')
-        # Unreliable
-        module_name = dir_name.split('_').map(&:capitalize).join
-
-        # Assign nav_order: only ReleaseHx gets explicit nav_order 4, others get auto-incremented values
-        nav_order = if dir_name == 'releasehx'
-                      4
-                    else
-                      base_nav_order + index + 1
-                    end
-
-        modules << {
-          name: module_name,
-          files: files,
-          readme: readme_path,
-          nav_order: nav_order,
-          title: "#{module_name} API"
-        }
-      end
-
-      # Sort by nav_order to ensure main gem comes first
-      modules.sort_by { |mod| mod[:nav_order] }
+      {
+        name: 'ReleaseHx',
+        files: files,
+        readme: readme_path,
+        title: 'ReleaseHx API'
+      }
     end
 
     def self.add_jekyll_front_matter
       puts 'Adding front matter to YARD API docs...'
-
-      # Get the modules to build lookup maps
-      modules = discover_modules
-      nav_order_map = {}
-      title_map = {}
-
-      modules.each do |mod|
-        nav_order_map[mod[:name].downcase] = mod[:nav_order]
-        title_map[mod[:name].downcase] = mod[:title]
-      end
 
       # Add front matter to YARD API documentation files
       api_files = Dir.glob('build/docs/docs/api/**/*.html')
@@ -213,18 +170,17 @@ module DocOpsLab
         content = File.read(file)
         next if content.start_with?('---')
 
-        module_name = Pathname.new(file).each_filename.to_a[-2]
-
-        if File.basename(file) == 'index.html' && title_map.key?(module_name)
-          page_title = title_map[module_name]
+        if File.basename(file) == 'index.html'
+          # Main index gets explicit title and nav_order
           front_matter = <<~HEREDOC
             ---
             layout: null
-            title: "#{page_title}"
-            nav_order: #{nav_order_map[module_name]}
+            title: "ReleaseHx API"
+            nav_order: 4
             ---
           HEREDOC
         else
+          # Other files are auto-excluded from nav
           doc = Nokogiri::HTML(content)
           page_title = doc.title
           page_title = if page_title.nil? || page_title.strip.empty?
