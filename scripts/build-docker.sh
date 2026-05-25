@@ -36,7 +36,7 @@ gem_file=$(find pkg -name "${PROJECT_NAME}-*.gem" -type f 2>/dev/null | head -n 
 
 if [ -z "$gem_file" ]; then
   echo -e "${RED}❌ Error: No gem found in pkg/ directory${NC}"
-  echo -e "${YELLOW}Build the gem first with: bundle exec rake build${NC}"
+  echo -e "${YELLOW}Build the gem first with: bundle exec rake build:gem${NC}"
   exit 1
 fi
 

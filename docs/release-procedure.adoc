@@ -54,11 +54,11 @@ Confirm demo builds in releasehx-demo repo::
 ----
 cd ../releasehx-demo
 ./dev-install.sh
-bundle exec rake yaml_test
-bundle exec rake cli_test
-bundle exec rake readme_test
-bundle exec rake dynamic_test
-bundle exec rake validate_content
+bundle exec rake test:yaml
+bundle exec rake test:cli
+bundle exec rake test:readme
+bundle exec rake test:dynamic
+bundle exec rake test:content
 ----
 
 Check demo test results::
@@ -94,7 +94,7 @@ Test Docker Build::
 +
 [source,bash]
 ----
-bundle exec rake buildx
+bundle exec rake build:image
 # Note: This creates/updates the buildx builder and tests the build
 # May need to recreate builder after Docker updates: docker buildx rm releasehx-builder
 ----
@@ -133,8 +133,7 @@ Build Gem Package::
 +
 [source,bash]
 ----
-bundle exec rake build
-# Creates pkg/releasehx-0.x.y.gem
+bundle exec rake build:gem
 ----
 
 Verify Gem Package::
@@ -331,7 +330,7 @@ If you encounter TLS certificate errors with buildx:
 docker buildx rm releasehx-builder
 
 # Recreate builder (Rakefile will do this automatically)
-bundle exec rake buildx
+bundle exec rake build:image
 ----
 
 [[mfa-otp-issues]]

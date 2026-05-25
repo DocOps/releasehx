@@ -2,9 +2,9 @@ name: Documentation Quality Check
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: "3.2"
           bundler-cache: false
 
       - name: Generate prebuild artifacts
@@ -49,7 +49,7 @@ jobs:
 
       - name: Build docs
         run: |
-          bundle exec rake docs
+          bundle exec rake build:docs
 
       - name: Archive built site
         if: always()

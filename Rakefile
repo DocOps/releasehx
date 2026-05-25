@@ -63,93 +63,97 @@ task :prebuild do
   puts '✓ Generated release index: build/docs/_release_index.adoc'
 end
 
-desc 'Build and tag multi-arch Docker image for releasehx'
-task buildx: :prebuild do
-  ensure_buildx_builder
-  version = extract_version
+namespace :build do
+  desc 'Build and tag multi-arch Docker image for releasehx'
+  task image: :prebuild do
+    ensure_buildx_builder
+    version = extract_version
 
-  sh 'docker buildx build --platform linux/amd64 ' \
-     "--build-arg RELEASEHX_VERSION=#{version} " \
-     '-t docopslab/releasehx:latest ' \
-     "-t docopslab/releasehx:#{version} " \
-     '.'
-end
-
-desc 'Build the gem (run `prebuild` first)'
-task prebundle: :prebuild do
-  mkdir_p 'pkg'
-  sh 'gem build releasehx.gemspec'
-  sh 'mv releasehx-*.gem pkg/'
-end
-
-desc 'Run CLI tests'
-task :cli_test do
-  puts 'Testing CLI functionality...'
-  puts 'Checking that CLI files exist...'
-  unless File.exist?('bin/rhx')
-    puts '✗ bin/rhx not found'
-    exit 1
-  end
-  puts '✓ bin/rhx exists'
-  puts 'Note: Full CLI testing requires prebuild step for attributes'
-end
-
-desc 'Smoke test MCP server resources'
-task :mcp_test do
-  require_relative 'lib/releasehx/mcp'
-
-  server = ReleaseHx::MCP::Server.new
-  expected = [
-    'releasehx://agent/guide',
-    'releasehx://config/sample',
-    'releasehx://config/schema',
-    'releasehx://config/reference.json',
-    'releasehx://config/reference.adoc'
-  ]
-
-  resources = server.list_resources
-  missing = expected - resources
-  unless missing.empty?
-    puts "✗ Missing MCP resources: #{missing.join(', ')}"
-    exit 1
+    sh 'docker buildx build --platform linux/amd64 ' \
+       "--build-arg RELEASEHX_VERSION=#{version} " \
+       '-t docopslab/releasehx:latest ' \
+       "-t docopslab/releasehx:#{version} " \
+       '.'
   end
 
-  begin
-    server.get_resource('releasehx://agent/guide')
-  rescue Errno::ENOENT => e
-    puts "✗ #{e.message}"
-    exit 1
+  desc 'Build the gem'
+  task gem: :prebuild do
+    mkdir_p 'pkg'
+    sh 'gem build releasehx.gemspec'
+    sh 'mv releasehx-*.gem pkg/'
   end
-
-  response = server.send(:handle_tool, 'config.reference.get', { pointer: '/properties/origin' }, nil)
-  unless response.is_a?(MCP::Tool::Response) && response.structured_content
-    puts '✗ MCP tool response missing structured content'
-    exit 1
-  end
-
-  puts '✓ MCP smoke test passed'
 end
 
-desc 'Validate YAML examples'
-task :yaml_test do
-  puts 'Validating YAML examples...'
-  buckets = {
-    'Test configs' => 'specs/tests/configs/*.yml',
-    'RHYML mappings' => 'lib/releasehx/rhyml/mappings/*.{yml,yaml}',
-    'Schemas' => 'specs/data/*-schema.yaml'
-  }
+namespace :test do
+  desc 'Run CLI tests'
+  task :cli do
+    puts 'Testing CLI functionality...'
+    puts 'Checking that CLI files exist...'
+    unless File.exist?('bin/rhx')
+      puts '✗ bin/rhx not found'
+      exit 1
+    end
+    puts '✓ bin/rhx exists'
+    puts 'Note: Full CLI testing requires prebuild step for attributes'
+  end
 
-  buckets.each do |label, pattern|
-    files = Dir.glob(pattern)
-    puts "#{label}: #{files.size} file(s)"
-    files.each do |file|
-      puts "Validating #{file}"
-      begin
-        YAML.safe_load_file(file, aliases: true)
-        puts "✓ #{file} is valid"
-      rescue StandardError => e
-        puts "✗ #{file} failed: #{e.message}"
-        exit 1
+  desc 'Smoke test MCP server resources'
+  task :mcp do
+    require_relative 'lib/releasehx/mcp'
+
+    server = ReleaseHx::MCP::Server.new
+    expected = [
+      'releasehx://agent/guide',
+      'releasehx://config/sample',
+      'releasehx://config/schema',
+      'releasehx://config/reference.json',
+      'releasehx://config/reference.adoc'
+    ]
+
+    resources = server.list_resources
+    missing = expected - resources
+    unless missing.empty?
+      puts "✗ Missing MCP resources: #{missing.join(', ')}"
+      exit 1
+    end
+
+    begin
+      server.get_resource('releasehx://agent/guide')
+    rescue Errno::ENOENT => e
+      puts "✗ #{e.message}"
+      exit 1
+    end
+
+    response = server.send(:handle_tool, 'config.reference.get', { pointer: '/properties/origin' }, nil)
+    unless response.is_a?(MCP::Tool::Response) && response.structured_content
+      puts '✗ MCP tool response missing structured content'
+      exit 1
+    end
+
+    puts '✓ MCP smoke test passed'
+  end
+
+  desc 'Validate YAML examples'
+  task :yaml do
+    puts 'Validating YAML examples...'
+    buckets = {
+      'Test configs' => 'specs/tests/configs/*.yml',
+      'RHYML mappings' => 'lib/releasehx/rhyml/mappings/*.{yml,yaml}',
+      'Schemas' => 'specs/data/*-schema.yaml'
+    }
+
+    buckets.each do |label, pattern|
+      files = Dir.glob(pattern)
+      puts "#{label}: #{files.size} file(s)"
+      files.each do |file|
+        puts "Validating #{file}"
+        begin
+          YAML.safe_load_file(file, aliases: true)
+          puts "✓ #{file} is valid"
+        rescue StandardError => e
+          puts "✗ #{file} failed: #{e.message}"
+          exit 1
+        end
       end
     end
   end
@@ -160,51 +164,56 @@ task :install do
   sh 'bundle install'
 end
 
-desc 'Run all PR tests locally (same as GitHub Actions)'
-task :pr_test do
-  puts '🔍 Running all PR tests locally...'
-  puts '\n=== RSpec Tests ==='
-  Rake::Task[:rspec].invoke
+namespace :test do
+  desc 'Run all PR tests locally (same as GitHub Actions)'
+  task :pr do
+    puts '🔍 Running all PR tests locally...'
+    puts '\n=== RSpec Tests ==='
+    Rake::Task[:rspec].invoke
 
-  puts '\n=== CLI Tests ==='
-  Rake::Task[:cli_test].invoke
+    puts '\n=== CLI Tests ==='
+    Rake::Task['test:cli'].invoke
 
-  puts '\n=== YAML Validation ==='
-  Rake::Task[:yaml_test].invoke
+    puts '\n=== YAML Validation ==='
+    Rake::Task['test:yaml'].invoke
 
-  puts '\n✅ All PR tests passed!'
-end
-
-desc 'Build and install gem locally'
-task install_local: :prebundle do
-  sh 'gem install pkg/releasehx-*.gem'
-end
-
-desc 'Build the gem with prebuild artifacts'
-task build: :prebundle
-
-desc 'Test commands in README.adoc'
-task :readme_test do
-  require 'asciisourcerer'
-  puts 'Executing testable commands from README.adoc'
-  command_groups = Sourcerer.extract_commands('README.adoc', role: 'testable')
-  demo_dir = '../releasehx-demo'
-  unless Dir.exist?(demo_dir)
-    puts 'Note: README command tests require the releasehx-demo repo.'
-    next
+    puts '\n✅ All PR tests passed!'
   end
-  Dir.chdir(demo_dir) do
-    command_groups.each do |group|
-      sh "shopt -s expand_aliases; #{group}" unless group.strip.empty?
+end
+
+namespace :install do
+  desc 'Build and install gem locally'
+  task local: 'build:gem' do
+    sh 'gem install pkg/releasehx-*.gem'
+  end
+end
+
+namespace :test do
+  desc 'Test commands in README.adoc'
+  task :readme do
+    require 'asciisourcerer'
+    puts 'Executing testable commands from README.adoc'
+    command_groups = Sourcerer.extract_commands('README.adoc', role: 'testable')
+    demo_dir = '../releasehx-demo'
+    unless Dir.exist?(demo_dir)
+      puts 'Note: README command tests require the releasehx-demo repo.'
+      next
+    end
+    Dir.chdir(demo_dir) do
+      command_groups.each do |group|
+        sh "shopt -s expand_aliases; #{group}" unless group.strip.empty?
+      end
     end
   end
 end
 
-desc 'Generate rich-text documentation from source with Jekyll and Yard'
-task docs: :prebuild do
-  require_relative 'scripts/build_docs'
-  version = extract_version
-  DocOpsLab::DocBuilder.build_docs version
+namespace :build do
+  desc 'Generate rich-text documentation from source with Jekyll and Yard'
+  task docs: :prebuild do
+    require_relative 'scripts/build_docs'
+    version = extract_version
+    DocOpsLab::DocBuilder.build_docs version
+  end
 end
 
 desc 'Spins up a local HTTP server to serve the docs'
@@ -267,7 +276,7 @@ namespace :rhx do
   end
 
   desc 'Publish release notes as AsciiDoc'
-  task :adoc, [:version] do |_t, args|
+  task :publish, [:version] do |_t, args|
     with_rhx(args) do |config_path, config, version|
       drafts_dir = config.dig('paths', 'drafts_dir') || 'docs/release/drafts'
       yaml_file = File.join(drafts_dir, "#{version}.yml")
@@ -292,7 +301,7 @@ namespace :rhx do
 
     puts "=== Generating complete release documentation for #{version} ==="
     Rake::Task['rhx:draft'].invoke(version)
-    Rake::Task['rhx:adoc'].invoke(version)
+    Rake::Task['rhx:publish'].invoke(version)
     puts "\n✓ Complete! Release documentation generated for version #{version}"
   end
 end

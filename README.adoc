@@ -4,7 +4,6 @@
 :page-permalink: /docs/
 :page-title: ReleaseHx Docs
 :page-nav_order: 1
-[[releasehx]]
 = ReleaseHx
 // tag::ai-prompt[]
 // Collects AsciiDoc content for presenting to a generative AI prompt
@@ -2576,7 +2575,7 @@ From the `releasehx` repository:
 [.prompt]
  cd releasehx
  bundle install
- bundle exec rake build
+ bundle exec rake build:gem
 +
 This operation generates untracked dependencies during a _pre-build_ stage and compiles the gem file in the `pkg/` directory.
 
@@ -2593,7 +2592,7 @@ Alternatively, for development testing without installing:
 . Run the test suite to verify functionality.
 +
 [.prompt]
- bundle exec rake spec
+ bundle exec rake rspec
 
 [[working-with-the-demo-repository]]
 ==== Working with the Demo Repository
@@ -2713,7 +2712,7 @@ To maintain DRY sourcing, make your changes in the following files:
 To build the documentation locally, run the following command from the project root:
 
 [.prompt]
- bundle exec rake docs
+ bundle exec rake build:docs
 
 This will generate the documentation in the `build/docs` directory.
 
