@@ -11,6 +11,7 @@ group :development, :test do
 end
 
 group :development do
+  gem 'asciisourcerer', path: '../asciisourcerer'
   gem 'docopslab-dev'
 end
 

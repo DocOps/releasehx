@@ -1,4 +1,16 @@
 PATH
+  remote: ../asciisourcerer
+  specs:
+    asciisourcerer (0.5.0)
+      asciidoctor (~> 2.0)
+      asciidoctor-html5s (~> 0.5)
+      jekyll (~> 4.4)
+      jekyll-asciidoc (~> 3.0)
+      kramdown-asciidoc (~> 2.1)
+      liquid (~> 4.0)
+      reverse_markdown (~> 2.1)
+
+PATH
   remote: .
   specs:
     releasehx (0.2.0)
@@ -45,14 +57,6 @@ GEM
       prawn-templates (~> 0.1.0)
       treetop (~> 1.6.0)
       ttfunk (~> 1.7.0)
-    asciisourcerer (0.4.0)
-      asciidoctor (~> 2.0)
-      asciidoctor-html5s (~> 0.5)
-      jekyll (~> 4.4)
-      jekyll-asciidoc (~> 3.0)
-      kramdown-asciidoc (~> 2.1)
-      liquid (~> 4.0)
-      reverse_markdown (~> 2.1)
     ast (2.4.3)
     async (2.37.0)
       console (~> 1.29)
@@ -407,6 +411,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  asciisourcerer!
   docopslab-dev
   jekyll
   jekyll-asciidoc
