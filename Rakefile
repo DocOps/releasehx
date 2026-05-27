@@ -345,12 +345,11 @@ def mark_down_grade_docs
     backend: 'asciidoctor-html5s',
     markdown_converter: Sourcerer::MarkDownGrade.method(:convert_html),
     include_frontmatter: true,
-    markdown_options: { github_flavored: true }
-  )
+    markdown_options: { github_flavored: true })
 
-  unless result && result[:markdown]
-    warn "Failed to convert #{input_file} to markdown"
-  end
+  return if result && result[:markdown]
+
+  warn "Failed to convert #{input_file} to markdown"
 end
 
 def generate_release_index
