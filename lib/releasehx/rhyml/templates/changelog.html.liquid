@@ -4,11 +4,13 @@
 {%- assign dflt_next_header_level = level | plus: 1 -%}
 {%- assign item_count = 0 %}
 
-<div class="changelog-section">
-    {%- include header.liquid format=format level=level text=content_config.head %}
+<section class="changelog-section py-4 px-3 mb-4 rounded">
+  {%- include header.liquid format=format level=level text=content_config.head %}
 
-    {%- embed section-text.liquid %}
+  {%- embed section-text.liquid %}
 
+  <div class="changelog-content mt-4">
     {%- embed groupings.liquid %}
-</div>
+  </div>
+</section>
 

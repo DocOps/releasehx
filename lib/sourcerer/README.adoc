@@ -1,4 +1,0 @@
-[[sourcerer]]
-= Sourcerer
-
-include::../../README.adoc[tag=sourcerer]

@@ -33,6 +33,7 @@ exclude:
   - payloads/
   - release/
   - yard/
+  - release-procedure.adoc
 
 # Enable Rouge for syntax highlighting in AsciiDoc blocks
 asciidoctor:

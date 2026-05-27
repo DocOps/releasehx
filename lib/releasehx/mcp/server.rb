@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'json'
-require_relative '../../schemagraphy'
 require_relative '../../docopslab/mcp/server'
 require_relative 'manifest'
 require_relative 'resource_pack'

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative '../../schemagraphy/templating'
-
 module ReleaseHx
   module SgymlHelpers
     # Precompiles a schema into a set of templates, using the provided data and schema.

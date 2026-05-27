@@ -13,9 +13,10 @@ Table of Contents:
   - Remember
 
 <!-- tag::universal-agency[] -->
+
 ## AI Agency
 
-As an LLM-backed agent, your primary mission is to assist a human OPerator in the development, documentation, and maintenance of ReleaseHx by following best practices outlined in this document.
+As an LLM-backed agent, your primary mission is to assist a human Operator in the development, documentation, and maintenance of ReleaseHx by following best practices outlined in this document.
 
 ### Philosophy: Documentation-First, Junior/Senior Contributor Mindset
 
@@ -31,22 +32,45 @@ In particular, you values:
 
 ### Operations Notes
 
-**IMPORTANT**:
-This document is augmented by additional agent-oriented files at `.agent/docs/`.
-Be sure to `tree .agent/docs/` and explore the available documentation:
+#### Tools
+
+You need not have access to specific MCP or other *tools* like SKILLS or TEAMS or anything non-standard/semi-proprietary, to perform all of the operations that such interfaces enable.
+Make use of the available resources and prompt the Operator to carry out any actions that require tools you cannot access.
+
+When available, use MCP tools or CLIs to accomplish tasks, with REST/GraphQL APIs as a distant third preference.
+For instance, the GitHub MCP server for managing GitHub Issues and Pull Requests, or else the `gh` CLI tool, rather than having the user carry out mundane tasks via the Web UI.
+But unless you are working on the GitHub REST API itself, **do not** use the GitHub API to carry out tasks that can be done with MCP or CLI.
+
+#### Local Agent Documentation
+
+This document is augmented by additional agent-oriented files at `.agent/docs/`, with full-file overlays at `_docs/agent/`.
+
+Use the following command to generate a current skim index as JSON.
+
+```
+bundle exec rake 'labdev:skim:md[.agent/docs/:_docs/agent/,flat,json]' > .agent/docs/skim.json
+```
 
 - **skills/**: Specific techniques for upstream tools (Git, Ruby, AsciiDoc, GitHub Issues, testing, etc.)
 - **topics/**: DocOps Lab strategic approaches (dev tooling usage, product docs deployment)  
 - **roles/**: Agent specializations and behavioral guidance (Product Manager, Tech Writer, DevOps Engineer, etc.)
 - **missions/**: Cross-project agent procedural assignment templates (new project setup, conduct-release, etc.)
 
-**NOTE:** Periodically run `bundle exec rake labdev:sync:docs` to generate/update the library.
+> **NOTE:** Periodically run `bundle exec rake labdev:sync:docs` to generate/update the library.
 
 For any task session for which no mission template exists, start by selecting an appropriate role and relevant skills from the Agent Docs library.
 
-**Local Override Priority**: Always check `docs/{_docs,topics,content/topics}/agent/` for project-specific agent documentation that may override or supplement the universal guidance.
+#### 3rd Party Docs Discovery / Access Patterns
 
-### Ephemeral/Scratch Directory
+When you need to find third-party documentation on the Web, follow these suggestions:
+
+1. Check for `llms.txt` first (ex: https://example.com/llms.txt).
+2. Try appending `.md` to documentation URLs for Markdown versions.
+3. Avoid JavaScript-heavy or rate-limited documentation sites, check the GitHub repo for docs sources.
+  - Check for `/docs`, `/examples`, or `/manual` directories in GitHub repos.
+  - Use raw.githubusercontent.com URLs when browsing Markdown or AsciiDoc docs sources.
+
+#### Ephemeral/Scratch Directories
 
 There should always be an untracked `.agent/` directory available for writing paged command output, such as `git diff > .agent/tmp/current.diff && cat .agent/tmp/current.diff`.
 Use this scratch directory as you may, but don't get caught up looking at documents you did not write during the current session or that you were not pointed directly at by the user or other docs.
@@ -55,9 +79,35 @@ Typical subdirectories include:
 
 - `docs/`: Generated agent documentation library (skills, roles, topics, missions)
 - `tmp/`: Scratch files for current session
-- `logs/`: Persistent logs across sessions (e.g., task run history)
-- `reports/`: Persistent reports across sessions (e.g., spellcheck reports)
+- `logs/`: Persistent logs across sessions (ex: task run history)
+- `reports/`: Persistent reports across sessions (ex: spellcheck reports)
 - `team/`: Shared (Git-tracked) files for multi-agent/multi-operator collaboration
+
+#### Teamwork and Collaboration
+
+When working with other agents or human operators, be collaborative and communicative:
+
+- Share your thought process and reasoning when proposing solutions.
+- Ask for feedback and input from others, especially on complex or risky changes.
+- Be open to suggestions and alternative approaches.
+- Track actual work:
+  - Use each codebase's Git repository.
+  - Maintain a document like `.agent/tmp/refactor-session-notes.md` or `agent/team/refactor-session-notes.md`.
+
+#### Inter-agent Delegation
+
+When you lack inter-agent delegation tools (*sub-agents*, *background agents*, etc), communicate with your Operator about how to spin up additional agents or chats, and exchange content through the shared/tracked `.agent/team/` path.
+
+- Delegate tasks or even projects to other agents when appropriate:
+  - If you identify a task that would require upgrading with roles/skills not needed for your current work.
+  - If the task is too much of an aside and would clutter your context window with content that is superfluous or potentially confusing to your current work.
+- Use the `.agent/team/` directory to share files and information with other agents or human collaborators.
+  - IMYML files for issue tracking
+  - Markdown or AsciiDoc files or other formats as needed for conveying info and updates
+  - Use a project- or epic-based file or sub-folder naming system (`refactor-issues.imyml.yml`. `refactor-plan.adoc`, `refactor-updates.md`).
+- Frequently check the `.agent/team/` directory for updates from others that may be relevant to your work.
+  - Check modification timestamps or Git commit logs to determine what to consume.
+  - Avoid consuming outdated or unrelated content.
 
 ### AsciiDoc, not Markdown
 
@@ -147,16 +197,18 @@ API/File → JSON → RHYML → Templates → Output (MD/AsciiDoc/HTML/PDF)
 
 <!-- tag::universal-config[] -->
 
+
 - **Default values:** Defined in `specs/data/config-def.yml`
 - **User overrides:** Via `.releasehx.yml` or `--config` flag
 - **Defined in lib/releasehx/configuration.rb:** Configuration class loads and validates configs
 - **Uses `SchemaGraphy::Config` and `SchemaGraphy::CFGYML`:** For schema validation and YAML parsing
-- **No hardcoded defaults outside `config-def.yml`:** All defaults come from the Configuration class; whether in Liquid templates or Ruby code expressing config properties, any explicit defaults will at best duplicate the defaults set in `config-def.yml` and propagated into the config object, so avoid expressing `|| 'some-value'` in Ruby or `| default: 'some-value'` in Liquid for core product code.
+- **No hard-coded defaults outside `config-def.yml`:** All defaults come from the Configuration class; whether in Liquid templates or Ruby code expressing config properties, any explicit defaults will at best duplicate the defaults set in `config-def.yml` and propagated into the config object, so avoid expressing `|| 'some-value'` in Ruby or `| default: 'some-value'` in Liquid for core product code.
 
 <!-- end::universal-config[] -->
 
 
 <!-- tag::universal-approach -->
+
 
 ## Agent Development Approach
 
@@ -236,6 +288,7 @@ bundle exec rhx 1.1.0 --config configs/jira-customfield.yml --api-data _payloads
 ```
 
 <!-- tag::universal-responsibilities[] -->
+
 
 ## General Agent Responsibilities
 

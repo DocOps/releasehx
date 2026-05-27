@@ -1,30 +1,75 @@
-{%- capture change_metadata -%}
-{%- assign metadata_parts = "" | split: "," -%}
+{%- comment -%} Build inline metadata with badges for release notes {%- endcomment -%}
+{%- assign metadata_kinds = 'type,part' | split: ',' -%}
+{%- assign metadata_items = "" | split: "," -%}
+
+{%- comment -%} Type badge {%- endcomment -%}
+{%- if metadata_kinds contains "type" and change.type -%}
+{%-   assign type_config = config.types[change.type] -%}
+{%-   if type_config -%}
+{%-     assign type_text = type_config.text | default: change.type -%}
+{%-     assign type_slug = change.type | sluggerize: slug_type -%}
+{%-     capture type_badge -%}<span class="badge type-badge type-{{ type_slug }}">{{ type_text }}</span>{%- endcapture -%}
+{%-     assign metadata_items = metadata_items | push: type_badge -%}
+{%-   endif -%}
+{%- endif -%}
+
+{%- comment -%} Parts {%- endcomment -%}
+{%- if metadata_kinds contains "part" -%}
+{%-   assign effective_parts = "" | split: "," -%}
+{%-   if change.parts and change.parts.size > 0 -%}
+{%-     assign effective_parts = change.parts -%}
+{%-   elsif change.part -%}
+{%-     assign effective_parts = change.part | split: "," -%}
+{%-   endif -%}
+{%-   if effective_parts.size > 0 -%}
+{%-     for part in effective_parts -%}
+{%-       assign part_config = config.parts[part] -%}
+{%-       if part_config -%}
+{%-         assign part_text = part_config.text | default: part -%}
+{%-         assign part_slug = part | sluggerize: slug_type -%}
+{%-         capture part_badge -%}<span class="badge part-badge part-{{ part_slug }}">{{ part_text }}</span>{%- endcapture -%}
+{%-         assign metadata_items = metadata_items | push: part_badge -%}
+{%-       endif -%}
+{%-     endfor -%}
+{%-   endif -%}
+{%- endif -%}
+
+{%- comment -%} Tags {%- endcomment -%}
+{%- if metadata_kinds contains "tag" and change.tags and change.tags.size > 0 -%}
+{%-   for tag in change.tags -%}
+{%-     assign tag_slug = tag | sluggerize: slug_type -%}
+{%-     capture tag_badge -%}<span class="badge tag-badge tag-{{ tag_slug }}">{{ tag }}</span>{%- endcapture -%}
+{%-     assign metadata_items = metadata_items | push: tag_badge -%}
+{%-   endfor -%}
+{%- endif -%}
+
+{%- comment -%} Lead/user {%- endcomment -%}
 {%- if note_show_lead and change.lead -%}
-  {%- capture lead_text -%}
-    {%- if note_show_lead_links and config.links.user.href -%}
-      [{{ change.lead }}]({{ config.links.user.href | replace: '{{user}}', change.lead }})
-    {%- else -%}
-      {{ change.lead }}
-    {%- endif -%}
-  {%- endcapture -%}
-  {%- assign metadata_parts = metadata_parts | push: lead_text -%}
+{%-   if note_show_lead_links and config.links.user.href -%}
+{%-     capture lead_link -%}[@{{ change.lead }}]({{ config.links.user.href | replace: '{{user}}', change.lead }}){%- endcapture -%}
+{%-     assign metadata_items = metadata_items | push: lead_link -%}
+{%-   else -%}
+{%-     capture lead_text -%}@{{ change.lead }}{%- endcapture -%}
+{%-     assign metadata_items = metadata_items | push: lead_text -%}
+{%-   endif -%}
 {%- endif -%}
+
+{%- comment -%} Issue link {%- endcomment -%}
 {%- if note_show_issue_links and change.tick and config.links.web.href -%}
-  {%- capture issue_link -%}[{{ config.links.web.text | render: change }}]({{ config.links.web.href | render: change }}){%- endcapture -%}
-  {%- assign metadata_parts = metadata_parts | push: issue_link -%}
+{%-   capture issue_link -%}[{{ config.links.web.text | render: change }}]({{ config.links.web.href | render: change }}){%- endcapture -%}
+{%-   assign metadata_items = metadata_items | push: issue_link -%}
 {%- elsif change.tick -%}
-  {%- assign metadata_parts = metadata_parts | push: change.tick -%}
+{%-   assign metadata_items = metadata_items | push: change.tick -%}
 {%- endif -%}
-{%- embed parts-listing.liquid -%}
-{%- if parts_listing and parts_listing != "" -%}
-  {%- assign metadata_parts = metadata_parts | push: parts_listing -%}
+
+{%- comment -%} Git commit {%- endcomment -%}
+{%- if metadata_kinds contains "git" and change.ghsh and config.links.git.href -%}
+{%-   capture git_link -%}[`{{ change.ghsh | slice: 0, 7 }}`]({{ config.links.git.href | render: change }}){%- endcapture -%}
+{%-   assign metadata_items = metadata_items | push: git_link -%}
 {%- endif -%}
-{%- embed tags-listing.liquid -%}
-{%- if tags_listing and tags_listing != "" -%}
-  {%- assign metadata_parts = metadata_parts | push: tags_listing -%}
+
+{%- if metadata_items.size > 0 -%}
+{%-   assign change_metadata = metadata_items | join: " " -%}
+{%- else -%}
+{%-   assign change_metadata = "" -%}
 {%- endif -%}
-{%- if metadata_parts.size > 0 -%}
-({{ metadata_parts | join: ", " }})
-{%- endif -%}
-{%- endcapture -%}

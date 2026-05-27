@@ -2,7 +2,7 @@ name: Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -24,7 +24,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.3'
+          ruby-version: "3.3"
           bundler-cache: false
 
       - name: Generate prebuild artifacts
@@ -37,7 +37,7 @@ jobs:
         run: bundle install --jobs 4
 
       - name: Build docs
-        run: bundle exec rake docs
+        run: bundle exec rake build:docs
 
       - name: Add .nojekyll to output (prevent Pages from reprocessing)
         run: |

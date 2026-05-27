@@ -6,6 +6,8 @@
 :icons: font
 {% embed head-parser.liquid %}
 
+[.release-section]
+
 {%- if release.hash and release.hash != "" and config.links.git and config.links.git.trim != "" %}
 link:{{ config.links.git | render: release }}[icon:{{ config.links.git_icon | default: 'code-fork' }}[]{{ release.hash | slice: 0, 7 }}]
 {%- endif %}

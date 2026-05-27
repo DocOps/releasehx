@@ -29,9 +29,7 @@ tmp/
 *.bak
 *~
 .warp/
-.agent/*
-!.agent/team/
-.agents/
+.agent/
 
 # Logs
 *.log
@@ -84,3 +82,4 @@ releasehx-demo/
 # Release history working directories
 docs/release/drafts/
 docs/release/payloads/
+docs/agent/*.md

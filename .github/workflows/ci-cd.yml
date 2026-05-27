@@ -2,10 +2,10 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
   release:
-    types: [ published ]
+    types: [published]
 
 jobs:
   test:
@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 20
     strategy:
       matrix:
-        ruby-version: ['3.2', '3.3']
+        ruby-version: ["3.2", "3.3"]
     steps:
       - uses: actions/checkout@v4
 
@@ -37,7 +37,7 @@ jobs:
         run: bundle exec rake rspec
 
       - name: CLI sanity checks
-        run: bundle exec rake cli_test
+        run: bundle exec rake test:cli
 
   # gem-build and docker-build jobs disabled for manual release process
   # These will be re-enabled when standardized release automation is implemented across repos

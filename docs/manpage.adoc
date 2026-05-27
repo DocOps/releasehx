@@ -4,7 +4,7 @@
 :manpage:
 :man-linkstyle: pass:[blue R < >]
 :toc: macro
-include::../README.adoc[tags="globals,helpscreen_attrs"]
+include::../README.adoc[tags="global-settings,helpscreen_attrs"]
 
 
 [[name]]
@@ -12,7 +12,7 @@ include::../README.adoc[tags="globals,helpscreen_attrs"]
 
 releasehx - {tagline}
 
-*Tip:* Type `q` to exit this page.
+TIP: Type `q` to exit this page.
 
 
 [[aliases]]

@@ -24,7 +24,7 @@ Metrics/ParameterLists:
 
 # RSpec cops - More lenient for integration tests
 RSpec/ExampleLength:
-  Max: 25
+  Max: 35
 
 RSpec/MultipleExpectations:
   Max: 5

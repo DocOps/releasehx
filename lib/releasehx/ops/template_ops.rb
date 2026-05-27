@@ -53,7 +53,7 @@ module ReleaseHx
           releasehx_debug: true
         })
 
-      raise "Template rendering failed:\n#{rendered}" if rendered.include?('Liquid error')
+      raise "Template rendering failed:\n#{rendered}" if rendered.match?(/Liquid error[:(]/)
 
       rendered
     end

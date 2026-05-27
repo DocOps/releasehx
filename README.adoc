@@ -1,28 +1,60 @@
 :page-layout: default
 :page-permalink: /docs/
 :page-title: ReleaseHx Docs
+:page-permalink: /docs/
+:page-title: ReleaseHx Docs
 :page-nav_order: 1
-[[releasehx]]
 = ReleaseHx
 // tag::ai-prompt[]
 // Collects AsciiDoc content for presenting to a generative AI prompt
 // Other AI-only prompt matter could go here
-// tag::globals[]
-:docopslab_git_www: https://github.com/DocOps
-:this_prod_slug: releasehx
-:releasehx_prod_repo: {docopslab_git_www}/{this_prod_slug}
-:releasehx_demo_repo: {docopslab_git_www}/releasehx-demo
-:this_prod_repo: {releasehx_prod_repo}
+// tag::global-settings[]
+:this_proj_slug: releasehx
+:this_proj_name: ReleaseHx
+// tag::universal-settings[]
+:docopslab_src_www_url: https://github.com/DocOps
+:docopslab_domain: docopslab.org
+:docopslab_www_url: https://{docopslab_domain}
+:docopslab_io_www_url: https://docopslab.github.io
+:docopslab_ruby_version: 3.2.7
+:docopslab_src_www_url: https://raw.githubusercontent.com/DocOps
+:docopslab_git_src_uri: git@github.com:DocOps
+:this_proj_src_www_url: {docopslab_src_www_url}/{this_proj_slug}
+:this_proj_src_raw_url: https://raw.githubusercontent.com/DocOps/{this_proj_slug}/main
+:this_proj_src_main_files_url: {this_proj_src_www_url}/blob/main
+:this_proj_src_main_edit_url: {this_proj_src_www_url}/edit/main
+:this_proj_src_git_uri: {docopslab_git_src_uri}/{this_proj_slug}.git
+:this_proj_ruby_version: {docopslab_ruby_version}
+// tag::env-settings[]
+:extn:
+ifdef::env-github[]
+:extn: .adoc
+:icons: font
+:caution-caption: :fire:
+:important-caption: :exclamation:
+:note-caption: :paperclip:
+:tip-caption: :bulb:
+:warning-caption: :warning:
+endif::[]
+// end::env-settings[]
+// end::universal-settings[]
+:releasehx_demo_repo: {docopslab_src_www_url}/releasehx-demo
+// tag::product-settings[]
+:this_prod_slug: {this_proj_slug}
+// tag::version-settings[]
 :this_prod_vrsn_major: 0
-:this_prod_vrsn_minor: 1
-:this_prod_vrsn_major-minor: {this_prod_vrsn_major}.{this_prod_vrsn_minor}
-:this_prod_vrsn_patch: 2
-:this_prod_vrsn: {this_prod_vrsn_major-minor}.{this_prod_vrsn_patch}
-:next_prod_vrsn: 0.2.0
+:this_prod_vrsn_minor: 2
+:this_prod_vrsn_majmin: {this_prod_vrsn_major}.{this_prod_vrsn_minor}
+:this_prod_vrsn_patch: 0
+:this_prod_vrsn: {this_prod_vrsn_majmin}.{this_prod_vrsn_patch}
+:next_prod_vrsn: 0.3.0
+:next_prod_vrsn_majmin: 0.3
+// end::version-settings[]
 :tagline: Generate formatted release histories from Jira, GitHub, GitLab, YAML, or JSON sources.
 :description: pass:q[CLI utility and Ruby API for generating structured release notes and changelog documents from various issue-tracking platforms or YAML definitions into plaintext drafts (*AsciiDoc*, *Markdown*, *YAML*) and rich-text output (*HTML* and *PDF*).]
 :gem_config_definition_path: ./specs/data/config-def.yml
 :app_default_config_path: ./.releasehx.yml
+:docker_run_command: docker run -it --rm --user $(id -u):$(id -g) -v $(pwd):/workdir docopslab/{this_prod_slug} rhx
 // Default configuration values - single source of truth for config-def.yml
 :default_markup: markdown
 :default_slug_type: kebab
@@ -46,19 +78,10 @@
 :draft_source_extensions: {markdown_extensions}, {asciidoc_extensions}, {yaml_extensions}
 :enrich_file_types: HTML, PDF
 :enrich_extensions: .html, .pdf
-:docker_base_command: docker run -it --rm --user $(id -u):$(id -g) -v $(pwd):/workdir docopslab/releasehx rhx
-:this_prod_repo_branch: {this_prod_repo}/tree/release/{this_prod_vrsn_major-minor}
-ifdef::env-github[]
-:docs_extn: .adoc
-:releasehx_www: https://releasehx.docopslab.org
-:releasehx_docs_www: {releasehx_www}/docs
-:default-config_www: {releasehx_docs_www}/sample-config.html
-:this_prod_docs_www: {releasehx_docs_www}
-endif::[]
-ifndef::env-github[]
-:docs_extn: 
-endif::[]
-// end::globals[]
+// end::product-settings[]
+:asciisourcerer_www_url: {docopslab_src_www_url}/asciisourcerer
+:schemagraphy_www_url: {docopslab_src_www_url}/schemagraphy
+// end::global-settings[]
 :toc: macro
 :toclevels: 3
 
@@ -210,7 +233,7 @@ With Docker installed and running...
 . Run the `rhx` command.
 +
 [.prompt,subs=+attributes]
- {docker_base_command}
+ {docker_run_command}
 +
 This mounts your local directory to be writeable by the Docker container.
 Everything after `rhx` accepts the standard <<rhx,arguments and options>> of the ReleaseHx utility.
@@ -220,7 +243,7 @@ Everything after `rhx` accepts the standard <<rhx,arguments and options>> of the
 Optionally alias the base Docker command.
 
 [.prompt,subs=+attributes]
- alias rhx='{docker_base_command}'
+ alias rhx='{docker_run_command}'
 ====
 
 Try the <<demo-setup,demo configs and data>> to get a feel for how ReleaseHx works.
@@ -266,6 +289,7 @@ It does not provide assistance for command-line actions or other configurations 
 For your LLM client (such as Copilot, Claude Code, Codex, Cursor, etc) to interact with this service, it must be configured using a general MCP syntax.
 This data is usually added to a `mcp.json` file or another object.
 
+// 1. This block is totally fine
 Generic MCP config (global gem install)::
 [source,json]
 ----
@@ -278,12 +302,12 @@ Generic MCP config (global gem install)::
 }
 ----
 
+// 2. This block looks totally fine
 Generic MCP config (Docker)::
 +
---
 Use the Docker image for maximum compatibility across environments.
 This is the *recommended approach* for most users.
-
++
 [source,json]
 ----
 {
@@ -296,13 +320,10 @@ This is the *recommended approach* for most users.
 }
 ----
 
---
-
+// 3. The first line on this block is white instead of blue like a DL term designator should be
 VS Code MCP configuration (Docker)::
-+
---
 Create or update `~/.config/Code/User/mcp.json` (Linux/Mac) or `%APPDATA%\Code\User\mcp.json` (Windows).
-
++
 [source,json]
 ----
 {
@@ -315,13 +336,10 @@ Create or update `~/.config/Code/User/mcp.json` (Linux/Mac) or `%APPDATA%\Code\U
 }
 ----
 
---
-
+// 4.This and all the following blocks are improperly highlighted
 VS Code MCP configuration (global gem install)::
-+
---
 If you have ReleaseHx installed globally (`gem install releasehx`), you can use this simpler configuration:
-
++
 [source,json]
 ----
 {
@@ -332,8 +350,6 @@ If you have ReleaseHx installed globally (`gem install releasehx`), you can use 
   }
 }
 ----
-
---
 
 Local repo MCP config (Bundler + cwd)::
 [source,json]
@@ -414,9 +430,11 @@ Global gem::
 
 If your MCP server isn't working in VS Code or Copilot:
 
-. **Verify Docker image exists**: Run `docker images | grep releasehx` to confirm the image is available.
+. *Verify Docker image exists.*
+Run `docker images | grep releasehx` to confirm the image is available.
 
-. **Test MCP server manually**: Run the following to verify the server responds:
+. *Test MCP server manually.*
+Run the following to verify the server responds:
 +
 [.prompt]
 ----
@@ -425,11 +443,14 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 +
 You should see a JSON response with `"serverInfo":{"name":"releasehx-mcp"}`
 
-. **Check VS Code MCP config**: Ensure `~/.config/Code/User/mcp.json` exists and uses the correct command format (see examples above).
+. *Check VS Code MCP config.*
+Ensure `~/.config/Code/User/mcp.json` exists and uses the correct command format (see examples above).
 
-. **Restart VS Code**: After changing `mcp.json`, restart VS Code completely for changes to take effect.
+. *Restart VS Code.*
+After changing `mcp.json`, restart VS Code completely for changes to take effect.
 
-. **Check VS Code logs**: Open Output panel (Ctrl+Shift+U) and look for errors related to MCP or the releasehx server.
+*Check VS Code logs.*
+Open Output panel (kbd:[Ctrl+Shift+U]) and look for errors related to MCP or the releasehx server.
 
 [TIP]
 ====
@@ -1144,6 +1165,203 @@ Templates replace their namesakes built into the ReleaseHx application or API.
 By default, ReleaseHx expects templates to be formatted in link:https://shopify.github.io[Liquid], but it uses the Jekyll-enhanced Liquid 4.
 See <<templating>> for details.
 
+[[styling-customization]]
+==== HTML Styling and CSS Integration
+
+ReleaseHx provides multiple approaches for customizing the appearance of HTML output through the `history.styling` configuration section.
+
+[[styling-modes]]
+===== Styling Modes
+
+The `history.styling.mode` property controls how CSS is applied to HTML output:
+
+`framework` (default)::
+Uses only the configured CSS framework (Bootstrap, etc.) via CDN links.
+No additional custom CSS is included.
+Best for standard, professional appearance with minimal configuration.
+
+`embedded`::
+Includes comprehensive CSS directly in the HTML `<style>` block.
+Generates standalone HTML files that display correctly without external dependencies.
+Automatically includes framework CSS plus custom theming.
+Best for distribution and email-friendly HTML.
+
+`external`::
+References an external stylesheet via `<link>` tag.
+Requires `history.styling.css_url` to specify the stylesheet location.
+Framework CSS is disabled when using external stylesheets.
+Best for custom branding and when CSS needs to be shared across multiple pages.
+
+`minimal`::
+Provides basic semantic styling with minimal inline CSS.
+No framework dependencies or complex styling.
+Best for simple, lightweight output or when CSS will be applied by a static site generator.
+
+[[theme-variants]]
+===== Theme Variants
+
+When using `embedded` or `framework` modes, the `history.styling.theme` property controls spacing and typography:
+
+`default`::
+Balanced spacing and typography for general use.
+
+`compact`::
+Reduced spacing and condensed layout for information-dense displays.
+Ideal for internal documentation or when screen space is limited.
+
+`detailed`::
+Expanded spacing and enhanced typography for presentation contexts.
+Includes larger headings and more prominent metadata display.
+
+[[configuration-examples]]
+===== Configuration Examples
+
+.Framework Mode with Default Theme
+[source,yaml]
+----
+history:
+  html_framework: bootstrap5
+  styling:
+    mode: framework
+    theme: default
+----
+
+.Embedded CSS with Compact Theme
+[source,yaml]
+----
+history:
+  html_framework: bootstrap5
+  styling:
+    mode: embedded
+    theme: compact
+    embed_css: true
+----
+
+.External Stylesheet
+[source,yaml]
+----
+history:
+  styling:
+    mode: external
+    css_url: "assets/custom-releasehx.css"
+----
+
+.Minimal Styling
+[source,yaml]
+----
+history:
+  styling:
+    mode: minimal
+----
+
+[[custom-css-development]]
+===== Custom CSS Development
+
+When using `external` mode, create a CSS file that targets ReleaseHx's semantic HTML structure:
+
+.Key CSS Classes and Elements
+[source,css]
+----
+/* Main containers */
+.release-history { /* Overall wrapper */ }
+.release-section { /* Individual release container */ }
+
+/* Content sections */
+.changelog-section { /* Changelog entries container */ }
+.notes-section { /* Release notes container */ }
+
+/* Individual items */
+.release-note { /* Individual release note */ }
+.change-entry { /* Individual changelog entry */ }
+
+/* Components */
+.card-header, .card-body, .card-footer { /* Note structure */ }
+.change-metadata { /* Metadata display container */ }
+.badge { /* Type/status badges */ }
+----
+
+For a complete example, see the `releasehx-custom.css` file in the https://github.com/DocOps/releasehx-demo[releasehx-demo repository].
+
+[[css-variables]]
+===== CSS Variables for Easy Customization
+
+ReleaseHx's embedded CSS uses CSS custom properties for easy theming:
+
+[source,css]
+----
+:root {
+  --release-spacing: 3rem;    /* Space between releases */
+  --section-spacing: 2.5rem;  /* Space between sections */
+  --item-spacing: 1rem;       /* Space between items */
+  --primary-color: #0d6efd;   /* Brand primary color */
+  --success-color: #198754;   /* Success/changelog color */
+  --info-color: #0dcaf0;      /* Info/notes color */
+}
+----
+
+Override these variables in your external CSS to customize the appearance without rewriting the entire stylesheet.
+
+[[dark-theme]]
+===== Dark Theme Support
+
+ReleaseHx's embedded CSS includes comprehensive dark theme support that automatically adapts to user preferences:
+
+Automatic detection::
+When using `framework: bootstrap5` mode, ReleaseHx includes a detection script that automatically applies dark theme based on system preferences.
+The script listens for system theme changes and updates the display in real-time.
+
+CSS custom properties::
+Dark theme colors are defined using CSS custom properties within a `@media (prefers-color-scheme: dark)` query.
+All color values automatically invert for dark mode while maintaining proper contrast ratios.
+
+Manual override::
+Users can manually toggle dark mode using the `.dark-theme` class on the `<html>` element.
+This overrides system preferences for explicit theme control.
+
+.Dark Theme Configuration Example
+[source,yaml]
+----
+history:
+  html_framework: bootstrap5
+  styling:
+    mode: embedded
+    theme: default
+----
+
+When rendered, the HTML will include:
+
+* Bootstrap 5 with `data-bs-theme` attribute management
+* CSS custom properties for both light and dark color schemes
+* JavaScript to detect and respond to system preference changes
+* Manual theme toggle capability (if you add UI controls)
+
+.Dark Theme CSS Variables
+[source,css]
+----
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1a1a1a;
+    --text-color: #e0e0e0;
+    --border-color: #444;
+    --card-bg: #2d2d2d;
+    --note-bg: #252525;
+    /* Additional dark theme variables */
+  }
+}
+----
+
+For examples of dark theme in action, see the demo configurations in the {releasehx_demo_repo}[releasehx-demo repository], particularly `github-dark-mode.yml` and `github-bootstrap-dark.yml`.
+
+[[html-wrapper-control]]
+===== HTML Wrapper Control
+
+To enable HTML wrapper with CSS, use either:
+
+* Configuration: `modes.html_wrap: true`
+* CLI flag: `--wrap`
+
+The wrapper includes proper HTML document structure, meta tags, and CSS framework loading.
+
 [[sourcing-strategy]]
 === Sourcing Strategy
 
@@ -1585,7 +1803,7 @@ Writes to `<output_path>/<file_template>` or `<PATH>`.
 *--wrap, --no-wrap*::
 {cli_option_message_wrap}.
 When enriching to HTML, _include_ (`--wrap`) or _exclude_ (`--no-wrap`) the `<head>` and `<body>` tags and their content.
-For use when the opposite value is set in the config file ([.ppty]*<<conf_ppty_modes_wrapped>>*).
+For use when the opposite value is set in the config file ([.ppty]*<<conf_ppty_modes_html_wrap>>*).
 
 *--quiet*::
 {cli_option_message_quiet}.
@@ -1727,7 +1945,7 @@ Each item must have a `user` property that matches a username in the Issues syst
 These pertain the to the main configuration file, which is defined specifically for your _application_ of ReleaseHx.
 By default, the application config is found at `{app_default_config_path}.`
 
-The full configuration reference is published at link:{releasehx_docs_www}/config-reference{docs_extn}[].
+The full configuration reference is published at link:{releasehx_docs_www}/config-reference{extn}[].
 
 [[sample-config]]
 === Sample Application Configurations
@@ -1766,7 +1984,7 @@ If you add a non-standard API, please consider <<contributing,contributing it>> 
 
 ReleaseHx connects to all upstream REST APIs via YAML-based client configurations.
 
-For reference, the official configs for the three supported REST APIs are at link:{this_prod_repo}/blob/lib/releasehx/rest/clients/jira.yml[jira.yml], link:{this_prod_repo}/blob/lib/releasehx/rest/clients/github.yml[github.yml], and link:{this_prod_repo}/blob/lib/releasehx/rest/clients/gitlab.yml[gitlab.yml].
+For reference, the official configs for the three supported REST APIs are at link:{this_proj_src_www_url}/blob/lib/releasehx/rest/clients/jira.yml[jira.yml], link:{this_proj_src_www_url}/blob/lib/releasehx/rest/clients/github.yml[github.yml], and link:{this_proj_src_www_url}/blob/lib/releasehx/rest/clients/gitlab.yml[gitlab.yml].
 
 To override any of these or to add your own, place a file at `.releasehx/rest/clients/<hostslug>.yml`.
 Make sure it conforms to the schema defined in `specs/data/api-client-schema.yaml`.
@@ -1855,9 +2073,9 @@ Most configuration of output (for drafting or enriching), is handled in the main
 
 For reference, the official mapping configs for the three supported REST APIs are at: 
 
-* link:{this_prod_repo}/blob/lib/releasehx/rest/mappings/jira.yaml[jira.yaml]
-* link:{this_prod_repo}/blob/lib/releasehx/rest/mappings/github.yaml[github.yaml]
-* link:{this_prod_repo}/blob/lib/releasehx/rest/mappings/gitlab.yaml[gitlab.yaml]
+* link:{this_proj_src_www_url_files_path}/lib/releasehx/rest/mappings/jira.yaml[jira.yaml]
+* link:{this_proj_src_www_url_files_path}/lib/releasehx/rest/mappings/github.yaml[github.yaml]
+* link:{this_proj_src_www_url_files_path}/lib/releasehx/rest/mappings/gitlab.yaml[gitlab.yaml]
 
 To override any of these or to add your own, place a file at `.releasehx/rest/mappings/<hostslug>.yml`.
 
@@ -1883,7 +2101,7 @@ The extracted value is available in the `path` local variable.
 ==== Sandboxed Ruby Transformations
 
 The `ruby` key provides a powerful way to perform complex data transformations using a secure, sandboxed Ruby environment.
-This sandbox is powered by the `SchemaGraphy::SafeTransform` class, which ensures that only an explicit allowlist of safe methods and language features can be used.
+This sandbox is powered by the `SchemaGraphy::SafeTransform` class (from link:{schemagraphy_www_url}[SchemaGraphy gem]), which ensures that only an explicit allowlist of safe methods and language features can be used.
 
 [[sandboxed-ruby-context]]
 ===== Execution Context
@@ -1970,8 +2188,7 @@ For example, if your GitHub issues use labels like:
 Your ReleaseHx application will need an alternate mapping because the default GitHub mapping expects native `issue_type.name` fields.
 
 An example alternate mapping for label-based GitHub type extraction can be found at:
-
-`link:{releasehx_demo_repo}/blob/main/_mappings_/legacy-labels/github.yaml[releasehx-demo/_mappings_/legacy-labels/github.yaml]`
+link:{releasehx_demo_repo}/blob/main/_mappings_/legacy-labels/github.yaml[`releasehx-demo/_mappings_/legacy-labels/github.yaml`]
 
 This mapping includes Ruby logic to:
 
@@ -2037,9 +2254,8 @@ The custom mappings path can be set using <<conf_ppty_paths_mappings_dir>> setti
 
 ReleaseHx generally uses enhanced *Liquid 4 templates* to generate new files and content from RHYML and configuration data.
 
-Notably, it employs *link:https://jekyllrb.com/docs/liquid/[Jekyll's extended tags and filters]*, as well as some additional tag and several filters provided by Sourcerer.
-
-Here we document the custom filters added by the Sourcerer module and ReleaseHx itself.
+Notably, it employs *link:https://jekyllrb.com/docs/liquid/[Jekyll's extended tags and filters]*, as well as some additional tag and several filters provided by AsciiSourcerer.
+Here we document the custom filters added by the link:{asciisourcerer_www_url}[AsciiSourcerer gem] and ReleaseHx itself.
 
 [[advanced-template-configuration]]
 ==== Advanced Template Configuration
@@ -2064,7 +2280,30 @@ The various sample configurations found in the link:{releasehx_demo_repo}/blob/m
 
 A complete link:{default-config_www}[sample config] displays default values and commented descriptions of all available properties.
 
-[[liquid-extensions]]
+[[template-support]]
+==== Template and Theme Support Policy
+
+The RHYML templates in link:{this_proj_src_www_url_files_path}/lib/releasehx/rhyml/templates/[`lib/releasehx/rhyml/templates/`] are the default templates used for drafting and enriching content.
+
+Templates filenames formatted like `*.{html,yaml,md,adoc}.liquid` all contain expressive markup intended for output.
+We will call these files, such as `changelog.adoc.liquid` and `changelog.html.liquid` _expressive templates_.
+
+All files that are just `<string>.liquid`, such as `changes-sorter.liquid` and `parts-listing.liquid` merely generate data objects and produce express no output to the rendered output.
+We'll call these _parsing templates_.
+
+During pre-1.0 releases, changes made to _parsing templates_ will maintain backward compatibility.
+Deprecations will be announced as early as possible, but we will not change the output of these files except by addition or in the case of a bug, in which case we will change the output to match the documented/expected processing.
+
+When it comes to _expressive templates_, DocOps Lab intends to make incremental improvements and fine tuning.
+
+You will always be able to use the templates from a prior version by dropping them into your local custom-templates directory (`_templates/`) by default, but set using {ppty_conf_paths_templates_dir}.
+
+_After the 1.0 release_, all templates will be kept backward compatible between major releases; so no breaking changes until 2.0, 3.0, etc.
+
+[NOTE]
+This is true of the RHYML domain-specific language, as well.
+We may modify it during pre-1.0 development, but it will be kept backward compatible thereafter.
+
 [[custom-liquid-tags]]
 ==== Custom Liquid Tags
 
@@ -2164,6 +2403,20 @@ Returns a YAML representation of the input for debugging purposes.
 example:::
 `{{ changes | inspect_yaml }}`
 
+[[jekyll-asciidoc-liquid-filters]]
+==== Jekyll/AsciiDoc Liquid Filters
+
+ReleaseHx supports all link:https://jekyllrb.com/docs/liquid/filters/[filters provided by Jekyll 4.4].
+
+It also includes all filters provided by the jekyll-asciidoc plugin.
+
+asciidocify::
+Uses Asciidoctor API to convert a string of AsciiDoc content to HTML.
+
+tocify_asciidoc::
+Generates a table of contents in HTML from the parsed AsciiDoc document of the current page.
+For use outside the context of a full AsciiDoc document, such as in a sidebar or drop-down ToC.
+
 
 [[troubleshooting]]
 == Troubleshooting
@@ -2235,18 +2488,6 @@ Solution::
 . Review Jekyll's Liquid documentation for supported tags and filters
 
 
-ifdef::site-gen-jekyll[]
-[[apis]]
-== APIs
-
-Documntation for th ReleaseHx, SchemaGraphy, and Sourcerer APIs is available at:
-
-* link:/api/releasehx[ReleaseHx API]
-* link:/api/schemagraphy[SchemaGraphy API]
-* link:/api/sourcerer[Sourcerer API]
-
-endif::[]
-
 
 ifndef::site-gen-jekyll[]
 // tag::releasehx-api[]
@@ -2308,7 +2549,7 @@ To work with ReleaseHx source, clone both repositories side by side for the most
 . Clone both repositories.
 +
 [.prompt]
- git clone {releasehx_prod_repo}
+ git clone {this_proj_src_www_url}
  git clone {releasehx_demo_repo}
 +
 This will give you `<source_dir>/releasehx` and `<source_dir>/releasehx-demo`, side by side.
@@ -2323,9 +2564,9 @@ From the `releasehx` repository:
 [.prompt]
  cd releasehx
  bundle install
- bundle exec rake build
+ bundle exec rake build:gem
 +
-This creates the gem file in the `pkg/` directory.
+This operation generates untracked dependencies during a _pre-build_ stage and compiles the gem file in the `pkg/` directory.
 
 . Install the locally built gem for testing.
 +
@@ -2340,7 +2581,7 @@ Alternatively, for development testing without installing:
 . Run the test suite to verify functionality.
 +
 [.prompt]
- bundle exec rake spec
+ bundle exec rake rspec
 
 [[working-with-the-demo-repository]]
 ==== Working with the Demo Repository
@@ -2429,7 +2670,7 @@ Additionally, the help screen itself is sourced here in this README and included
 The application help and manpage documentation is also sourced in this way.
 (Use `rhx --help` or `rhx --man` to reveal.)
 
-This capability is provided by the Sourcerer module introduced in this gem but intended to be spun off into it own gem for use in all my (and any of your) Ruby projects in the future.
+This capability is provided by the link:{asciisourcerer_www_url}[AsciiSourcerer gem].
 
 [[common-dev-tasks]]
 === Common Dev Tasks
@@ -2460,7 +2701,7 @@ To maintain DRY sourcing, make your changes in the following files:
 To build the documentation locally, run the following command from the project root:
 
 [.prompt]
- bundle exec rake docs
+ bundle exec rake build:docs
 
 This will generate the documentation in the `build/docs` directory.
 
@@ -2488,7 +2729,7 @@ Special dev Rake tasks and libraries are available via the `docopslab-dev` gem.
 [.prompt]
  bundle exec rake --tasks | grep labdev:
 
-The link:{docopslab_git_www}/lab/tree/main/gems/docopslab-dev/README.adoc[DocOps Lab Devtool] or see `.agent/docs/topics/docpslab-devtool`.
+The link:{docopslab_src_www_url}/lab/tree/main/gems/docopslab-dev/README.adoc[DocOps Lab Devtool] or see `.agent/docs/topics/docpslab-devtool`.
 
 // tag::releasehx-api[]
 [[issue-data-mapping]]
@@ -2627,71 +2868,54 @@ Dockerfile                       # Docker image definition
 build/                           # Untracked, ephemeral path for generated assets
 docs/                            # Documentation build source (Jekyll, YARD)
 .config/                         # Config files for various tools
-├── sourcerer.yml                # Sourcerer prebuild manifest
-└── docopslab-dev.yml            # DocOpsLab Devtool config
+   ├── sourcerer.yml             # Sourcerer prebuild manifest
+   └── docopslab-dev.yml         # DocOpsLab Devtool config
 specs/
-   ├── data/                     # Schema/definition files
-   │   ├── config-def.yml            # Configuration definition
-   │   ├── rhyml-schema.yaml         # RHYML schema definition
-   │   ├── api-client-schema.yaml    # API client schema definition
-   │   ├── rhyml-mapping-schema.yaml # API -> RHYML schema definition
-   │   └── mcp-manifest.yml          # Asset registry for MCP server
-   └── tests/
-       ├── README.adoc
-       ├── rspec/                # RSpec tests
-       └── configs/              # Test configs
+├── data/                     # Schema/definition files
+│   ├── config-def.yml            # Configuration definition
+│   ├── rhyml-schema.yaml         # RHYML schema definition
+│   ├── api-client-schema.yaml    # API client schema definition
+│   ├── rhyml-mapping-schema.yaml # API -> RHYML schema definition
+│   └── mcp-manifest.yml          # Asset registry for MCP server
+└── tests/
+    ├── README.adoc
+    ├── rspec/                # RSpec tests
+    └── configs/              # Test configs
 lib/
-├── releasehx.rb                 # Application core
-├── schemagraphy.rb              # Special YAML handling
-├── sourcerer.rb                 # Single-sourcing tool
 ├── docopslab/
 │   ├── mcp/                     # MCP assets and packaging
 │   └── mcp.rb                   # DocOpsLab MCP entrypoint
-├── releasehx/
-│   ├── cli.rb                   # Thor CLI definition
-│   ├── configuration.rb         # CFGYML parsing
-│   ├── generated.rb             # Generated by prebuild (packaged)
-│   ├── helpers.rb               # Utility helpers
-│   ├── mcp/                     # MCP server assets
-│   ├── mcp.rb                   # MCP server entrypoint
-│   ├── README.adoc              # Internal developer notes
-│   ├── rhyml.rb                 # RHYML entrypoint
-│   ├── sgyml/                   # SGYML helpers
-│   │   └── helpers.rb           # module SgymlHelpers
-│   ├── transforms/              # Input transformations (ADF, etc)
-│   ├── version.rb               # Version constant
-│   ├── rest/                    # module REST
-│   │   ├── yaml_client.rb       # ReleaseHx::REST::YamlClient class
-│   │   └── clients/             # YAML files for API clients (jira.yaml, etc)
-│   ├── ops/                     # Main ReleaseHx methods 
-│   │   ├── check_ops.rb         # ReleaseHx::CheckOps module
-│   │   ├── draft_ops.rb         # ReleaseHx::DraftOps module
-│   │   ├── enrich_ops.rb        # ReleaseHx::EnrichOps module
-│   │   ├── template_ops.rb      # ReleaseHx::TemplateOps module
-│   │   └── write_ops.rb         # ReleaseHx::WriteOps module
-│   ├── rhyml/                   # module RHYML
-│   │   ├── adapter.rb           # maps from JSON using a mapping file
-│   │   ├── change.rb            # Change class
-│   │   ├── liquid.rb            # Liquid filters for RHYML
-│   │   ├── release.rb           # Release class
-│   │   ├── loaders.rb           # loads RHYML YAML or JSON from disk
-│   │   ├── mappings/            # API -> RHYML mappings
-│   │   └── templates/           # RHYML output templates
-├── schemagraphy/
-│   ├── cfgyml/                  # CFGYML (OpenCFGY) parsing
-│   ├── attribute_resolver.rb    # Resolves {attribute_name} placeholders
-│   ├── loader.rb                # `SchemaGraphy::Loader`
-│   ├── regexp_utils.rb          # Regular expression utilities
-│   ├── schema_utils.rb          # `get_schema_defaults`, etc
-│   ├── tag_utils.rb             # `detag`, `tag_of`, etc
-│   ├── templates/               # CFGYML documentation templates
-│   │   └── cfgyml/              # Config reference templates (+ sample gen)
-│   └── templating.rb            # Defines handling of parsable YAML nodes
-└── sourcerer/
-    ├── builder.rb               # Writes snippets to files at build time
-    ├── jekyll.rb                # Jekyll and Liquid handling for Sourcerer
-    ├── plaintext_converter.rb   # Pre-processes AsciiDoc source files
-    └── templating.rb            # Liquid/ERB template handling
+├── releasehx.rb                 # Application core
+└── releasehx/
+    ├── cli.rb                   # Thor CLI definition
+    ├── configuration.rb         # CFGYML parsing
+    ├── generated.rb             # Generated by prebuild (packaged)
+    ├── helpers.rb               # Utility helpers
+    ├── mcp/                     # MCP server assets
+    ├── mcp.rb                   # MCP server entrypoint
+    ├── README.adoc              # Internal developer notes
+    ├── rhyml.rb                 # RHYML entrypoint
+    ├── sgyml/                   # SGYML helpers
+    │   └── helpers.rb           # module SgymlHelpers
+    ├── transforms/              # Input transformations (ADF, etc)
+    ├── version.rb               # Version constant
+    ├── rest/                    # module REST
+    │   ├── yaml_client.rb       # ReleaseHx::REST::YamlClient class
+    │   └── clients/             # YAML files for API clients (jira.yaml, etc)
+    ├── ops/                     # Main ReleaseHx methods 
+    │   ├── check_ops.rb         # ReleaseHx::CheckOps module
+    │   ├── draft_ops.rb         # ReleaseHx::DraftOps module
+    │   ├── enrich_ops.rb        # ReleaseHx::EnrichOps module
+    │   ├── template_ops.rb      # ReleaseHx::TemplateOps module
+    │   └── write_ops.rb         # ReleaseHx::WriteOps module
+    └── rhyml/                   # module RHYML
+        ├── adapter.rb           # maps from JSON using a mapping file
+        ├── change.rb            # Change class
+        ├── liquid.rb            # Liquid filters for RHYML
+        ├── release.rb           # Release class
+        ├── loaders.rb           # loads RHYML YAML or JSON from disk
+        ├── mappings/            # API -> RHYML mappings
+        └── templates/           # RHYML output templates
 ----
 // end::ai-prompt[]
 
@@ -2704,200 +2928,6 @@ Either way, this gem will include a wrapper for the link:https://github.com/mode
 For now it's easier to test inside the one gem that is making immediate use of the protocol.
 
 If the MVP pans out (which is uncertain given how weak MCP tech is and how frustrating it was to get it working with various clients), I will upstream it for use in any Ruby projects.
-
-[[sourcerer]]
-=== Sourcerer
-// tag::sourcerer[]
-This gem introduces a module called Sourcerer, by which AsciiDoc files can be parsed and their contents harvested for use in the application build.
-The module also handles Liquid template processing with enhanced attribute resolution capabilities.
-
-[NOTE]
-Sourcerer is intended to be spun off as its own gem once it successfully proves the concept in this gem.
-It will probably be called _AsciiSourcerer_ and may replace an older and unmaintained utility of mine called LiquiDoc.
-
-It is invoked in the Rakefile, establishing global namespaces: 
-
-* `ReleaseHx::ATTRIBUTES[:globals]` (derived from this `README.adoc` file)
-* `ReleaseHx.read_built_snippet(:<name>)` (such as `:helpscreen`)
-
-The Sourcerer module also generates files like `build/docs/manpage.adoc`, which generates the formatted terminal manual, using content from `build/docs/config-reference.adoc` and this README (`tags="cli_options"`, for instance).
-
-It also generates an AsciiDoc-formatted configuration reference, a machine-readable JSON reference, and a sample config using the `specs/data/config-def.yml` file.
-The Sourcerer system now supports *attribute resolution* from AsciiDoc source files, enabling templates to access README attributes during rendering, ensuring configuration documentation reflects actual default values.
-
-Sourcerer also performs basic testing of select commands in the ASciiDoc file that have been assigned a `testable` role.
-
-This is mostly just showing off what Sourcerer can do, and hopefully setting into habit some best practices for my more complicated apps.
-
-Sourcerer is also where integration with Jekyll's extensions of Liquid occurs, bringing ReleaseHx's templating powers closely in line with how Jekyll's work, as described in <<custom-liquid>>.
-// end::sourcerer[]
-
-[[schemagraphy]]
-=== SchemaGraphy
-
-This gem also introduces a module that derives from an unreleased gem I have been working on for some years: SchemaGraphy.
-
-SchemaGraphy is basically an extension of YAML, enabling Ruby developers and end users more broadly to powerfully interpret and schematize YAML-based data.
-Most relevant to our case, as enabled by the `SchemaGraphy` module in this gem, is its handling of *YAML custom tags*, *attribute resolution*, and what I am calling *"`templated fields`"*, where the value of a YAML node is a String that is intended to be further processed by a templating engine like Liquid or ERB, either immediately upon ingest or later in the runtime stack, when it can be mixed with additional data.
-
-SchemaGraphy facilitates handling these and other quirky power-ups we use with our fully valid YAML files, so low-code users can pass some dynamism along in their YAML configs and so forth.
-
-[[attribute-resolution]]
-==== Attribute Resolution
-
-SchemaGraphy provides *attribute resolution* capabilities through the `AttributeResolver` component.
-This enables YAML files to reference external attributes using placeholder syntax like `{attribute_name}`.
-
-When loading YAML with `.load_yaml_with_attributes(file_path, attributes)`, SchemaGraphy:
-
-. Loads the YAML file normally
-. Searches for `{attribute_name}` patterns in String values  
-. Replaces them with corresponding values from the provided attributes Hash
-. Returns the resolved YAML data structure
-
-This is used extensively in ReleaseHx's configuration system to enable single-sourcing of defaults from README attributes.
-
-[[custom-yaml-tag-handling]]
-==== Custom YAML Tag Handling
-
-To enable end users to pass meta-instructions along with their data, wherever it will make sense to do so, SchemaGraphy offers a straightforward handling system.
-
-Wherever you parse YAML-formatted data using `.load_yaml_with_tags`, custom-tagged Scalar nodes are converted into Maps like so:
-
-.User's YAML
-[source,yaml]
-----
-some_property: !liquid "{{ some_value }}"
-----
-
-.Converted data TagMap
-[source,yaml]
-----
-some_property:
-  __tag__: liquid
-  value: "{{ some_value }}"
-----
-
-Developers may therefore conditionally interpret ingested data based on user-defined classifications, wherever the developer supports such things.
-
-Whether a Scalar has been transformed into a TagMap, you can resolve it using:
-
-[source,ruby]
-----
-SchemaGraphy::TagUtils.detag(some_property)
-# Or, with a local alias
-detag = ->(val) { SchemaGraphy::TagUtils.detag(val) }
-detag(some_property)
-----
-
-When tags are used this way, to convey a syntax/engine for processing a template or other dynamic content, SchemaGraphy can even help us handle the content in the manner designated by the tag.
-This will come up again in <<templated-fields,the next section>>.
-
-[NOTE]
-This capability is only available on Scalar node values.
-For now, tags applied to other compound node types (Arrays/sequences, Maps/mappings) will be ignored by SchemaGraphy interpreters.
-
-[WARNING]
-When you use `load_yaml_with_tags`, you will encounter errors downstream if a user places a tag on a node where you do not expect it.
-
-[[templated-fields]]
-==== Templated Property Values in YAML
-
-We are calling these "`templated fields`" to specify that we are talking about enabling end users to use Liquid, ERB, or eventually other templating syntaxes in YAML node values.
-
-In so doing, developer are able to designate that the value of certain YAML nodes should be handled by a templating engine, as well as when and how.
-
-We'll look at how this is done in <<templated-fields-handling>>.
-For now, the point is that sometimes files like `specs/data/config-def.yml` or an API-mapping file call for a little more runtime dynamism than a low-code solution like pure YAML can support.
-
-Therefore, when the value of a user-configurable or environment-deterimined "`setting`" is a string that must be generated from data defined outside that field, we parse and render the template at runtime, using data from the environment or elsewhere.
-For now, it is up to our calling code to provide the appropriate variables to the template depending on the context.
-
-[[config-def]]
-==== Configuration Definition (CFGYML)
-
-All user-configurable settings have a definition, if not also a default value.
-For single-sourcing purposes, these are defined in a YAML format called CFGYML -- a configuration-file modeling language.
-
-The file is at `{gem_config_definition_path}`.
-It is used to establish the literal default settings carried by the application, and also to document those settings for the user.
-
-This practice lets developers give end users extremely detailed configurations, always well documented.
-
-[[attribute-resolution-in-cfgyml]]
-===== Attribute Resolution in CFGYML
-
-CFGYML supports *attribute resolution* from AsciiDoc files (like this README) using placeholder syntax.
-Default values can reference README attributes using `{attribute_name}` syntax:
-
-[source,yaml]
-----
-properties:
-  $meta:
-    properties:
-      markup:
-        dflt: "{default_markup}"  # Resolved from README.adoc :default_markup: attribute
-----
-
-This enables single-sourcing of configuration defaults from README attributes, ensuring that documentation and defaults stay synchronized.
-
-[[cfgyml-schema-structure]]
-===== CFGYML Schema Structure
-
-The basic schema is somewhat straightforward.
-Essentially, you're nesting Map objects within a YAML key `properties`, and each property (setting) of the defined config file can be described and constrained.
-
-Each setting can have a type, description (`desc`), default (`dflt`), and templated-field instructions (`templating`).
-If the setting is itself a of type `Map` (YAML "`mapping`", JSON "`object`"), its own nested parameters can be established with a `properties:` block.
-
-For now, you can designate the type, which you will have to enforce in your code, as well as a default value.
-
-[[sgyml-schemas]]
-==== SGYML Schemas
-
-Similar to but more complicated than CFGYML definition files are SchemaGraphy schema files.
-This is a partially specified, partially developed, and as-yet-incomplete syntax for designating and constraining YAML documents.
-
-ReleaseHx at this time makes active use of only minimal aspects of these schemas, all of which are contained in the `specs/` directory at the root of the gem source.
-
-Each of the YAML formats used by ReleaseHx has its own schema in the repo.
-The cfgyml-schema.yaml file will eventually be spun off, but the `specs/data/rhyml-schema.yaml` and `specs/data/rhyml-mapping-schema.yaml` files will stay here, defining valid formats for the types of files they apply to.
-
-Since SchemaGraphy itself is still unreleased, CFGYML as introduced in this gem offers only a subset of what it will enable down the road.
-
-Once SchemaGraphy is generally available, this gem will call it as a dependency.
-At that point, a file like `specs/data/config-def.yml` (CFGYML) will be able to impose a more detailed `$schema` for any property.
-
-[[templated-fields-handling]]
-==== Dynamic Templated-field Handling
-
-The most powerful function of SchemaGraphy schemas that is now available in ReleaseHx is the ability to instruct how templated fields should be processed at different stages, and also to parse and render them as needed.
-
-Templated-field handling can be established between a combination of (1) CFGYML definition files or SGYML schema files and (2) configuration files to be applied at runtime.
-
-Developers can designate a given property to be `type: Template` in a schema or definition.
-This "`typing`" can be a trigger for downstream parsing/rendering of the template.
-
-[NOTE]
-Liquid uses these two stages.
-The _parse_ operation compiles a template into a `Liquid::Template` object.
-The _render_ operation applies a dataset to the loaded template, generating a String with Liquid tags resolved.
-
-[[nyi]]
-==== Not Yet Implemented
-
-Most aspects of SchemaGraphy/SGYML are not yet available in ReleaseHx, but some are worth pointing out.
-
-data types::
-As of now, the `type` node of any property in `specs/data/config-def.yml` is not particularly functional.
-I do have a whole table of "`data types`" in SGYML, most of which are extremely self-explanatory and drawn from fairly platonic, cross-language terms.
-+
-However, these are entirely unenforced in ReleaseHx -- for now, data still has to be type checked explicitly in the Ruby code, and user configs are not validated against any kind of typing system.
-
-schema docs::
-The schema files do not yet generate complete reference docs for the subject files that they govern.
-So for instance, you'll have to read files like `specs/data/rhyml-schema.yaml` and `specs/data/rhyml-mapping-schema.yaml` directly to understand the format of RHYML files and how they are mapped to REST response payloads.
-// end::schemagraphy[]
 
 [[docs-deployment]]
 === Documentation Deployment

@@ -1,0 +1,365 @@
+= ReleaseHx Release Procedure
+
+This document outlines the step-by-step procedure for releasing a new version of ReleaseHx.
+
+It covers all stages from pre-release checks to post-release verification.
+
+
+[[prerequisites]]
+== Prerequisites
+
+- [ ] All changes merged to `release/0.x` branch
+- [ ] Version numbers updated in README.adoc attributes (`:this_prod_vrsn_major:` through `:next_prod_vrsn_majmin:`)
+- [ ] Release notes prepared in `docs/release/0.x.y.adoc`
+- [ ] Clean working tree on `release/0.x`
+- [ ] RubyGems credentials configured (`~/.gem/credentials`)
+- [ ] Docker Hub credentials configured (`docker login`)
+
+
+[[release-stages]]
+== Release Stages
+
+[[stage-pre-flight-checks]]
+=== Stage {counter:stage}: Pre-flight Checks
+
+Verify CI/CD Setup::
++
+[source,bash]
+----
+# Check workflows exist
+ls .github/workflows/
+# Should see: ci-cd.yml, gh-pages.yml, docs-qa.yml
+----
+
+Check Current State::
++
+[source,bash]
+----
+# Verify branch and clean status
+git status
+# Should be on release/0.x with clean working tree
+----
+
+Run Test Suite::
++
+[source,bash]
+----
+bundle exec rake rspec
+# All tests must pass
+----
+
+Confirm demo builds in releasehx-demo repo::
++
+[source,bash]
+----
+cd ../releasehx-demo
+./dev-install.sh
+bundle exec rake test:yaml
+bundle exec rake test:cli
+bundle exec rake test:readme
+bundle exec rake test:dynamic
+bundle exec rake test:content
+----
+
+Check demo test results::
++
+[source,bash]
+----
+# View test output directories
+ls -lh __tests/
+# Should contain: cli/, readme/, dynamic/, validation/
+
+# Check for errors in output
+grep -i error __tests/*/*.log 2>/dev/null || echo "No errors found"
+
+# Spot-check generated files
+ls -lh __output/drafts/
+ls -lh __output/publish/
+----
+
+Demo Repo Release Readiness::
+
+- [ ] YAML validation passes
+(`yaml_test`)
+- [ ] CLI workflows pass (`cli_test`) 
+- [ ] README testable commands pass (`readme_test`)
+- [ ] Dynamic test matrix passes (`dynamic_test`)
+- [ ] Content validation passes (`validate_content`)
+- [ ] Test output
+directories contain no errors
+- [ ] Generated files present in
+__output/
+
+Test Docker Build::
++
+[source,bash]
+----
+bundle exec rake build:image
+# Note: This creates/updates the buildx builder and tests the build
+# May need to recreate builder after Docker updates: docker buildx rm releasehx-builder
+----
+
+Verify Version Numbers::
++
+[source,bash]
+----
+# Check version in README.adoc
+grep ":this_prod_vrsn" README.adoc
+# Verify lib/releasehx/version.rb reads from README attributes
+grep "VERSION" lib/releasehx/version.rb
+----
+
+Verify Gemfile::
++
+[source,bash]
+----
+# Ensure no local path dependencies
+grep -E "path:|git:" Gemfile
+# Should be empty
+----
+
+Confirm Release Notes::
++
+[source,bash]
+----
+# Verify release notes file exists
+ls -lh docs/release/0.x.y.adoc
+----
+
+[[stage-build-artifacts]]
+=== Stage {counter:stage}: Build Artifacts
+
+Build Gem Package::
++
+[source,bash]
+----
+bundle exec rake build:gem
+----
+
+Verify Gem Package::
++
+[source,bash]
+----
+ls -lh pkg/releasehx-*.gem
+# Confirm version number is correct
+----
+
+[[stage-create-pull-request]]
+=== Stage {counter:stage}: Create Pull Request
+
+Push Release Branch::
++
+[source,bash]
+----
+git push origin release/0.x
+----
+
+Create Pull Request::
+* Via GitHub UI:
+https://github.com/DocOps/releasehx/compare/main…release/0.x
+* Title:
+Release 0.x.y
+* Body: (leave empty); wait for CI tests to pass.
+
+Merge Strategy::
+Use "`Create a merge commit`" (NOT squash or rebase).
+This preserves commit history and allows future PRs from the same
+branch
+
+[[stage-tag-release]]
+=== Stage {counter:stage}: Tag Release
+
+Update Local Main Branch::
++
+[source,bash]
+----
+git checkout main
+git pull origin main
+----
+
+Create and Push Tag::
++
+[source,bash]
+----
+git tag -a v0.x.y -m "Release 0.x.y"
+git push origin v0.x.y
+----
+
+NOTE: GitHub Pages workflow will auto-deploy docs when tag is pushed.
+
+[[stage-sync-release]]
+=== Stage {counter:stage}: Sync Release Branch (Optional but Recommended)
+
+Cherry-pick Any Post-Merge Fixes::
+If you made any fixes to release notes or docs on main after the merge:
++
+[source,bash]
+----
+git checkout release/0.x
+git cherry-pick <commit-sha>
+git push origin release/0.x
+----
+
+[[stage-publish-gem-to-rubygems]]
+=== Stage {counter:stage}: Publish Gem to RubyGems
+
+[source,bash]
+----
+gem push pkg/releasehx-0.x.y.gem
+# Enter OTP code from authenticator when prompted
+----
+
+Verify Publication::
++
+[source,bash]
+----
+# Check on RubyGems.org
+open https://rubygems.org/gems/releasehx
+----
+
+[[stage-publish-docker-image]]
+=== Stage {counter:stage}: Publish Docker Image
+
+Build and Load Image::
++
+[source,bash]
+----
+docker buildx build --platform linux/amd64 \
+  --build-arg RELEASEHX_VERSION=0.x.y \
+  -t docopslab/releasehx:latest \
+  -t docopslab/releasehx:0.x.y \
+  --load \
+  .
+----
+
+Push Images::
++
+[source,bash]
+----
+docker push docopslab/releasehx:0.x.y
+docker push docopslab/releasehx:latest
+----
+
+Verify Publication::
++
+[source,bash]
+----
+# Check on Docker Hub
+open https://hub.docker.com/r/docopslab/releasehx
+----
+
+[[stage-publish-issuer-rhx]]
+=== Stage {counter:stage}: Publish issuer-rhx Docker Image
+
+Follow the Release Process documented in the https://github.com/DocOps/issuer-rhx[issuer-rhx] repo's `README.adoc`.
+
+
+[[stage-create-github-release]]
+=== Stage {counter:stage}: Create GitHub Release
+
+Via GitHub UI (recommended)::
+. Go to:
+https://github.com/DocOps/releasehx/releases/new
+. Select tag: v0.x.y
+. Title: ReleaseHx 0.x.y
+. Description:
+See release notes at `https://releasehx.docopslab.org/docs/releases/`
+. Upload: `pkg/releasehx-0.x.y.gem`
+. Click "`Publish release`"
+
+Via CLI (if permissions allow)::
++
+[source,bash]
+----
+gh release create v0.x.y pkg/releasehx-0.x.y.gem \
+  --title "ReleaseHx 0.x.y" \
+  --notes "See release notes at https://releasehx.docopslab.org/docs/releases/"
+----
+
+[[stage-release-verification]]
+=== Stage {counter:stage}: Post-Release Verification
+
+Test Gem Installation::
++
+[source,bash]
+----
+gem install releasehx --version 0.x.y
+rhx --version
+# Should show: 0.x.y
+----
+
+Test Docker Image::
++
+[source,bash]
+----
+docker pull docopslab/releasehx:0.x.y
+docker run --rm docopslab/releasehx:0.x.y rhx --version
+# Should show: 0.x.y
+----
+
+Verify Documentation::
++
+[source,bash]
+----
+# Check that docs are live
+open https://releasehx.docopslab.org/docs/releases/
+# Should show 0.x.y release notes
+----
+
+[[stage-post-release-cleanup-optional]]
+=== Stage {counter:stage}: Post-Release Cleanup (Optional)
+
+Update Version for Next Release::
+Edit `README.adoc` to increment patch version; commit on `release/0.x` branch
+
+Notify Stakeholders::
+Post announcement in relevant channels; update downstream projects
+
+
+[[troubleshooting]]
+== Troubleshooting
+
+[[docker-buildkit-issues]]
+=== Docker BuildKit Issues
+
+If you encounter TLS certificate errors with buildx:
+
+[source,bash]
+----
+# Remove stale builder
+docker buildx rm releasehx-builder
+
+# Recreate builder (Rakefile will do this automatically)
+bundle exec rake build:image
+----
+
+[[mfa-otp-issues]]
+=== MFA/OTP Issues with RubyGems
+
+* Get fresh OTP code from authenticator app
+* Code expires quickly; have app ready before running `gem push`
+
+[[github-cli-permission-issues]]
+=== GitHub CLI Permission Issues
+
+If `gh` CLI lacks permissions::
+
+* Use GitHub web UI for creating PRs and
+Releases
+* Upload gem file manually in Release creation form
+
+
+[[branch-strategy]]
+== Branch Strategy
+
+Long-lived Branch (`release/0.x`)::
+* Used for all 0.x.y patch releases
+* PR to main for each release
+* Merge commits preserve history
+* Continue development on same branch
+
+Tagging::
+Tags created on `main` branch after merge
+
+Documentation::
+Auto-deploys from `main` via GitHub Actions

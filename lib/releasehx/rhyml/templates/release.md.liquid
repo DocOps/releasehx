@@ -1,12 +1,13 @@
-{% assign format  = "markdown" -%}
-{% assign config  = vars.config -%}
-{% assign release = vars.release -%}
-{% assign changes = vars.changes -%}
-{% assign sorted  = vars.sorted -%}
+{%- assign format  = "markdown" -%}
+{%- assign config  = vars.config -%}
+{%- assign release = vars.release -%}
+{%- assign changes = vars.changes -%}
+{%- assign sorted  = vars.sorted -%}
 {%- embed head-parser.liquid %}
-{% if release.memo -%}
+<!-- .release-section -->
+{%- if release.memo -%}
 {{ release.memo }}
-{% endif -%}
+{%- endif -%}
 
 {% if release.hash and release.hash != "" and config.links.git and config.links.git.trim != "" -%}
 **Git:** [{{ release.hash | slice: 0, 7 }}]({{ config.links.git | render: release }})

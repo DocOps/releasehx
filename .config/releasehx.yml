@@ -19,13 +19,13 @@ conversions:
   note: issue_body
   note_pattern: |
     /^(((#|=)+ (Draft )?Release Note.*?)|(<!-- (draft )?release note -->))\n+(?<note>(.|)+)/gmi
-  markup: markdown
 
 rhyml:
   pasterize_summ: true
   pasterize_head: true
   chid: "{{ release.code | replace: '.', '_' | upcase }}-{{ change.tick }}"
-  empty_notes: skip
+  empty_notes: empty
+  markup: asciidoc
 
 parts:
   label_prefix: "component:"
@@ -97,8 +97,8 @@ types:
 
 tags:
   # Include all tags by default for 0.1.2 (no filtering)
-  # _include: ['highlight', 'changelog', 'breaking', 'deprecation', 'experimental']
-  # _exclude: ['internal', 'wontfix', 'duplicate', 'invalid']
+  _include: ['needs:note', 'highlight', 'changelog', 'breaking', 'deprecation', 'experimental']
+  _exclude: ['internal', 'wontfix', 'duplicate', 'invalid']
   
   highlight:
     head: Highlights

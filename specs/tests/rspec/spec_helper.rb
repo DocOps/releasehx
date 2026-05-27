@@ -6,7 +6,6 @@ require 'yaml'
 require 'json'
 require 'tempfile'
 require 'tmpdir'
-require_relative '../../../lib/schemagraphy/safe_expression'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -22,25 +21,17 @@ end
 
 # Helper methods for tests
 def create_temp_yaml_file content
-  file = Tempfile.new(['test', '.yml'])
-  if content.is_a?(Hash)
-    file.write(YAML.dump(content))
-  else
-    file.write(content)
-  end
-  file.close
-  file.path
+  require 'securerandom'
+  path = File.join(Dir.tmpdir, "test#{Process.pid}-#{SecureRandom.hex(8)}.yml")
+  File.write(path, content.is_a?(Hash) ? YAML.dump(content) : content.to_s)
+  path
 end
 
 def create_temp_json_file content
-  file = Tempfile.new(['test', '.json'])
-  if content.is_a?(Hash) || content.is_a?(Array)
-    file.write(JSON.pretty_generate(content))
-  else
-    file.write(content)
-  end
-  file.close
-  file.path
+  require 'securerandom'
+  path = File.join(Dir.tmpdir, "test#{Process.pid}-#{SecureRandom.hex(8)}.json")
+  File.write(path, (content.is_a?(Hash) || content.is_a?(Array)) ? JSON.pretty_generate(content) : content.to_s)
+  path
 end
 
 def create_temp_dir

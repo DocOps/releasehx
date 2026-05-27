@@ -1,14 +1,19 @@
 # ShellCheck configuration for DocOps Lab projects
 # This file is synced from docopslab-dev gem
 
-# Disable some overly strict rules for our use cases
-disable=SC2034 # Variable appears unused (common in sourced scripts)
-disable=SC2086 # Double quote to prevent globbing (sometimes we want globbing)
-disable=SC2181 # Check exit code directly with e.g. 'if mycmd;', not indirectly with $?
-
-# Set default shell to bash (most of our scripts are bash)
+# tag::core-rules[]
+# Set default shell to bash
 shell=bash
 
-# Enable additional optional checks
+# Enforce documented style rules
+enable=require-double-brackets  # Require [[ ]] over [ ] in Bash
+enable=deprecate-which          # Use command -v instead of which
+enable=add-default-case         # Require a fallthrough *) in case statements
+
+# Quote safety
 enable=quote-safe-variables
-enable=require-variable-braces
+
+# NOTE: SC2034 (variable appears unused) is NOT disabled globally.
+# In sourced library files that export variables for callers, suppress inline:
+#   # shellcheck disable=SC2034 # exported; read by callers
+# end::core-rules[]

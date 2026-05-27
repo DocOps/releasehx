@@ -55,7 +55,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'tilt', '~> 2.3'
   spec.add_dependency 'yaml', '~> 0.4'
 
+  spec.add_dependency 'asciidoctor-html5s', '~> 0.5'
   spec.add_dependency 'asciidoctor-pdf', '~> 2.3'
+  spec.add_dependency 'asciisourcerer', '~> 0.4'
   spec.add_dependency 'commonmarker', '~> 0.23'
   spec.add_dependency 'jekyll', '~> 4.4'
   spec.add_dependency 'jekyll-asciidoc', '~> 3.0.0'
@@ -64,5 +66,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'liquid', '~> 4.0'
   spec.add_dependency 'mcp', '~> 0.4'
   spec.add_dependency 'prism', '~> 1.5'
+  spec.add_dependency 'schemagraphy', '~> 0.1'
   spec.add_dependency 'to_regexp', '= 0.2.1'
 end

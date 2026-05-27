@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'psych'
-require_relative '../schemagraphy/loader'
 
 module ReleaseHx
   # Manages the application's configuration by loading and merging settings

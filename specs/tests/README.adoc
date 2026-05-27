@@ -44,9 +44,7 @@ bundle exec rspec
 === Run Comprehensive Test Suite
 
 [.prompt]
- rake pr_test
-
-This runs:
+ rake test:pr
 
 *  RSpec unit tests
 *  CLI functionality tests
@@ -58,10 +56,10 @@ This runs:
 
 [source,bash]
 ----
-rake spec                   # RSpec tests only
-rake cli_test               # CLI functionality
-rake yaml_test              # YAML validation
-rake mcp_test               # MCP resource smoke test
+rake rspec                   # RSpec tests only
+rake test:cli               # CLI functionality
+rake test:yaml              # YAML validation
+rake test:mcp               # MCP resource smoke test
 ----
 
 
@@ -217,7 +215,7 @@ Templates:: Future template customization tests
 === Pre-commit Testing
 
 [.prompt]
- rake pr_test
+ rake test:pr
 
 [[release-testing]]
 === Release Testing
@@ -226,8 +224,8 @@ Before any release, run the full test suite:
 
 [source,bash]
 ----
-rake install_local  # Build and install locally
-rake pr_test        # Full test suite
+ rake install:local  # Build and install locally
+ rake test:pr        # Full test suite
 ----
 
 [[docopslab-dev]]

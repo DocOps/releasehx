@@ -1,130 +1,82 @@
-{%- assign metadata_parts = "" | split: "," -%}
+{%- comment -%} Build inline metadata array with minimal HTML badges {%- endcomment -%}
+{%- assign metadata_items = "" | split: "," -%}
 
-{%- comment -%}Collect ticket link{%- endcomment -%}
+{%- comment -%} Type badge {%- endcomment -%}
+{%- if metadata_kinds contains "type" and change.type -%}
+{%-   assign type_config = config.types[change.type] -%}
+{%-   if type_config -%}
+{%-     assign type_text = type_config.text | default: change.type -%}
+{%-     assign type_slug = change.type | sluggerize: slug_type -%}
+{%-     capture type_badge -%}<span class="badge type-badge type-{{ type_slug }}">{{ type_text }}</span>{%- endcapture -%}
+{%-     assign metadata_items = metadata_items | push: type_badge -%}
+{%-   endif -%}
+{%- endif -%}
+
+{%- comment -%} Parts/components {%- endcomment -%}
+{%- if metadata_kinds contains "part" -%}
+{%-   assign effective_parts = "" | split: "," -%}
+{%-   if change.parts and change.parts.size > 0 -%}
+{%-     assign effective_parts = change.parts -%}
+{%-   elsif change.part -%}
+{%-     assign effective_parts = change.part | split: "," -%}
+{%-   endif -%}
+{%-   if effective_parts.size > 0 -%}
+{%-     for part in effective_parts -%}
+{%-       assign skip_part = false -%}
+{%-       if part == "changelog" or part == "release_note_needed" -%}
+{%-         assign skip_part = true -%}
+{%-       elsif part == group1_slug or part == group2_slug -%}
+{%-         assign skip_part = true -%}
+{%-       elsif config.parts[part] == nil -%}
+{%-         assign skip_part = true -%}
+{%-       endif -%}
+{%-       unless skip_part -%}
+{%-         assign part_config = config.parts[part] -%}
+{%-         assign part_text = part_config.text | default: part -%}
+{%-         assign part_slug = part | sluggerize: slug_type -%}
+{%-         capture part_badge -%}<span class="badge part-badge part-{{ part_slug }}">{{ part_text }}</span>{%- endcapture -%}
+{%-         assign metadata_items = metadata_items | push: part_badge -%}
+{%-       endunless -%}
+{%-     endfor -%}
+{%-   endif -%}
+{%- endif -%}
+
+{%- comment -%} Tags {%- endcomment -%}
+{%- if metadata_kinds contains "tag" and change.tags and change.tags.size > 0 -%}
+{%-   for tag in change.tags -%}
+{%-     assign tag_slug = tag | sluggerize: slug_type -%}
+{%-     capture tag_badge -%}<span class="badge tag-badge tag-{{ tag_slug }}">{{ tag }}</span>{%- endcapture -%}
+{%-     assign metadata_items = metadata_items | push: tag_badge -%}
+{%-   endfor -%}
+{%- endif -%}
+
+{%- comment -%} Lead/user {%- endcomment -%}
+{%- if metadata_kinds contains "lead" and change.lead -%}
+{%-   if entry_show_lead_links and config.links.user.href -%}
+{%-     capture lead_link -%}[@{{ change.lead }}]({{ config.links.user.href | replace: '{{user}}', change.lead }}){%- endcapture -%}
+{%-     assign metadata_items = metadata_items | push: lead_link -%}
+{%-   else -%}
+{%-     capture lead_text -%}@{{ change.lead }}{%- endcapture -%}
+{%-     assign metadata_items = metadata_items | push: lead_text -%}
+{%-   endif -%}
+{%- endif -%}
+
+{%- comment -%} Issue/ticket link {%- endcomment -%}
 {%- if entry_show_issue_links and change.tick and config.links.web.href and config.links.web.href != "" -%}
 {%-   assign ticket_link_text = config.links.web.text | render: change -%}
-{%-   if config.links.web.href and config.links.web.href != "" -%}
-{%-     assign ticket_link = "[" | append: ticket_link_text | append: "](" | append: config.links.web.href | render: change | append: ")" -%}
-{%-   endif -%}
-{%-   assign ticket_part = ticket_link | split: "," -%}
-{%-   assign metadata_parts = metadata_parts | concat: ticket_part -%}
+{%-   capture ticket_link -%}[{{ ticket_link_text }}]({{ config.links.web.href | render: change }}){%- endcapture -%}
+{%-   assign metadata_items = metadata_items | push: ticket_link -%}
 {%- endif -%}
 
-{%- if metadata_kinds contains "part" %}
-{%- comment -%}Collect parts/components{%- endcomment -%}
-{%- assign effective_parts = "" | split: "," -%}
-{%- if change.parts and change.parts.size > 0 -%}
-{%-   assign effective_parts = change.parts -%}
-{%- elsif change.part -%}
-{%-   assign effective_parts = change.part | split: "," -%}
-{%- endif -%}
-{%- if effective_parts.size > 0 -%}
-{%-   assign parts_formatted = "" | split: "," -%}
-{%-   assign parts_count = 0 -%}
-{%-   for part in effective_parts -%}
-{%-     assign skip_part = false -%}
-{%-     if part == "changelog" or part == "release_note_needed" -%}
-{%-       assign skip_part = true -%}
-{%-     elsif part == group1_slug or part == group2_slug -%}
-{%-       assign skip_part = true -%}
-{%-     elsif config.parts[part] == nil -%}
-{%-       assign skip_part = true -%}
-{%-     endif -%}
-{%-     unless skip_part -%}
-{%-       assign part_config = config.parts[part] -%}
-{%-       assign part_text = part_config.text | default: part -%}
-{%-       assign bold_part = "**" | append: part_text | append: "**" -%}
-{%-       assign bold_part_array = bold_part | split: "," -%}
-{%-       assign parts_formatted = parts_formatted | concat: bold_part_array -%}
-{%-       assign parts_count = parts_count | plus: 1 -%}
-{%-     endunless -%}
-{%-   endfor -%}
-{%-   if parts_count > 0 -%}
-{%-     assign parts_joined = parts_formatted | join: labeling_join_string -%}
-{%-     if entry_show_parts_label -%}
-{%-       if labeling_singularize_labels and parts_count == 1 -%}
-{%-         assign parts_text = labeling_part_label | append: ": " | append: parts_joined -%}
-{%-       else -%}
-{%-         assign parts_text = labeling_parts_label | append: ": " | append: parts_joined -%}
-{%-       endif -%}
-{%-     else -%}
-{%-       assign parts_text = parts_joined -%}
-{%-     endif -%}
-{%-     assign parts_part = parts_text | split: "," -%}
-{%-     assign metadata_parts = metadata_parts | concat: parts_part -%}
-{%-   endif -%}
-{%- endif -%}
+{%- comment -%} Git commit link {%- endcomment -%}
+{%- if metadata_kinds contains "git" and change.ghsh and config.links.git.href -%}
+{%-   capture git_link -%}[`{{ change.ghsh | slice: 0, 7 }}`]({{ config.links.git.href | render: change }}){%- endcapture -%}
+{%-   assign metadata_items = metadata_items | push: git_link -%}
 {%- endif -%}
 
-{%- if metadata_kinds contains "type" %}
-{%- comment -%}Collect type (only if not already being grouped by type){%- endcomment -%}
-{%- assign skip_type = false -%}
-{%- if change.type == group1_slug or change.type == group2_slug -%}
-{%-   assign skip_type = true -%}
+{%- comment -%} Join metadata inline {%- endcomment -%}
+{%- if metadata_items.size > 0 -%}
+{%-   assign change_metadata = metadata_items | join: " " -%}
+{%- else -%}
+{%-   assign change_metadata = "" -%}
 {%- endif -%}
-{%- if change.type and skip_type == false -%}
-{%-   assign type_config = config.types[change.type] -%}
-{%-   if entry_show_type_label -%}
-{%-     assign type_text = labeling_type_label | append: ": " | append: type_config.text | default: change.type | capitalize -%}
-{%-   else -%}
-{%-     assign type_text = type_config.text | default: change.type | capitalize -%}
-{%-   endif -%}
-{%-   assign type_part = type_text | split: "," -%}
-{%-   assign metadata_parts = metadata_parts | concat: type_part -%}
-{%- endif -%}
-{%- endif -%}
-
-{%- if metadata_kinds contains "tag" %}
-{%- comment -%}Collect tags{%- endcomment -%}
-{%- if change.tags and change.tags.size > 0 -%}
-{%-   assign tags_formatted = "" | split: "," -%}
-{%-   assign tags_count = 0 -%}
-{%-   for tag in change.tags -%}
-{%-     assign skip_tag = false -%}
-{%-     if tag == "changelog" or tag == "release_note_needed" -%}
-{%-       assign skip_tag = true -%}
-{%-     elsif tag == group1_slug or tag == group2_slug -%}
-{%-       assign skip_tag = true -%}
-{%-     elsif config.tags[tag] == nil -%}
-{%-       assign skip_tag = true -%}
-{%-     endif -%}
-{%-     unless skip_tag -%}
-{%-       assign tag_text_array = tag | split: "," -%}
-{%-       assign tags_formatted = tags_formatted | concat: tag_text_array -%}
-{%-       assign tags_count = tags_count | plus: 1 -%}
-{%-     endunless -%}
-{%-   endfor -%}
-{%-   if tags_count > 0 -%}
-{%-     if entry_show_tags_label -%}
-{%-       if labeling_singularize_labels and tags_count == 1 -%}
-{%-         assign tags_text = labeling_tag_label | append: ": " | append: tags_formatted | join: labeling_join_string -%}
-{%-       else -%}
-{%-         assign tags_text = labeling_tags_label | append: ": " | append: tags_formatted | join: labeling_join_string -%}
-{%-       endif -%}
-{%-     else -%}
-{%-       assign tags_text = tags_formatted | join: labeling_join_string -%}
-{%-     endif -%}
-{%-     assign tags_part = tags_text | split: "," -%}
-{%-     assign metadata_parts = metadata_parts | concat: tags_part -%}
-{%-   endif -%}
-{%- endif -%}
-{%- endif -%}
-
-{%- comment -%}Collect lead contributor{%- endcomment -%}
-{%- if entry_show_lead and change.lead -%}
-{%-   if entry_show_lead_label -%}
-{%-     assign lead_prefix = labeling_lead_label | append: ": " -%}
-{%-   else -%}
-{%-     assign lead_prefix = "" -%}
-{%-   endif -%}
-{%-   if entry_user_link_template -%}
-{%-     assign lead_text = lead_prefix | append: "[" | append: change.lead | append: "](" | append: entry_user_link_template | render: change | append: ")" -%}
-{%-   else -%}
-{%-     assign lead_text = lead_prefix | append: change.lead -%}
-{%-   endif -%}
-{%-   assign lead_part = lead_text | split: "," -%}
-{%-   assign metadata_parts = metadata_parts | concat: lead_part -%}
-{%- endif -%}
-
-{%- comment -%}Output the final metadata string{%- endcomment -%}
-{%- assign change_metadata = metadata_parts | join: " | " -%}
