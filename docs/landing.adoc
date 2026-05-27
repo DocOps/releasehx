@@ -25,4 +25,4 @@
 </div>
 ++++
 
-include::index.adoc[tags="globals,intro,features-list"]
+include::index.adoc[tags="global-settings,intro,features-list"]

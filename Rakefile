@@ -383,7 +383,7 @@ def generate_release_index
     version = File.basename(file, '.adoc')
     # Try to extract date from the file
     date = extract_release_date(file) || 'TBD'
-    content << "* link:../release/#{version}.html[#{version}] - #{date}"
+    content << "* link:../release/#{version}[#{version}] - #{date}"
   end
 
   content << ''

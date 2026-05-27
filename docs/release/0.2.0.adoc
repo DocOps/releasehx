@@ -1,0 +1,148 @@
+:icons: font
+:page-title: Release History for 0.2.0
+:page-version: 0.2.0
+:page-date: 2026-05-27
+:page-permalink: /docs/releases/0.2.0
+= Release History -- 0.2.0 - 2026-05-27
+
+
+[.release-section]
+== What's Changed
+
+
+Summary of all changes in this release.
+
+
+[.changelog-section]
+
+
+=== Breaking Changes
+
+
+[.change-entry]
+* Radically upgraded template designs
+ +
+xref:note-0_2_0-38[NOTE]
+
+
+=== Fixed
+
+
+[.change-entry]
+* Adapter now honors documented config settings for extracting release notes
+ +
+xref:note-0_2_0-25[NOTE]
+
+
+[.change-entry]
+* Addressed Liquid errors in the generated sample-config file
+ +
+xref:note-0_2_0-23[NOTE]
+
+
+[.change-entry]
+* Fixed payload pre-extraction that interfered with custom `--mapping` files
+ +
+xref:note-0_2_0-custom-mapping-payload[NOTE]
+
+
+=== Improved
+
+
+[.change-entry]
+* Radically upgraded template designs
+ +
+xref:note-0_2_0-38[NOTE]
+
+
+=== Removed
+
+
+[.change-entry]
+* Removed `SchemaGraphy` module in favor of external `schemagraphy` gem
+ +
+xref:note-0_2_0-42[NOTE]
+
+
+[.change-entry]
+* Removed `Sourcerer` module code in favor of `asciisourcerer` gem
+ +
+xref:note-0_2_0-41[NOTE]
+
+
+== Release Notes
+
+
+Detailed descriptions of notable changes.
+
+
+[.notes-section]
+
+
+=== Fixed
+[.release-note]
+--
+The adapter was reading an internal legacy property (`sources.note_source`) rather than the documented `conversions.note` setting, causing note extraction to fail silently.
+The default `note_pattern` regex also used a greedy quantifier that consumed the entire issue body when multiple heading formats were specified.
+
+Both are now fixed: the adapter reads `conversions.note` (with a backward-compatible fallback to `note_source`), and the default pattern uses a non-greedy match.
+
+--
+
+
+[.release-note]
+--
+The pre-build produced a YAML file containing literal Liquid error strings due to template defects in the `cfgyml` template layer.
+These have been corrected.
+
+--
+
+
+[.release-note]
+--
+When using `--mapping` with a custom mapping file, the CLI was pre-extracting the `issues` array from the API payload before passing it to the adapter.
+Custom mappings define their own `changes_array_path` and expect the full payload structure from the root.
+This caused failures with Jira description-based mappings and any other custom mapping that traverses from the payload root.
+
+--
+
+
+=== Improved
+[.release-note]
+--
+Substantial redesign of HTML, Markdown, and AsciiDoc output templates, with a new configurable styling system.
+
+HTML output now renders with Bootstrap 5 components and semantic HTML5 markup.
+Styling is configurable via `history.styling.*`: choose between framework, embedded, external, or minimal CSS modes, with dark theme and print style support.
+
+_Breaking changes:_
+
+* `modes.wrapped` renamed to `modes.html_wrap`
+* `conversions.engine` replaced by `conversions.engines.html` and `conversions.engines.pdf`
+* The default ordering of `notes.spot` and `changelog.spot` is swapped;
+Changelog now appears before Notes
+
+--
+
+
+=== Removed
+[.release-note]
+--
+The `SchemaGraphy` module has been extracted from `releasehx` and published as the `schemagraphy` gem on RubyGems.
+
+Now `releasehx` adds `schemagraphy` as a runtime dependency, so no change is needed for CLI users.
+Downstream gem users who rely on individualized `SchemaGraphy` classes directly should require `schemagraphy` and/or its modules explicitly and invoke through such paths.
+
+--
+
+
+[.release-note]
+--
+_This note applies only to downstream developers who embed the `releasehx` gem as a dependency._
+
+The `Sourcerer``` module has been extracted and published as the ``asciisourcerer`` gem on RubyGems (the ``sourcerer`` name was taken by an unrelated project).
+Downstream dependencies should add ``asciisourcerer` explicitly if they rely on the Sourcerer API.
+
+--
+
+
