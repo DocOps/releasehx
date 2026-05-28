@@ -9,25 +9,25 @@
 {%- endif %}
 {%- if change.parts.size > 0 %}
   {%- if change.parts.size == 1 %}
-    part: {{ change.parts[0] }}
+  part: {{ change.parts[0] }}
   {%- else %}
-    parts:
+  parts:
     {%- for part in change.parts %}
-      - {{ part }}
+    - {{ part }}
     {%- endfor %}
   {%- endif %}
 {%- endif %}
 {%- if change.hash %}
   hash: {{ change.hash }}
 {%- endif %}
-summ: |
-{{ change.summ }}
+  summ: |
+    {{ change.summ }}
 {%- if change.head %}
   head: {{ change.head }}
 {%- endif %}
-{%- if change.note and change.note.strip != '' %}
+{%- if change.note and change.note != '' %}
   note: |
-  {{ _note | indent: 6 }}
+    {{ change.note | indent: 4 }}
 {%- endif %}
 {%- if change.tags.size > 0 %}
   tags:
