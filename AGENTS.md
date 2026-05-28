@@ -272,7 +272,7 @@ bundle exec rspec specs/tests/rspec --format documentation
 The releasehx-demo repository can help illustrate real usage (optional):
 
 ```bash
-git clone {releasehx_demo_repo}
+git clone git@github.com:DocOps/releasehx-demo.git
 cd releasehx-demo
 
 # Study different API data structures

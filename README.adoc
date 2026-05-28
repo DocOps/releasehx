@@ -12,23 +12,25 @@
 :this_proj_slug: releasehx
 :this_proj_name: ReleaseHx
 // tag::universal-settings[]
+// ALL changes within this block must be made in prime template:
+//  DocOps/lab/gems/docopslab-dev/templates/README.asciidoc
 :docopslab_src_www_url: https://github.com/DocOps
 :docopslab_domain: docopslab.org
 :docopslab_www_url: https://{docopslab_domain}
 :docopslab_io_www_url: https://docopslab.github.io
 :docopslab_ruby_version: 3.2.7
-:docopslab_src_www_url: https://raw.githubusercontent.com/DocOps
 :docopslab_git_src_uri: git@github.com:DocOps
+:docopslab_src_raw_url: https://raw.githubusercontent.com/DocOps
 :this_proj_src_www_url: {docopslab_src_www_url}/{this_proj_slug}
-:this_proj_src_raw_url: https://raw.githubusercontent.com/DocOps/{this_proj_slug}/main
+:this_proj_src_raw_url: {docopslab_src_raw_url}/{this_proj_slug}
+:this_proj_src_main_raw_url: {this_proj_src_raw_url}/main
 :this_proj_src_main_files_url: {this_proj_src_www_url}/blob/main
-:this_proj_src_main_edit_url: {this_proj_src_www_url}/edit/main
 :this_proj_src_git_uri: {docopslab_git_src_uri}/{this_proj_slug}.git
 :this_proj_ruby_version: {docopslab_ruby_version}
 // tag::env-settings[]
-:extn:
+:docs_extn:
 ifdef::env-github[]
-:extn: .adoc
+:docs_extn: .adoc
 :icons: font
 :caution-caption: :fire:
 :important-caption: :exclamation:
@@ -37,8 +39,12 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 // end::env-settings[]
+// Settings likely to be overridden locally
+:this_prod_slug: {this_proj_slug}
+:this_prod_name: {this_proj_name}
+:this_prod_src_www_url: {this_proj_src_www_url}
 // end::universal-settings[]
-:releasehx_demo_repo: {docopslab_src_www_url}/releasehx-demo
+:releasehx-demo_repo_www_url: {docopslab_src_www_url}/releasehx-demo
 // tag::product-settings[]
 :this_prod_slug: {this_proj_slug}
 // tag::version-settings[]
@@ -461,7 +467,7 @@ Then have it consult `releasehx://config/sample` as a table of contents before u
 [[demo-setup]]
 ==== Demo Repo Setup
 
-If you want to play around with ReleaseHx before connecting it to your own Issues source via API, use the `link:{releasehx_demo_repo}[DocOps/releasehx-demo]` repository as instructed in this section.
+If you want to play around with ReleaseHx before connecting it to your own Issues source via API, use the `link:{releasehx-demo_repo_www_url}[DocOps/releasehx-demo]` repository as instructed in this section.
 
 Alternately, skip to <<issue-sources>> to begin configuring your own project/environment.
 
@@ -632,7 +638,7 @@ Out of the box, there are two issues in the `jira-customfield-note-1.1.0.json` f
 [.prompt.testable]
  rhx 1.1.0 --config configs/jira-customfield.yml --api-data _payloads/jira-customfield-note-1.1.0.json --html --pdf
 
-For more on the demo repo, visit its README at {releasehx_demo_repo}.
+For more on the demo repo, visit its README at {releasehx-demo_repo_www_url}.
 
 [[custom-configuration]]
 ==== Custom Configuration
@@ -923,7 +929,7 @@ For *custom field-based* release notes, the entire ADF content in the custom fie
 No heading extraction is performed.
 --
 
-See link:{releasehx_demo_repo}[releasehx-demo] repository for working examples with ADF payloads and configurations.
+See link:{releasehx-demo_repo_www_url}[releasehx-demo] repository for working examples with ADF payloads and configurations.
 
 [[github-issues]]
 ==== GitHub Issues
@@ -1350,7 +1356,7 @@ When rendered, the HTML will include:
 }
 ----
 
-For examples of dark theme in action, see the demo configurations in the {releasehx_demo_repo}[releasehx-demo repository], particularly `github-dark-mode.yml` and `github-bootstrap-dark.yml`.
+For examples of dark theme in action, see the demo configurations in the {releasehx-demo_repo_www_url}[releasehx-demo repository], particularly `github-dark-mode.yml` and `github-bootstrap-dark.yml`.
 
 [[html-wrapper-control]]
 ===== HTML Wrapper Control
@@ -1954,7 +1960,7 @@ ReleaseHx comes with a complete default configuration file as well as a series o
 
 The complete link:{default-config_www}[default config file] displays default values with commented descriptions of all available properties.
 
-The various sample configurations stored in the link:{releasehx_demo_repo}/blob/main/configs/[demo repository] may be a good start toward establishing your own setup.
+The various sample configurations stored in the link:{releasehx-demo_repo_www_url}/blob/main/configs/[demo repository] may be a good start toward establishing your own setup.
 
 [[env-vars]]
 === Environment Variables in ReleaseHx
@@ -2188,7 +2194,7 @@ For example, if your GitHub issues use labels like:
 Your ReleaseHx application will need an alternate mapping because the default GitHub mapping expects native `issue_type.name` fields.
 
 An example alternate mapping for label-based GitHub type extraction can be found at:
-link:{releasehx_demo_repo}/blob/main/_mappings_/legacy-labels/github.yaml[`releasehx-demo/_mappings_/legacy-labels/github.yaml`]
+link:{releasehx-demo_repo_www_url}/blob/main/_mappings_/legacy-labels/github.yaml[`releasehx-demo/_mappings_/legacy-labels/github.yaml`]
 
 This mapping includes Ruby logic to:
 
@@ -2240,7 +2246,7 @@ To use an alternate mapping:
 
 . Test with representative payload data to ensure proper extraction
 
-The link:{releasehx_demo_repo}[demo repository] contains working examples of these alternate mappings alongside their corresponding configurations and test payloads.
+The link:{releasehx-demo_repo_www_url}[demo repository] contains working examples of these alternate mappings alongside their corresponding configurations and test payloads.
 
 [NOTE]
 ReleaseHx by default looks for a mapping file that matches the name of the API you are using.
@@ -2276,7 +2282,7 @@ Using the ReleaseHx config file, you can manipulate:
 
 Most of this can be manipulated using the following sections: <<conf_ppty_history>>, <<conf_ppty_changelog>>, <<conf_ppty_notes>>, <<conf_ppty_links>>, as well as within change-metadata config blocks, where you can alter labels, icons, and such: <<conf_ppty_types>>, <<conf_ppty_parts>>, <<conf_ppty_tags>>.
 
-The various sample configurations found in the link:{releasehx_demo_repo}/blob/main/configs/[demo repository] illustrate many of these options.
+The various sample configurations found in the link:{releasehx-demo_repo_www_url}/blob/main/configs/[demo repository] illustrate many of these options.
 
 A complete link:{default-config_www}[sample config] displays default values and commented descriptions of all available properties.
 
@@ -2550,7 +2556,7 @@ To work with ReleaseHx source, clone both repositories side by side for the most
 +
 [.prompt]
  git clone {this_proj_src_www_url}
- git clone {releasehx_demo_repo}
+ git clone {releasehx-demo_repo_www_url}
 +
 This will give you `<source_dir>/releasehx` and `<source_dir>/releasehx-demo`, side by side.
 

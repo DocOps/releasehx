@@ -1,4 +1,5 @@
 = ReleaseHx Release Procedure
+include::../README.adoc[tags="global-settings"]
 
 This document outlines the step-by-step procedure for releasing a new version of ReleaseHx.
 
@@ -275,6 +276,11 @@ gh release create v0.x.y pkg/releasehx-0.x.y.gem \
   --title "ReleaseHx 0.x.y" \
   --notes "See release notes at https://releasehx.docopslab.org/docs/releases/"
 ----
+
+[[stage-demo-repo-release]]
+=== Stage {counter:stage}: Release releasehx-demo
+
+Follow the release process documented in the {releasehx-demo_repo_www_url}[releasehx-demo] repo's `README.adoc`.
 
 [[stage-release-verification]]
 === Stage {counter:stage}: Post-Release Verification
