@@ -9,10 +9,10 @@ origin:
   format: json
 
 paths:
-  drafts_dir: docs/release/drafts
-  payloads_dir: docs/release/payloads
-  templates_dir: docs/release/templates
-  mappings_dir: docs/release/mappings
+  drafts_dir: docs/_releases/drafts
+  payloads_dir: docs/_releases/payloads
+  templates_dir: docs/_releases/templates
+  mappings_dir: docs/_releases/mappings
 
 conversions:
   summ: issue_heading

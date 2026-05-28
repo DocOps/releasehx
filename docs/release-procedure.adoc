@@ -11,7 +11,7 @@ It covers all stages from pre-release checks to post-release verification.
 
 - [ ] All changes merged to `release/0.x` branch
 - [ ] Version numbers updated in README.adoc attributes (`:this_prod_vrsn_major:` through `:next_prod_vrsn_majmin:`)
-- [ ] Release notes prepared in `docs/release/0.x.y.adoc`
+- [ ] Release notes prepared in `docs/_releases/0.x.y.adoc`
 - [ ] Clean working tree on `release/0.x`
 - [ ] RubyGems credentials configured (`~/.gem/credentials`)
 - [ ] Docker Hub credentials configured (`docker login`)
@@ -124,7 +124,7 @@ Confirm Release Notes::
 [source,bash]
 ----
 # Verify release notes file exists
-ls -lh docs/release/0.x.y.adoc
+ls -lh docs/_releases/0.x.y.adoc
 ----
 
 [[stage-build-artifacts]]

@@ -56,7 +56,7 @@ tools:
         - specs/*
         - "**/config-reference.adoc"
         - docs/releases.adoc
-        - docs/release/*
+        - docs/_releases/*
         - .bundle/*
         - .agent/*
         - docs/manpage.adoc

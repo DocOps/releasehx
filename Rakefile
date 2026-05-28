@@ -278,7 +278,7 @@ namespace :rhx do
   desc 'Publish release notes as AsciiDoc'
   task :publish, [:version] do |_t, args|
     with_rhx(args) do |config_path, config, version|
-      drafts_dir = config.dig('paths', 'drafts_dir') || 'docs/release/drafts'
+      drafts_dir = config.dig('paths', 'drafts_dir') || 'docs/_releases/drafts'
       yaml_file = File.join(drafts_dir, "#{version}.yml")
 
       unless File.exist?(yaml_file)
@@ -288,7 +288,7 @@ namespace :rhx do
       end
 
       puts "Publishing release notes for version #{version}..."
-      output_file = "docs/release/#{version}.adoc"
+      output_file = "docs/_releases/#{version}.adoc"
       cmd = "bundle exec bin/rhx #{yaml_file} --config #{config_path} --adoc #{output_file}"
       run_cmd(cmd)
       puts "✓ Successfully published release notes to #{output_file}"
@@ -356,7 +356,7 @@ def generate_release_index
   require 'fileutils'
   require 'yaml'
 
-  release_dir = 'docs/release'
+  release_dir = 'docs/_releases'
   output_file = 'build/docs/_release_index.adoc'
 
   # Ensure output directory exists
@@ -370,30 +370,28 @@ def generate_release_index
 
   return if release_files.empty?
 
-  # Build the index content
+  # Build the index content — all releases included inline, links are anchors
   content = []
-  content << '== Available Releases'
-  content << ''
-  content << 'Each release includes detailed notes about new features, improvements, bug fixes, and breaking changes.'
+  content << '== Release History'
   content << ''
 
-  # List releases
+  # TOC-style list linking to anchors within this page
   release_files.each do |file|
     version = File.basename(file, '.adoc')
-    # Try to extract date from the file
     date = extract_release_date(file) || 'TBD'
-    content << "* link:../release/#{version}[#{version}] - #{date}"
+    anchor = "release-#{version.gsub('.', '-')}"
+    content << "* <<#{anchor},#{version}>> — #{date}"
   end
 
   content << ''
-  content << '== Latest Release'
-  content << ''
 
-  # Include the latest release content
-  if release_files.any?
-    latest_file = release_files.first
-    latest_version = File.basename(latest_file, '.adoc')
-    content << "include::release/#{latest_version}.adoc[leveloffset=+1]"
+  # Include all releases inline with anchor IDs
+  release_files.each do |file|
+    version = File.basename(file, '.adoc')
+    anchor = "release-#{version.gsub('.', '-')}"
+    content << "[[#{anchor}]]"
+    content << "include::_releases/#{File.basename(file)}[leveloffset=+1]"
+    content << ''
   end
 
   # Write the file
@@ -403,7 +401,10 @@ end
 def extract_release_date file
   # Read first 20 lines looking for :page-date: attribute
   File.foreach(file).first(20).each do |line|
-    return Regexp.last_match(1).strip if line =~ /:page-date:\s+(.+)$/
+    if line =~ /:page-date:\s+(.+)$/
+      # Strip time component if present — display date only
+      return Regexp.last_match(1).strip.split(' ').first
+    end
   end
   nil
 end
