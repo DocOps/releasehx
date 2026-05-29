@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    releasehx (0.2.0)
+    releasehx (0.2.1)
       asciidoctor-html5s (~> 0.5)
       asciidoctor-pdf (~> 2.3)
       asciisourcerer (~> 0.4)

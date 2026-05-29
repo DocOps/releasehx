@@ -80,6 +80,6 @@ dev/
 releasehx-demo/
 
 # Release history working directories
-docs/release/drafts/
-docs/release/payloads/
+docs/_releases/drafts/
+docs/_releases/payloads/
 docs/agent/*.md

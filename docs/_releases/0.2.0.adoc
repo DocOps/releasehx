@@ -2,7 +2,6 @@
 :page-title: Release History for 0.2.0
 :page-version: 0.2.0
 :page-date: 2026-05-27
-:page-permalink: /docs/releases/0.2.0
 = Release History -- 0.2.0 - 2026-05-27
 
 

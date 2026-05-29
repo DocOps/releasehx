@@ -1,6 +1,7 @@
 title: ReleaseHx Documentation
 theme: just-the-docs
 baseurl: /
+future: true
 
 plugins:
   - jekyll-asciidoc
@@ -31,7 +32,8 @@ exclude:
   - manpage.adoc
   - jekyll/
   - payloads/
-  - release/
+  - _releases/drafts
+  - _releases/payloads
   - yard/
   - release-procedure.adoc
 

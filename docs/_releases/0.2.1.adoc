@@ -1,0 +1,52 @@
+:icons: font
+:page-title: Release History for 0.2.1
+:page-version: 0.2.1
+:page-date: 2026-05-28
+= Release History -- 0.2.1 - 2026-05-28
+
+
+[.release-section]
+== What's Changed
+
+
+Summary of all changes in this release.
+
+
+[.changelog-section]
+
+
+=== Fixed
+
+
+[.change-entry]
+* Fixed broken YAML output when changes contain notes
+ +
+xref:note-0_2_1-liquid-template[NOTE]
+
+
+== Release Notes
+
+
+Detailed descriptions of notable changes.
+
+
+[.notes-section]
+
+
+=== Fixed
+[[note-0_2_1-liquid-template]]
+[.release-note]
+--
+The `rhyml-change.yaml.liquid` template contained four defects introduced in 0.2.0 that caused `Liquid error: internal` followed by a YAML `SyntaxError` whenever a change entry included a release note.
+
+Specifically:
+
+* `_note` was referenced as a variable but never defined (should be `change.note`)
+* `summ:` key was output at column 0 instead of the required 2-space indent
+* `part:` key was indented 4 spaces instead of 2
+* `.strip` was applied as a Liquid filter, which is not valid Liquid syntax
+
+All four are corrected.
+Any configuration that includes `conversions.note` (Jira, GitHub, GitLab, or RHYML sources with note content) is affected by this bug and should upgrade to 0.2.1.
+
+--

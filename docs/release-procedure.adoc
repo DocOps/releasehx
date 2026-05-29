@@ -1,4 +1,5 @@
 = ReleaseHx Release Procedure
+include::../README.adoc[tags="global-settings"]
 
 This document outlines the step-by-step procedure for releasing a new version of ReleaseHx.
 
@@ -10,7 +11,7 @@ It covers all stages from pre-release checks to post-release verification.
 
 - [ ] All changes merged to `release/0.x` branch
 - [ ] Version numbers updated in README.adoc attributes (`:this_prod_vrsn_major:` through `:next_prod_vrsn_majmin:`)
-- [ ] Release notes prepared in `docs/release/0.x.y.adoc`
+- [ ] Release notes prepared in `docs/_releases/0.x.y.adoc`
 - [ ] Clean working tree on `release/0.x`
 - [ ] RubyGems credentials configured (`~/.gem/credentials`)
 - [ ] Docker Hub credentials configured (`docker login`)
@@ -123,7 +124,7 @@ Confirm Release Notes::
 [source,bash]
 ----
 # Verify release notes file exists
-ls -lh docs/release/0.x.y.adoc
+ls -lh docs/_releases/0.x.y.adoc
 ----
 
 [[stage-build-artifacts]]
@@ -275,6 +276,11 @@ gh release create v0.x.y pkg/releasehx-0.x.y.gem \
   --title "ReleaseHx 0.x.y" \
   --notes "See release notes at https://releasehx.docopslab.org/docs/releases/"
 ----
+
+[[stage-demo-repo-release]]
+=== Stage {counter:stage}: Release releasehx-demo
+
+Follow the release process documented in the {releasehx-demo_repo_www_url}[releasehx-demo] repo's `README.adoc`.
 
 [[stage-release-verification]]
 === Stage {counter:stage}: Post-Release Verification
