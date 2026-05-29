@@ -1,7 +1,7 @@
 :icons: font
 :page-title: Release History for 0.2.1
 :page-version: 0.2.1
-:page-date: 2026-05-28 00:00:00 +0000
+:page-date: 2026-05-28
 = Release History -- 0.2.1 - 2026-05-28
 
 

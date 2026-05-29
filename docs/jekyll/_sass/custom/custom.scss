@@ -9,13 +9,26 @@
 .main-content .dlist dt {
   font-weight: bold;
   margin-top: 1em;
-  text-align: left; /* Fix: Ensure text is flush left */
+  text-align: left;
+  /* Fix: Ensure text is flush left */
 }
 
 .main-content .dlist dd {
-  margin-left: 2em; /* Indent the description */
+  margin-left: 2em;
+  /* Indent the description */
   margin-top: 0.5em;
   padding-bottom: 0.5em;
+}
+
+.table-wrapper {
+  width: min-content;
+  overflow-x: auto;
+}
+
+table {
+  width: auto;
+  min-width: auto;
+  text-wrap-mode: nowrap;
 }
 
 td {
@@ -28,7 +41,9 @@ h2 {
   font-size: 1.35rem !important;
 }
 
-h3, h4, h5 {
+h3,
+h4,
+h5 {
   font-weight: bold;
 }
 
@@ -49,7 +64,7 @@ h5 {
 }
 
 .highlight {
-  
+
   .cl {
     color: #6367A9;
   }

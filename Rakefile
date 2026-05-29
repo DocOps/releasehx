@@ -354,7 +354,7 @@ end
 
 def generate_release_index
   require 'fileutils'
-  require 'yaml'
+  require 'date'
 
   release_dir = 'docs/_releases'
   output_file = 'build/docs/_release_index.adoc'
@@ -374,15 +374,20 @@ def generate_release_index
   content = []
   content << '== Release History'
   content << ''
+  content << '[cols="~,~"]'
+  content << '|==='
 
   # TOC-style list linking to anchors within this page
   release_files.each do |file|
     version = File.basename(file, '.adoc')
-    date = extract_release_date(file) || 'TBD'
+    raw_date = extract_release_date(file)
+    date = raw_date ? Date.parse(raw_date).strftime('%-d %B, %Y') : 'TBD'
     anchor = "release-#{version.gsub('.', '-')}"
-    content << "* <<#{anchor},#{version}>> — #{date}"
+    content << "| <<#{anchor},#{version}>>"
+    content << "| #{date}"
   end
 
+  content << '|==='
   content << ''
 
   # Include all releases inline with anchor IDs
@@ -399,12 +404,7 @@ def generate_release_index
 end
 
 def extract_release_date file
-  # Read first 20 lines looking for :page-date: attribute
-  File.foreach(file).first(20).each do |line|
-    if line =~ /:page-date:\s+(.+)$/
-      # Strip time component if present — display date only
-      return Regexp.last_match(1).strip.split(' ').first
-    end
-  end
-  nil
+  require 'asciidoctor'
+  doc = Asciidoctor.load_file file, safe: :safe, parse_header_only: true
+  doc.attr 'page-date'
 end

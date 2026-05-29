@@ -1,6 +1,7 @@
 title: ReleaseHx Documentation
 theme: just-the-docs
 baseurl: /
+future: true
 
 plugins:
   - jekyll-asciidoc
